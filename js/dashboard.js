@@ -54,7 +54,7 @@ function dashboard(){
  const hero=`<section class="dh-hero">
   <div class="dh-ring"><svg width="132" height="132" viewBox="0 0 132 132" aria-hidden="true"><circle cx="66" cy="66" r="52" fill="none" stroke="rgba(255,255,255,.22)" stroke-width="12"/><circle cx="66" cy="66" r="52" fill="none" stroke="#fff" stroke-width="12" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C*(1-p/100)}" transform="rotate(-90 66 66)"/></svg><div><b class="tnum">${p}%</b><span>hành trình</span></div></div>
   <div class="dh-intro"><span class="dh-eyebrow">Dashboard · AI for CEO</span><h1>Hành trình AI của ${esc(S.profile.name||'anh/chị')}</h1><p>${cheer(p)}</p>
-   <div class="dh-tags">${pace}<span class="dh-tag">${ic('cal',14)} Bắt đầu ${fmtDate(d.start)}</span><span class="dh-tag">${ic('flag',14)} ${d.allDone?'Đã về đích':'Dự kiến về đích '+fmtDate(d.end)}</span></div>
+   <div class="dh-tags">${pace}${streakInfo().streak?`<span class="dh-tag">${ic('flame',14)} Chuỗi ${streakInfo().streak} ngày học</span>`:''}<span class="dh-tag">${ic('cal',14)} Bắt đầu ${fmtDate(d.start)}</span><span class="dh-tag">${ic('flag',14)} ${d.allDone?'Đã về đích':'Dự kiến về đích '+fmtDate(d.end)}</span></div>
    <div class="dh-cta">${ni>=0?`<button class="btn dh-btn-white" data-a="openLesson" data-v="${ni}">${ic('play',14)} Học tiếp Bài ${ni+1}</button>`:`<button class="btn dh-btn-white" data-a="go" data-to="complete">${ic('award',16)} Nhận chứng nhận</button>`}<button class="btn dh-btn-fb" data-a="shareOpen" data-v="dash">${ic('fb',16)} Chia sẻ Dashboard</button></div></div>
  </section>`;
  const kpis=[['book','Bài học đã hoàn thành',`${d.lessonsDone}/${d.N}`,d.lessonsDone/d.N,'#1747C9'],['file','Bài tập đã nộp',`${d.subs}/${Object.keys(TASKS).length}`,d.subs/Object.keys(TASKS).length,'#DB2777'],['spark','Năng lực AI đã chinh phục',`${d.caps}/${CAP_MAP.length}`,d.caps/CAP_MAP.length,'#7C3AED'],['clock','Thời gian đã học',hm(d.minDone),d.minAll?d.minDone/d.minAll:0,'#EA580C']];
@@ -86,7 +86,7 @@ function dashboard(){
   ${journeyMap()}
   <div class="jm-legend">${PHASES.map((ph,i)=>`<span><i style="background:${PHASE_COLOR[ph.id]}"></i>Chương ${i+1} · ${esc(ph.name)}</span>`).join('')}</div></section>`;
  const demo=`<div class="demo-box"><span class="t">Công cụ demo</span><span class="hint">Xem Dashboard ở các mức tiến độ khác nhau.</span><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-line btn-sm" data-a="simulateHalf">Mô phỏng: đã học một nửa</button><button class="btn btn-line btn-sm" data-a="simulateAll" data-v="dash">Mô phỏng: học xong toàn bộ</button></div></div>`;
- return `<section class="wrap page dash">${head}${hero}${kpiHTML}${chartsHTML(d)}${capHTML}${journeyHTML}${workHTML}${demo}</section>`;
+ return `<section class="wrap page dash">${head}${hero}${d.allDone&&!S.feedback?`<div class="callout info fb-ask"><span class="fb-ask-ico">${ic('star',20)}</span><div><b>Anh/chị đã hoàn thành khóa học!</b><span>Dành 2 phút góp ý về nội dung, hệ thống, hỗ trợ và trải nghiệm để Học viện làm tốt hơn.</span></div><button class="btn btn-primary btn-sm" data-a="goFeedback">Góp ý ngay ${ic('arrow',15)}</button></div>`:''}${kpiHTML}${chartsHTML(d)}${capHTML}${journeyHTML}${workHTML}${demo}</section>`;
 }
 
 /* ---------- biểu đồ (SVG tự vẽ, có tooltip khi rê chuột / focus bàn phím) ---------- */
@@ -178,6 +178,7 @@ function journeyMap(){
 // Facebook không cho website tự đính ảnh vào bài đăng → vẽ sẵn ảnh để tải/chia sẻ, kèm mở hộp chia sẻ link
 function shareCaption(kind){
  const d=dashStats();
+ if(kind==='cert')return `Tôi vừa hoàn thành khóa AI for CEO tại Học viện Siêu Tăng Trưởng: ${d.N} bài học, ${Object.keys(TASKS).length} bài tập áp dụng cho doanh nghiệp, ${d.caps}/${CAP_MAP.length} năng lực AI. #AIforCEO #SieuTangTruong`;
  return kind==='journey'
   ?`Hành trình AI for CEO của tôi: đã đi qua ${d.lessonsDone}/${d.N} bài, chinh phục ${d.caps}/${CAP_MAP.length} năng lực AI cùng Học viện Siêu Tăng Trưởng. #AIforCEO #SieuTangTruong`
   :`Tôi đã hoàn thành ${d.pct}% khóa AI for CEO: ${d.lessonsDone}/${d.N} bài học, ${d.subs} bài tập áp dụng cho doanh nghiệp, ${d.caps}/${CAP_MAP.length} năng lực AI. #AIforCEO #SieuTangTruong`;
@@ -188,7 +189,7 @@ function shareView(){
  return `<div class="mail-ov" role="presentation"><div class="mail share" role="dialog" aria-modal="true" aria-label="Chia sẻ lên Facebook">
   <div class="mail-bar"><span class="mail-app">${ic('fb',16)} Chia sẻ lên Facebook</span><button class="x" data-a="shareClose" aria-label="Đóng">${ic('x')}</button></div>
   <div class="share-body">
-   <div class="seg" role="group" aria-label="Chọn ảnh chia sẻ"><button class="${k==='dash'?'on':''}" data-a="shareOpen" data-v="dash">Dashboard</button><button class="${k==='journey'?'on':''}" data-a="shareOpen" data-v="journey">Bản đồ hành trình</button></div>
+   <div class="seg" role="group" aria-label="Chọn ảnh chia sẻ"><button class="${k==='dash'?'on':''}" data-a="shareOpen" data-v="dash">Dashboard</button><button class="${k==='journey'?'on':''}" data-a="shareOpen" data-v="journey">Bản đồ hành trình</button>${dashStats().allDone?`<button class="${k==='cert'?'on':''}" data-a="shareOpen" data-v="cert">Chứng nhận</button>`:''}</div>
    <canvas id="share-cv" width="1200" height="630" aria-label="Ảnh xem trước"></canvas>
    <label class="hint" for="share-cap">Nội dung bài đăng gợi ý (sửa tùy ý)</label>
    <textarea class="inp" id="share-cap" rows="3">${esc(T.shareCap||shareCaption(k))}</textarea>
@@ -201,7 +202,8 @@ async function drawShare(){
  const cv=document.getElementById('share-cv');if(!cv)return;
  try{await document.fonts.load('800 40px "Be Vietnam Pro"');await document.fonts.load('600 20px "Be Vietnam Pro"');}catch(e){}
  // ảnh Dashboard: khung chuẩn 1200×630; ảnh hành trình: cao theo số bài
- cv.height=T.share==='journey'?journeyLayout().H:630;
+ if(T.share==='cert'){cv.width=2000;cv.height=1414;await drawCert(cv);return;}
+ cv.width=1200;cv.height=T.share==='journey'?journeyLayout().H:630;
  const g=cv.getContext('2d');g.clearRect(0,0,cv.width,cv.height);
  (T.share==='journey'?drawJourneyCard:drawDashCard)(g);
 }
@@ -272,8 +274,71 @@ function drawJourneyCard(g){
  let x=60,y=H-34-26;g.font=F(600,14);PHASES.forEach((ph,i)=>{const t=`Chương ${i+1} · ${ph.name}`,w=g.measureText(t).width+20;if(x+w>1150){x=60;y+=26;}g.fillStyle=PHASE_COLOR[ph.id];g.beginPath();g.arc(x+6,y-5,6,0,7);g.fill();g.fillStyle='#2B3240';g.fillText(t,x+18,y);x+=w+28;});
 }
 function shareBlob(){return new Promise(ok=>{const cv=document.getElementById('share-cv');if(!cv)return ok(null);try{cv.toBlob(b=>ok(b),'image/png');}catch(e){ok(null);}});}
-function shareFileName(){return T.share==='journey'?'hanh-trinh-ai-for-ceo.png':'dashboard-ai-for-ceo.png';}
+function shareFileName(){return T.share==='cert'?`chung-nhan-ai-for-ceo-${certCode()}.png`:T.share==='journey'?'hanh-trinh-ai-for-ceo.png':'dashboard-ai-for-ceo.png';}
 async function shareDownload(){
  const b=await shareBlob();if(!b){toast('Chưa tạo được ảnh. Anh/chị thử mở demo bằng link GitHub thay vì mở file trên máy','bad');return false;}
  const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=shareFileName();document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},800);return true;
+}
+
+/* ---------- Chứng nhận hoàn thành (ảnh A4 ngang 2000×1414, tải PNG hoặc in/lưu PDF) ---------- */
+const certCode=()=>'STT-AICEO-'+((S.order&&S.order.code)||'000000').replace(/\D/g,'').slice(-6);
+// ngày cấp dạng 01/10/2026 (thêm số 0 cho ngày/tháng 1 chữ số)
+const certDate=()=>String(S.completedAt||today()).replace(/^(\d)\//,'0$1/').replace(/\/(\d)\//,'/0$1/');
+let CERT_LOGO=null; // logo chỉ vẽ được khi trang chạy qua http(s); mở file trực tiếp thì dùng chữ để ảnh vẫn tải về được
+function certLogo(){
+ if(location.protocol==='file:')return Promise.resolve(null);
+ if(CERT_LOGO)return Promise.resolve(CERT_LOGO);
+ return new Promise(ok=>{const i=new Image();i.onload=()=>{CERT_LOGO=i;ok(i);};i.onerror=()=>ok(null);i.src='img/logo.png';});
+}
+async function drawCert(target){
+ const cv=target||document.getElementById('cert-cv');if(!cv)return;
+ try{await document.fonts.load('800 60px "Be Vietnam Pro"');await document.fonts.load('600 30px "Be Vietnam Pro"');await document.fonts.load('500 30px "Be Vietnam Pro"');}catch(e){}
+ const logo=await certLogo(),g=cv.getContext('2d'),W=2000,H=1414,cx=W/2,d=dashStats(),p=S.profile;
+ // nền + khung
+ g.fillStyle='#FFFDF8';g.fillRect(0,0,W,H);
+ const grad=g.createLinearGradient(0,0,W,H);grad.addColorStop(0,'#1747C9');grad.addColorStop(.55,'#6D3BE0');grad.addColorStop(1,'#DB2777');
+ g.fillStyle=grad;g.beginPath();g.moveTo(0,0);g.lineTo(520,0);g.lineTo(0,380);g.closePath();g.fill();g.beginPath();g.moveTo(W,H);g.lineTo(W-520,H);g.lineTo(W,H-380);g.closePath();g.fill();
+ g.globalAlpha=.08;g.beginPath();g.moveTo(W,0);g.lineTo(W-300,0);g.lineTo(W,220);g.closePath();g.fill();g.beginPath();g.moveTo(0,H);g.lineTo(300,H);g.lineTo(0,H-220);g.closePath();g.fill();g.globalAlpha=1;
+ g.strokeStyle='#1747C9';g.lineWidth=6;rr(g,60,60,W-120,H-120,26);g.stroke();
+ g.strokeStyle='#C9A227';g.lineWidth=2;rr(g,84,84,W-168,H-168,18);g.stroke();
+ g.fillStyle='#FFFDF8';rr(g,90,90,W-180,H-180,16);g.fill();
+ g.textAlign='center';g.textBaseline='alphabetic';
+ // logo
+ if(logo){const lw=360,lh=lw*logo.height/logo.width;g.drawImage(logo,cx-lw/2,150,lw,lh);}else{g.fillStyle='#0A4AAD';g.font=F(800,46);g.fillText('Siêu Tăng Trưởng',cx,200);}
+ // tiêu đề
+ g.fillStyle='#141A26';g.font=F(800,84);g.fillText('CHỨNG NHẬN HOÀN THÀNH',cx,350);
+ g.fillStyle='#8A6D1D';g.font=F(600,26);g.fillText('C E R T I F I C A T E   O F   C O M P L E T I O N',cx,400);
+ g.fillStyle='#5B6472';g.font=F(500,32);g.fillText('Học viện Siêu Tăng Trưởng trân trọng chứng nhận',cx,490);
+ // tên học viên
+ g.fillStyle='#1747C9';g.font=F(800,104);g.fillText(fitText(g,p.name||'Học viên',1500),cx,620);
+ g.strokeStyle='#C9A227';g.lineWidth=2;g.beginPath();g.moveTo(cx-460,656);g.lineTo(cx+460,656);g.stroke();
+ g.fillStyle='#5B6472';g.font=F(500,32);g.fillText('đã hoàn thành chương trình',cx,false?780:740);
+ g.fillStyle='#141A26';g.font=F(800,68);g.fillText('AI for CEO',cx,false?865:825);
+ g.fillStyle='#5B6472';g.font=F(500,28);g.fillText('Chương trình 12 module về năng lực AI dành cho lãnh đạo doanh nghiệp',cx,false?915:875);
+ // số liệu
+ const stats=[[`${d.N}`,'bài học'],[`${Object.keys(TASKS).length}`,'bài tập áp dụng'],[`${d.caps}/${CAP_MAP.length}`,'năng lực AI'],[hm(d.minAll),'thời gian học']];
+ const sy=false?1010:980,sw=330;stats.forEach(([v,l],i)=>{const x=cx+(i-1.5)*sw;g.fillStyle='#1747C9';g.font=F(800,40);g.fillText(v,x,sy);g.fillStyle='#5B6472';g.font=F(500,24);g.fillText(l,x,sy+36);if(i)g.fillStyle='#E6E8EC',g.fillRect(x-sw/2,sy-38,2,80);});
+ // con dấu
+ const sx=cx,sY=1185;g.fillStyle='#C9A227';g.beginPath();for(let k=0;k<24;k++){const a=k/24*Math.PI*2,r=k%2?96:108;g.lineTo(sx+Math.cos(a)*r,sY+Math.sin(a)*r);}g.closePath();g.fill();
+ g.fillStyle='#E9C65A';g.beginPath();g.arc(sx,sY,84,0,7);g.fill();g.strokeStyle='#8A6D1D';g.lineWidth=2;g.beginPath();g.arc(sx,sY,74,0,7);g.stroke();
+ g.fillStyle='#6B5212';g.font=F(800,19);g.fillText('SIÊU TĂNG',sx,sY-12);g.fillText('TRƯỞNG',sx,sY+12);g.font=F(800,13);g.fillText('★ AI FOR CEO ★',sx,sY+38);
+ // ngày, mã, chữ ký
+ g.textAlign='left';g.fillStyle='#5B6472';g.font=F(500,24);g.fillText('Ngày cấp',220,1170);g.fillStyle='#141A26';g.font=F(700,32);g.fillText(certDate(),220,1212);
+ g.fillStyle='#5B6472';g.font=F(500,22);g.fillText('Mã chứng nhận: '+certCode(),220,1256);
+ g.textAlign='center';g.strokeStyle='#2B3240';g.lineWidth=1.5;g.beginPath();g.moveTo(1440,1205);g.lineTo(1780,1205);g.stroke();
+ g.fillStyle='#141A26';g.font=F(700,26);g.fillText('Đại diện Học viện',1610,1245);g.fillStyle='#5B6472';g.font=F(500,22);g.fillText('Học viện Siêu Tăng Trưởng',1610,1280);
+ g.textAlign='left';
+}
+function certBlob(){return new Promise(ok=>{const cv=document.getElementById('cert-cv');if(!cv)return ok(null);try{cv.toBlob(b=>ok(b),'image/png');}catch(e){ok(null);}});}
+async function certDownload(){
+ const b=await certBlob();if(!b){toast('Chưa tạo được ảnh chứng nhận. Anh/chị thử lại sau vài giây','bad');return false;}
+ const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`chung-nhan-ai-for-ceo-${certCode()}.png`;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},800);return true;
+}
+// In / lưu PDF: chỉ in tấm chứng nhận, khổ A4 ngang
+function certPrint(){
+ const cv=document.getElementById('cert-cv');if(!cv)return;let url;try{url=cv.toDataURL('image/png');}catch(e){toast('Chưa tạo được bản in. Anh/chị dùng nút Tải ảnh','bad');return;}
+ let box=document.getElementById('cert-print');if(!box){box=document.createElement('div');box.id='cert-print';document.body.appendChild(box);}
+ box.innerHTML=`<img src="${url}" alt="Chứng nhận hoàn thành AI for CEO">`;document.body.classList.add('printing-cert');
+ const done=()=>{document.body.classList.remove('printing-cert');window.removeEventListener('afterprint',done);};window.addEventListener('afterprint',done);
+ setTimeout(()=>window.print(),150);
 }

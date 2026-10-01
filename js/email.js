@@ -71,6 +71,8 @@ function sendConfirmEmail(){
  S.mails.unshift(m);
  if(realMailOn())sendRealEmail(m);else toast(`Đã gửi email xác nhận tới ${o.email}`);
 }
+// nội dung 1 email trong hộp thư: xác nhận đăng ký hoặc nhắc lịch học
+function mailContent(m,opt){return m.kind==='remind'?{...remindEmail(m.msg,opt),to:m.to}:confirmEmail(m.order,opt);}
 /* ---------- Gửi email thật qua EmailJS ---------- */
 const realMailOn=()=>!!(EMAILJS.serviceId&&EMAILJS.templateId&&EMAILJS.publicKey);
 // Nạp thư viện EmailJS khi cần (chỉ khi đã cấu hình), không làm chậm lúc mở trang
@@ -82,12 +84,12 @@ function loadEmailJS(){
 async function sendRealEmail(m){
  // email thật cần đường dẫn đầy đủ: logo và nút "Truy cập khóa học" trỏ về đúng trang demo đang chạy
  const base=location.href.split('#')[0].replace(/index\.html$/,'');
- const e=confirmEmail(m.order,{logo:new URL('img/logo.png',base).href,url:base});
+ const e=mailContent(m,{logo:new URL('img/logo.png',base).href,url:base});
  m.real='sending';render();
  try{
   const ej=await loadEmailJS();
-  await ej.send(EMAILJS.serviceId,EMAILJS.templateId,{to_email:e.to,to_name:m.order.name||'',subject:e.subject,html:e.html,text:e.text,reply_to:ACADEMY.support,from_name:ACADEMY.name});
-  m.real='sent';toast(`Đã gửi email xác nhận tới ${e.to}. Anh/chị kiểm tra hộp thư (cả mục Spam/Quảng cáo)`);
+  await ej.send(EMAILJS.serviceId,EMAILJS.templateId,{to_email:e.to,to_name:(S.order&&S.order.name)||'',subject:e.subject,html:e.html,text:e.text,reply_to:ACADEMY.support,from_name:ACADEMY.name});
+  m.real='sent';if(m.kind!=='remind')toast(`Đã gửi email xác nhận tới ${e.to}. Anh/chị kiểm tra hộp thư (cả mục Spam/Quảng cáo)`);
  }catch(err){
   m.real='failed';m.err=(err&&(err.text||err.message))||'lỗi không xác định';
   toast(`Chưa gửi được email tới ${e.to}. Email vẫn có trong Hộp thư mô phỏng`,'bad');
@@ -101,9 +103,10 @@ const unreadMails=()=>S.mails.filter(m=>!m.read).length;
 function mailView(){
  if(!T.mailOpen)return '';
  const m=S.mails.find(x=>x.id===T.mailOpen)||S.mails[0];if(!m)return '';
- const e=confirmEmail(m.order,{url:'#',ctaAttr:'data-a="mailCta"'});
- return `<div class="mail-ov" data-a="mailClose" data-self="1"><div class="mail" role="dialog" aria-modal="true" aria-label="Email: ${esc(e.subject)}">
+ const e=mailContent(m,{url:'#',ctaAttr:m.kind==='remind'?`data-a="zaloCta" data-v="${m.msg.ctaTo}"`:'data-a="mailCta"'});
+ return `<div class="mail-ov" role="presentation"><div class="mail" role="dialog" aria-modal="true" aria-label="Email: ${esc(e.subject)}">
   <div class="mail-bar"><span class="mail-app">${ic('mail',16)} Hộp thư của ${esc(m.to)} <small>(mô phỏng)</small></span><button class="x" data-a="mailClose" aria-label="Đóng">${ic('x')}</button></div>
+  ${S.mails.length>1?`<div class="mail-list" role="tablist" aria-label="Các email">${S.mails.map(x=>{const sj=x.kind==='remind'?`${x.msg.icon} ${x.msg.title}`:'Đăng ký khóa học AI for CEO thành công';return `<button role="tab" aria-selected="${x.id===m.id}" class="${x.id===m.id?'on':''} ${x.read?'':'unread'}" data-a="mailOpen" data-v="${x.id}"><b>${esc(sj)}</b><small>${esc(x.at)}</small></button>`;}).join('')}</div>`:''}
   <div class="mail-head"><h2>${esc(e.subject)}</h2>
    <div class="mail-meta"><span class="av" aria-hidden="true">S</span><div><b>${esc(ACADEMY.name)}</b> <span>&lt;${esc(ACADEMY.sender)}&gt;</span><br><span>Đến: ${esc(m.to)} · ${esc(m.at)}</span></div></div></div>
   ${m.real?`<div class="mail-real ${m.real}">${m.real==='sent'?`${ic('check',15)} Đã gửi email thật tới <b>${esc(m.to)}</b>. Nếu chưa thấy, anh/chị xem mục Spam hoặc Quảng cáo.`:m.real==='sending'?'Đang gửi email thật…':`${ic('x',15)} Chưa gửi được email thật (${esc(m.err||'')}). <button class="btn-link" data-a="mailResend" data-v="${m.id}">Gửi lại</button>`}</div>`:''}

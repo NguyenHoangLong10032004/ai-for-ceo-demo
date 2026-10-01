@@ -8,7 +8,7 @@ function demoBar(){
  const cur=S.screen==='lesson'?'learn':S.screen;
  return `<div class="demo"><div class="wrap"><span class="demo-tag">Demo</span>
  <nav class="demo-steps" aria-label="Các bước trong luồng">${STAGES.map(([k,l],i)=>`<button class="${cur===k?'on':''}" data-a="jump" data-to="${k}"><b>${i+1}</b>${l}</button>`).join('')}</nav>
- <button class="demo-reset demo-mail" data-a="mailOpen" aria-label="Hộp thư mô phỏng${unreadMails()?`, ${unreadMails()} email chưa đọc`:''}">${ic('mail',13)} Hộp thư${unreadMails()?`<span class="cnt">${unreadMails()}</span>`:''}</button>${aiDot()}<button class="demo-reset" data-a="reset">${ic('refresh',13)} Làm lại</button></div></div>`;
+ <button class="demo-reset demo-mail" data-a="mailOpen" aria-label="Hộp thư mô phỏng${unreadMails()?`, ${unreadMails()} email chưa đọc`:''}">${ic('mail',13)} Hộp thư${unreadMails()?`<span class="cnt">${unreadMails()}</span>`:''}</button><button class="demo-reset demo-mail" data-a="zaloOpen" aria-label="Zalo mô phỏng${unreadZalo()?`, ${unreadZalo()} tin chưa đọc`:''}"><span class="zalo-ico sm">Z</span> Zalo${unreadZalo()?`<span class="cnt">${unreadZalo()}</span>`:''}</button>${aiDot()}<button class="demo-reset" data-a="reset">${ic('refresh',13)} Làm lại</button></div></div>`;
 }
 function header(){
  const name=S.enrolled?(S.profile.name||(S.order&&S.order.name)||''):'';
@@ -295,6 +295,7 @@ function learn(){
  <div class="page-head" style="display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap"><div style="display:grid;gap:8px"><span class="eyebrow">AI for CEO</span><h2 class="h2">Chào anh/chị ${esc(firstName())}</h2></div>
  <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-line" data-a="go" data-to="dashboard">${ic('chart',16)} Dashboard</button><button class="btn btn-ghost" data-a="go" data-to="syllabus">${ic('refresh',16)} Điều chỉnh lộ trình</button></div></div>
  <div class="two"><div style="display:grid;gap:18px">
+  ${remindAsk()}
   ${ni>=0?`<div class="today"><span class="lbl">Bài hôm nay · Bài ${ni+1}/${st.n} · ${dayLabel(ni,P.profile)}</span><h2>${esc(lessonTitle(todayKs))}</h2>
   <ul>${todayKs.map(k=>{const u=U(k),l=unitLine(u);return `<li class="${S.done[k]?'done':''}">${ic(S.done[k]?'check':l.icon,16)}<span>${esc(l.t)}</span><span class="m">${u.m} phút</span></li>`;}).join('')}</ul>
   <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn btn-primary" data-a="openLesson" data-v="${ni}">${todayKs.some(k=>S.done[k])?'Học tiếp bài '+(ni+1):'Bắt đầu bài '+(ni+1)} ${ic('arrow')}</button></div></div>`
@@ -304,6 +305,7 @@ function learn(){
   <div class="demo-box"><span class="t">Công cụ demo</span><span class="hint">Bỏ qua phần xem video để đến nhanh bước Hoàn thành.</span><div><button class="btn btn-line btn-sm" data-a="simulateAll">Mô phỏng: học xong toàn bộ và chọn 3 use case</button></div></div>
  </div>
  <aside class="sticky" style="display:grid;gap:16px">
+  ${remindCard()}
   <div class="card pad"><div class="ring"><svg width="84" height="84" viewBox="0 0 84 84" aria-hidden="true"><circle cx="42" cy="42" r="34" fill="none" stroke="var(--bg-2)" stroke-width="8"/><circle cx="42" cy="42" r="34" fill="none" stroke="var(--blue)" stroke-width="8" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C*(1-st.pct/100)}" transform="rotate(-90 42 42)"/></svg><div><b class="tnum">${st.lessonsDone}/${st.n}</b><span class="muted">bài học đã hoàn thành</span></div></div>
   <div class="kv" style="margin-top:18px"><div><span>Module năng lực</span><b class="tnum">${st.modsDone}/${st.mods}</b></div><div><span>Bài tập đã nộp</span><b class="tnum">${subsCount()}/${Object.keys(TASKS).length}</b></div></div>
   <div style="display:grid;gap:6px;margin-top:16px;padding-top:14px;border-top:1px solid var(--line)"><button class="btn btn-line btn-sm btn-block" data-a="go" data-to="dashboard">${ic('chart',15)} Xem Dashboard</button><button class="btn btn-line btn-sm btn-block" data-a="go" data-to="outputs">${ic('file',15)} Bài tập của tôi</button><button class="btn btn-ghost btn-sm btn-block" data-a="go" data-to="complete">${ic('award',15)} Điều kiện hoàn thành</button></div></div>
@@ -381,6 +383,42 @@ function outputs(){
  </section>`;
 }
 
+/* ---------- Góp ý sau khóa học (đề xuất mới) ---------- */
+// Hiện ở trang Hoàn thành khi đã đủ điều kiện. Chưa gửi / đang sửa → form; đã gửi → bản tóm tắt
+const starsView=(n,size=16)=>`<span class="stars-view" aria-label="${n} trên 5 sao">${[1,2,3,4,5].map(i=>`<i class="${i<=Math.round(n)?'on':''}">${ic('star',size)}</i>`).join('')}</span>`;
+function feedbackSection(){
+ const f=S.feedback;
+ if(f&&!T.fbEdit){
+  const avg=FEEDBACK_ASPECTS.reduce((s,a)=>s+f.ratings[a.k],0)/FEEDBACK_ASPECTS.length;
+  return `<section class="card pad cfb" id="feedback"><div class="fb-head"><div><span class="eyebrow">Góp ý của anh/chị</span><h2 class="h3">Cảm ơn anh/chị đã góp ý cho khóa học</h2><p class="hint">Gửi lúc ${esc(f.at)}. Học viện dùng góp ý này để cải thiện nội dung và dịch vụ cho các khóa sau.</p></div>
+   <div class="fb-avg"><div><b>${avg.toFixed(1).replace('.',',')}</b><span>/5</span></div>${starsView(avg,18)}</div></div>
+   <div class="fb-sum">${FEEDBACK_ASPECTS.map(a=>`<div class="fb-row"><span class="k">${esc(a.label)}</span>${starsView(f.ratings[a.k])}<span class="v">${STAR_LABEL[f.ratings[a.k]]}</span>${(f.tags[a.k]||[]).length?`<span class="fb-chips">${f.tags[a.k].map(t=>`<span class="pill">${esc(t)}</span>`).join('')}</span>`:''}</div>`).join('')}
+    <div class="fb-row"><span class="k">Khả năng giới thiệu cho CEO khác</span><b class="tnum">${f.nps}/10</b></div></div>
+   ${f.good?`<div class="fb-quote"><span class="t">Điều anh/chị thấy giá trị nhất</span><p>${fmt(f.good)}</p></div>`:''}
+   ${f.improve?`<div class="fb-quote"><span class="t">Học viện nên cải thiện</span><p>${fmt(f.improve)}</p></div>`:''}
+   <div class="form-foot"><span class="hint">${f.quote?`${ic('check',13)} Đồng ý công khai tên`:'Gửi ẩn danh'}</span><button class="btn btn-line btn-sm" data-a="fbEdit">Sửa góp ý</button></div></section>`;
+ }
+ const v=T.fbDraft||f||{ratings:{},tags:{}},miss=(T.err.fbMiss||[]);
+ const q=a=>{const r=v.ratings[a.k]||0,tg=v.tags[a.k]||[];
+  return `<fieldset class="fb-q ${miss.includes(a.k)?'bad':''}" id="fbq-${a.k}" tabindex="-1"><legend><b>${esc(a.label)}</b><span class="hint">${esc(a.hint)}</span></legend>
+   <div class="fb-rate"><div class="stars">${[5,4,3,2,1].map(n=>`<input type="radio" id="r-${a.k}-${n}" name="r_${a.k}" value="${n}" ${r===n?'checked':''}><label for="r-${a.k}-${n}" title="${STAR_LABEL[n]}"><span class="sr">${n} sao: ${STAR_LABEL[n]}</span>${ic('star',26)}</label>`).join('')}</div>
+    <span class="star-txt" data-for="r_${a.k}">${r?STAR_LABEL[r]:'Chưa chấm điểm'}</span></div>
+   <div class="fb-tags">${a.tags.map((t,i)=>`<label class="chk-chip"><input type="checkbox" name="t_${a.k}" value="${esc(t)}" ${tg.includes(t)?'checked':''}><span>${esc(t)}</span></label>`).join('')}</div></fieldset>`;};
+ const nps=v.nps;
+ return `<section class="card pad cfb" id="feedback"><form data-f="fbSubmit" novalidate>
+  <div class="fb-head"><div><span class="eyebrow">Góp ý về khóa học</span><h2 class="h3">Anh/chị đánh giá khóa AI for CEO thế nào?</h2><p class="hint">Khoảng 2 phút. Chấm sao cho 5 mục và chọn điểm giới thiệu là gửi được, phần còn lại không bắt buộc.</p></div></div>
+  ${FEEDBACK_ASPECTS.map(q).join('')}
+  <fieldset class="fb-q ${miss.includes('nps')?'bad':''}" id="fbq-nps" tabindex="-1"><legend><b>Anh/chị có sẵn lòng giới thiệu khóa học cho một CEO khác không?</b><span class="hint">0 = chắc chắn không, 10 = chắc chắn có</span></legend>
+   <div class="nps">${[...Array(11)].map((_,n)=>`<input type="radio" id="nps-${n}" name="nps" value="${n}" ${nps===n?'checked':''}><label for="nps-${n}">${n}</label>`).join('')}</div>
+   <div class="nps-ends"><span>Chắc chắn không</span><span>Chắc chắn có</span></div></fieldset>
+  <div class="row2"><div class="field"><label for="fb-good">Điều anh/chị thấy giá trị nhất (không bắt buộc)</label><textarea class="inp" id="fb-good" name="good" rows="3" placeholder="Ví dụ: phần demo Agent giúp tôi hình dung được việc tự động hóa báo cáo…">${esc(v.good||'')}</textarea></div>
+   <div class="field"><label for="fb-improve">Học viện nên cải thiện điều gì (không bắt buộc)</label><textarea class="inp" id="fb-improve" name="improve" rows="3" placeholder="Nội dung, hệ thống, hỗ trợ… điều gì làm anh/chị chưa hài lòng?">${esc(v.improve||'')}</textarea></div></div>
+  <label class="opt" for="fb-quote" style="justify-self:start"><input type="checkbox" id="fb-quote" name="quote" ${v.quote?'checked':''}><span>Đồng ý công khai tên tôi cùng góp ý này</span></label>
+  ${T.err.fb?`<p class="err">${esc(T.err.fb)}</p>`:''}
+  <div class="form-foot"><span class="hint">Không chọn thì góp ý được gửi ẩn danh.</span><div style="display:flex;gap:8px">${f?`<button type="button" class="btn btn-ghost" data-a="fbCancel">Hủy</button>`:''}<button class="btn btn-primary">${ic('send',15)} ${f?'Cập nhật góp ý':'Gửi góp ý'}</button></div></div>
+ </form></section>`;
+}
+
 /* ---------- 9. Hoàn thành ---------- */
 function complete(){
  const st=planStats();
@@ -394,7 +432,9 @@ function complete(){
   <div><button class="btn btn-primary btn-lg" data-a="go" data-to="learn">Tiếp tục học ${ic('arrow')}</button></div></div></section>`;
  const p=S.profile;const rows=S.subs.M12.rows;
  return `<section class="wrap page">${head}
- <div class="cert"><span class="seal">${ic('award',28)}</span><span class="t">Chứng nhận hoàn thành</span><span class="name">${esc(p.name||'')}</span><p class="muted">đã hoàn thành chương trình <b style="color:var(--ink)">AI for CEO</b> · Học viện Siêu Tăng Trưởng</p><span class="code">Mã chứng nhận STT-AICEO-${esc(((S.order&&S.order.code)||'000000').replace(/\D/g,'').slice(-6))} · ${esc(S.completedAt)}</span></div>
+ <div class="cert-wrap"><canvas id="cert-cv" width="2000" height="1414" role="img" aria-label="Chứng nhận hoàn thành AI for CEO của ${esc(p.name||'')}, mã ${certCode()}"></canvas>
+  <div class="cert-act"><button class="btn btn-primary" data-a="certDownload">${ic('download',16)} Tải chứng nhận (PNG)</button><button class="btn btn-line" data-a="certPrint">${ic('file',16)} In / Lưu PDF</button><button class="btn dh-btn-fb solid" data-a="certShare">${ic('fb',16)} Chia sẻ lên Facebook</button><span class="hint">Mã chứng nhận ${certCode()} · cấp ngày ${esc(certDate())}</span></div></div>
+ <div style="margin-top:24px">${feedbackSection()}</div>
  <div class="grid g2" style="margin-top:24px;align-items:start">
   <article class="card pad"><h3 class="h3" style="margin-bottom:12px">3 use case anh/chị chọn</h3><div class="tbl-wrap"><table class="uct"><thead><tr><th>Use case</th><th>Phòng ban</th><th>Năng lực AI</th></tr></thead><tbody>${rows.map(r=>`<tr><td><b>${esc(r.uc)}</b>${r.why?`<div class="hint">${esc(r.why)}</div>`:''}</td><td>${esc(GOALS[r.dept]||'')}</td><td>${esc(r.cap)}</td></tr>`).join('')}</tbody></table></div>
    <div class="kv" style="margin-top:16px"><div><span>Bài học</span><b class="tnum">${st.lessonsDone}/${st.n}</b></div><div><span>Bài tập đã nộp</span><b class="tnum">${subsCount()}/${Object.keys(TASKS).length}</b></div><div><span>Thời gian học</span><b class="tnum">${hours(st.min)} giờ</b></div></div>

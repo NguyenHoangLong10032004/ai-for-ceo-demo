@@ -41,6 +41,8 @@ flag:'<path d="M5 21V4M5 4h11l-2 4 2 4H5"/>',
 download:'<path d="M12 4v11M7 10l5 5 5-5M5 20h14"/>',
 share:'<circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="m8.2 10.8 7.6-4.4M8.2 13.2l7.6 4.4"/>',
 fb:'<path d="M14 8h3V4h-3a4 4 0 0 0-4 4v3H7v4h3v7h4v-7h3l1-4h-4V8Z" fill="currentColor" stroke="none"/>',
+star:'<path d="M12 2.8l2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.2l-5.6 3 1.1-6.3-4.6-4.4 6.3-.9L12 2.8Z" fill="currentColor" stroke="none"/>',
+flame:'<path d="M12 2c1 3.5 5 5.6 5 10.5A5 5 0 0 1 12 22a5 5 0 0 1-5-5c0-2.4 1.3-3.9 2.5-5 .3 1.6 1.1 2.6 2 3 0-3.5-1-6.3.5-13Z" fill="currentColor" stroke="none"/>',
 lock:'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
 file:'<path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9l-6-6Z"/><path d="M14 3v6h6M8 13h8M8 17h5"/>'
 };
@@ -217,6 +219,14 @@ const ACADEMY={name:"Học viện Siêu Tăng Trưởng",sender:"no-reply@sieuta
 const CAP_MAP=[{id:"M02",icon:"book",color:"#1747C9"},{id:"M03",icon:"eye",color:"#0E7490"},{id:"M04",icon:"pen",color:"#DB2777"},{id:"M05",icon:"search",color:"#7C3AED"},{id:"M06",icon:"code",color:"#4F46E5"},{id:"M07",icon:"link",color:"#0F766E"},{id:"M08",icon:"zap",color:"#EA580C"},{id:"M09",icon:"bot",color:"#B45309"},{id:"M10",icon:"users",color:"#15803D"},{id:"M11",icon:"shield",color:"#DC2626"}];
 // màu từng chương trên bản đồ hành trình
 const PHASE_COLOR={P1:"#1747C9",P2:"#DB2777",P3:"#7C3AED",P4:"#EA580C",P5:"#15803D"};
+// Góp ý sau khi hoàn thành khóa (đề xuất mới): 5 khía cạnh chấm 1–5 sao + gợi ý nhanh, điểm giới thiệu 0–10, nhận xét mở
+const FEEDBACK_ASPECTS=[
+ {k:"course",label:"Khóa học nói chung",hint:"Khóa học đáp ứng kỳ vọng của anh/chị đến đâu",tags:["Đúng nhu cầu của CEO","Đáng thời gian bỏ ra","Mở ra góc nhìn mới","Chưa đủ sâu"]},
+ {k:"content",label:"Nội dung",hint:"Video demo, phần giải thích cho CEO, bài tập",tags:["Demo thực tế","Dễ hiểu","Bài tập sát doanh nghiệp","Video hơi dài","Cần thêm ví dụ theo ngành"]},
+ {k:"system",label:"Hệ thống học",hint:"Website, lộ trình cá nhân hóa, Dashboard",tags:["Lộ trình hợp lý","Dễ sử dụng","Dashboard trực quan","Khó tìm bài học","Tải trang chậm"]},
+ {k:"support",label:"Hỗ trợ & dịch vụ",hint:"Trợ lý AI, chuyên gia, chăm sóc khách hàng, Live Zoom",tags:["Trợ lý AI hữu ích","Chuyên gia phản hồi nhanh","Live Zoom bổ ích","Phản hồi còn chậm"]},
+ {k:"exp",label:"Trải nghiệm tổng thể",hint:"Từ lúc đăng ký, onboarding đến khi hoàn thành",tags:["Đăng ký thuận tiện","Onboarding nhanh gọn","Có động lực học mỗi ngày","Muốn học tiếp khóa khác"]}];
+const STAR_LABEL=["","Rất không hài lòng","Chưa hài lòng","Bình thường","Hài lòng","Rất hài lòng"];
 const LIVE={title:'AI đến đâu rồi? · Tháng 10/2026',when:'20:00, thứ Năm 15/10/2026',len:'75 phút · Zoom'};
 
 /* ---------- cấu hình lộ trình & demo ---------- */
