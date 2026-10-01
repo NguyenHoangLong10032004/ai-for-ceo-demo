@@ -229,6 +229,9 @@ document.addEventListener('click',e=>{if(e.target.classList&&e.target.classList.
 document.addEventListener('submit',e=>{const f=e.target.closest('[data-f]');if(!f)return;e.preventDefault();const fn=FORMS[f.dataset.f];if(fn)fn(f);});
 // Dashboard: bản đồ hành trình đổi số cột theo bề rộng màn hình
 let rsz;window.addEventListener('resize',()=>{clearTimeout(rsz);rsz=setTimeout(()=>{if(S.screen==='dashboard'&&!T.share)render();},250);});
+// Dashboard: tooltip của biểu đồ khi rê chuột / dùng phím Tab
+['pointermove','focusin'].forEach(t=>document.addEventListener(t,e=>{if(S.screen==='dashboard')chartTip(e);}));
+window.addEventListener('scroll',()=>{const t=document.getElementById('ch-tip');if(t)t.hidden=true;},{passive:true});
 window.addEventListener('popstate',e=>{
  const st=e.state;if(!st||!SCREENS[st.screen])return;
  if(st.screen==='lesson'&&!(S.plan&&S.plan.lessons[st.lesson]&&lessonOpen(st.lesson)))return;
