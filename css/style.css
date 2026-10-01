@@ -375,6 +375,9 @@ ol.lessons{list-style:none;margin:0;padding:0 16px}
 .lrow .why{display:flex;gap:6px;align-items:flex-start;font-size:13px;color:var(--muted);margin-top:6px}
 .lrow .why .ic{color:var(--blue);margin-top:2px}
 .lrow .mn{display:flex;flex-direction:column;gap:6px;align-items:flex-end;font-size:13px;color:var(--muted);white-space:nowrap}
+/* bài chưa mở: học xong bài trước mới mở */
+.lrow.locked .tt,.lrow.locked .lcontent li{color:var(--muted)}
+.pill.lock{display:inline-flex;gap:4px;align-items:center;background:var(--bg-2);color:var(--muted)}
 .lrow .mn .pill.ok{color:var(--ok)}.lrow .mn .pill.blue{color:var(--blue)}.lrow .mn .pill.wait{color:var(--warn)}
 @media (max-width:640px){.ph-bar{display:none}.lrow{grid-template-columns:28px minmax(0,1fr)}.lrow .mn{grid-column:2;flex-direction:row;align-items:center}}
 
@@ -522,11 +525,23 @@ table.uct{width:100%;border-collapse:collapse;font-size:14px}
 .asst .chat{height:100%;box-shadow:var(--shadow)}
 .asst .x{margin-left:auto;background:none;border:0;color:var(--muted);padding:6px;border-radius:8px}
 .asst-foot{display:flex;justify-content:space-between;align-items:center;padding:0 18px 10px;font-size:12.5px;color:var(--muted);gap:8px}
-.handoff{padding:0 14px 12px;display:grid;gap:8px}
-.notif{position:fixed;right:20px;bottom:calc(80px + env(safe-area-inset-bottom,0px));z-index:41;width:min(360px,calc(100vw - 40px));padding:18px;display:grid;gap:10px;box-shadow:var(--shadow)}
-.notif h4{font-size:15px}
-.tk{border-top:1px solid var(--line);padding-top:10px;display:grid;gap:4px;font-size:13.5px}
-.tk .top{display:flex;justify-content:space-between;gap:8px;align-items:center}
+/* 2 tab tách riêng: Trợ lý AI (xanh) và Chuyên gia (xanh lá, người thật) */
+.chat-tabs{display:flex;align-items:center;gap:4px;padding:8px 8px 0 8px;border-bottom:1px solid var(--line);background:var(--bg-2)}
+.chat-tabs [role=tab]{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 14px;border:0;border-radius:10px 10px 0 0;background:transparent;color:var(--muted);font-weight:600;font-size:14px;position:relative;top:1px;border:1px solid transparent;border-bottom:0}
+.chat-tabs [role=tab]:hover{color:var(--ink)}
+.chat-tabs [role=tab].on{background:var(--surface);color:var(--blue);border-color:var(--line)}
+.is-expert .chat-tabs [role=tab].on{color:var(--ok)}
+.chat-tabs .cnt{min-width:18px;height:18px;border-radius:99px;background:#E5372B;color:#fff;font-size:11px;font-weight:700;display:grid;place-items:center;padding:0 5px}
+.chat-tabs .x{margin-left:auto}
+/* gợi ý trong khung chat nổi: gọn trên 1 hàng, vuốt ngang để xem thêm, nhường chỗ cho tin nhắn */
+.asst .chips{flex-wrap:nowrap;overflow-x:auto;gap:6px;padding:8px 14px;border-top:1px solid var(--line);scrollbar-width:thin}
+.asst .chip{flex:none;font-size:13px;padding:0 12px;min-height:34px;white-space:nowrap}
+.ex-av{background:var(--ok-soft);color:var(--ok);font-weight:700;font-size:13px}
+.expert-h .online{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--ok);margin-right:6px;vertical-align:1px}
+.msg.expert{background:var(--ok-soft);border-bottom-left-radius:4px}
+.msg small{display:block;font-size:12px;font-weight:600;color:var(--ok);margin-bottom:2px}
+.msg.user small.r{color:inherit;opacity:.8;font-weight:500;text-align:right;margin:2px 0 0}
+.msg.sys{align-self:center;max-width:92%;background:none;border:1px dashed var(--line-2);color:var(--muted);font-size:12.5px;text-align:center;padding:6px 12px}
 .icon-btn{background:none;border:0;color:var(--muted);padding:6px;border-radius:8px}
 
 /* ---------- footer ---------- */

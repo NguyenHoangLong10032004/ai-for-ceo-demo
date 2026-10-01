@@ -8,8 +8,8 @@
 const LS='aiceo-demo-v6';
 const DEFAULT=()=>({screen:'landing',eval:null,fit:null,nurture:false,order:null,pay:{status:null,method:'qr',sim:'success',support:false},enrolled:false,
  profile:{},ob:{flow:[],i:0,msgs:[],multi:[],done:false},plan:null,adjustLog:[],done:{},subs:{},lesson:0,unit:null,
- tickets:[],asst:[],completedAt:null,liveRemind:false,offline:false});
-const T={gen:null,ai:null,asstOpen:false,notifOpen:false,handoff:false,asstBusy:false,obTyping:false,focus:null,err:{},ph:{}};
+ expert:{id:null,msgs:[],unread:0,pending:false},asst:[],completedAt:null,liveRemind:false,offline:false});
+const T={gen:null,ai:null,asstOpen:false,tab:"ai",expertDraft:"",expertTyping:false,asstBusy:false,obTyping:false,focus:null,err:{},ph:{}};
 function load(){try{const r=localStorage.getItem(LS);if(r){return Object.assign(DEFAULT(),JSON.parse(r));}}catch(e){}return DEFAULT();}
 function save(){try{localStorage.setItem(LS,JSON.stringify(S));}catch(e){}}
 let S=load();
@@ -42,10 +42,6 @@ async function feedbackFor(id){
  if(sample){try{const r=await sample(`Bạn là trợ giảng khóa AI for CEO. Nhận xét bài tập của một CEO ngành ${S.profile.industry||''} bằng tiếng Việt, xưng em, gọi anh/chị, tối đa 70 từ: 1 điểm tốt, 1 gợi ý cụ thể để áp dụng trong công ty, 1 câu hỏi nên hỏi đội ngũ. Không dạy công cụ.\n\nModule: ${L[id].title}\nBài tập: ${TASKS[id].title}\nBài làm:\n${text}`,{cache:false,modelTier:'quick'});out=r.text;by='ai';}catch(e){}}
  else await new Promise(r=>setTimeout(r,600));
  s.feedback={text:out||ruleFeedback(id,text),by,at:nowStr()};render();}
-function exportAll(){
- const p=S.profile;const lines=[`BÀI TẬP KHÓA AI FOR CEO · HỌC VIỆN SIÊU TĂNG TRƯỞNG`,`Học viên: ${p.name||''} · ${p.company||''}`,`Xuất lúc: ${nowStr()}`,''];
- Object.keys(TASKS).forEach(id=>{const s=S.subs[id];lines.push(`== Module ${modNo(L[id])} · ${TASKS[id].title} ==`);lines.push(s?`Nộp lúc: ${s.at}${s.file?` · Tệp đính kèm: ${s.file.name}`:''}\n\n${subText(id)}`:'(Chưa nộp)');if(s&&s.feedback&&s.feedback.text)lines.push(`\nNhận xét: ${s.feedback.text}`);lines.push('');});
- const blob=new Blob([lines.join('\n')],{type:'text/plain;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='bai-tap-ai-for-ceo.txt';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}
 // Tệp ≤ 400 KB được lưu cả nội dung để tải lại; lớn hơn chỉ lưu tên (giới hạn của demo)
 function readFile(file){return new Promise(res=>{if(!file||!file.name)return res(null);const meta={name:file.name,size:file.size,type:file.type};if(file.size>400*1024)return res(meta);const r=new FileReader();r.onload=()=>res({...meta,data:r.result});r.onerror=()=>res(meta);r.readAsDataURL(file);});}
 function readUC(f){const fd=new FormData(f);return [0,1,2].map(i=>({uc:String(fd.get('uc'+i)||'').trim(),dept:fd.get('dept'+i),cap:fd.get('cap'+i),why:String(fd.get('why'+i)||'').trim()}));}
@@ -54,13 +50,16 @@ function readUC(f){const fd=new FormData(f);return [0,1,2].map(i=>({uc:String(fd
 const $app=document.getElementById('app');
 function render(){
  const scr=SCREENS[S.screen]||landing;
+ // giữ chữ đang gõ dở trong ô chat chuyên gia khi màn hình vẽ lại (vd. chuyên gia vừa trả lời)
+ const exIn=document.getElementById('ex-in'),exFocus=exIn&&document.activeElement===exIn;if(exIn)T.expertDraft=exIn.value;
  $app.innerHTML=demoBar()+header()+`<main>${scr()}</main>`+footer()+fab();
  save();
  // khả năng tiếp cận: vùng chat đọc được bằng trình đọc màn hình, lỗi có role=alert
  document.querySelectorAll('.chat-log').forEach(el=>{el.scrollTop=el.scrollHeight;el.setAttribute('role','log');el.setAttribute('aria-live','polite');});
  document.querySelectorAll('.err').forEach(el=>{el.setAttribute('role','alert');if(!el.querySelector('.ic'))el.insertAdjacentHTML('afterbegin',ic('x',16));});
  if(T.err.field){const f=document.getElementById(T.err.field);if(f){f.setAttribute('aria-invalid','true');f.focus({preventScroll:false});}}
- if(T.focus){const id={ob:'ob-in',asst:'asst-in',adj:'adj-in'}[T.focus];const el=document.getElementById(id);if(el)el.focus({preventScroll:true});T.focus=null;}
+ if(exFocus&&!T.focus)T.focus='expert';
+ if(T.focus){const id={ob:'ob-in',asst:'asst-in',adj:'adj-in',expert:'ex-in'}[T.focus];const el=document.getElementById(id);if(el)el.focus({preventScroll:true});T.focus=null;}
 }
 function go(to){S.screen=to;T.err={};T.draft=null;render();hist();landScroll();}
 // Lịch sử trình duyệt: nút Back của trình duyệt / vuốt quay lại trên điện thoại cũng quay về màn trước
@@ -110,8 +109,10 @@ const ACT={
  // trang bài học → quay lại danh sách bài học, cuộn tới đúng bài đang xem
  backToList:()=>{T.focusLesson=S.lesson;S.from=null;T.editEx=null;go('learn');},
  // bài tập mở từ "Bài tập của tôi" → quay lại đó, cuộn tới đúng thẻ bài tập
+ // Bài tập của tôi → danh sách bài học, cuộn tới bài đang học
+ outputsBack:()=>{const n=nextLesson();T.focusLesson=n>=0?n:null;T.editEx=null;go('learn');},
  backToOutputs:()=>{T.focusEl='out-'+S.fromEx;S.from=null;T.editEx=null;go('outputs');},
- reset:()=>{S=DEFAULT();PREVIEW=null;Object.assign(T,{gen:null,asstOpen:false,notifOpen:false,handoff:false,asstBusy:false,obTyping:false,err:{}});go('landing');toast('Đã làm lại demo từ đầu');},
+ reset:()=>{S=DEFAULT();PREVIEW=null;Object.assign(T,{gen:null,asstOpen:false,tab:"ai",expertDraft:"",expertTyping:false,asstBusy:false,obTyping:false,err:{}});go('landing');toast('Đã làm lại demo từ đầu');},
  scrollTo:d=>{const el=document.getElementById(d.v);if(el)el.scrollIntoView({behavior:'smooth'});},
  // danh sách bài học: thu gọn / mở ra chương
  phToggle:d=>{const a=T.ph[d.k]||[];const v=+d.v;T.ph[d.k]=a.includes(v)?a.filter(x=>x!==v):[...a,v];render();},
@@ -136,18 +137,17 @@ const ACT={
  fixPace:d=>{const p0={...S.profile},was=!!(S.plan&&S.plan.wasActive);S.profile.minPerSession=+d.v;S.plan=rulePlan(S.profile);S.plan.wasActive=was;S.adjustLog.push({role:'bot',text:describeChanges(p0,S.profile)});render();},
  acceptPlan:()=>{if(!S.plan||S.plan.warning)return;const was=S.plan.wasActive;S.plan.accepted=true;S.plan.wasActive=true;go('learn');toast(was?'Đã lưu lộ trình mới':'Đã xác nhận lộ trình. Bắt đầu Bài 1 nhé!');},
  // học
- openLesson:d=>{S.lesson=+d.v;S.unit=null;S.from=null;go('lesson');},
+ openLesson:d=>{if(!lessonOpen(+d.v)){toast(lockMsg(+d.v),'bad');return;}S.lesson=+d.v;S.unit=null;S.from=null;go('lesson');},
  selUnit:d=>{S.unit=d.v;render();},
  playUnit:()=>{if(U(S.unit).kind==='exercise')return;S.done[S.unit]=true;render();},
  markNext:()=>{S.done[S.unit]=true;advance();},
- asstLesson:()=>{T.asstOpen=true;T.notifOpen=false;askAssistant('Giải thích phần này theo góc nhìn CEO và công ty tôi có thể dùng ở đâu?');},
+ asstLesson:()=>{T.asstOpen=true;T.tab="ai";askAssistant('Giải thích phần này theo góc nhìn CEO và công ty tôi có thể dùng ở đâu?');},
  // bài tập
  exSample:d=>{const id=d.v,t=TASKS[id];if(t.kind==='uc'){ACT.ucSample();return;}const v=t.sample(S.profile);t.fields.forEach(f=>{const el=document.getElementById('ex-'+f.k);if(el&&v[f.k]!=null)el.value=v[f.k];});},
  ucSample:()=>{sampleUC(S.profile).forEach((r,i)=>{const s=(n,v)=>{const el=document.getElementById(n+i);if(el)el.value=v;};s('uc',r.uc);s('dept',r.dept);s('cap',r.cap);s('why',r.why);});},
  editEx:d=>{T.editEx=d.v;T.err={};render();},
  cancelEdit:()=>{T.editEx=null;T.err={};T.draft=null;render();},
- openEx:d=>{const li=lessonOfUnit('E:'+d.v);if(li<0)return;S.lesson=li;S.unit='E:'+d.v;S.from='outputs';S.fromEx=d.v;T.editEx=null;go('lesson');},
- exportAll:()=>{try{exportAll();toast('Đã tải file bài tập (.txt)');}catch(e){toast('Chưa tải được file. Anh/chị thử lại nhé','bad');}},
+ openEx:d=>{const li=lessonOfUnit('E:'+d.v);if(li<0)return;if(!S.subs[d.v]&&!lessonOpen(li)){toast(lockMsg(li),'bad');return;}S.lesson=li;S.unit='E:'+d.v;S.from='outputs';S.fromEx=d.v;T.editEx=null;go('lesson');},
  // công cụ demo
  simulateAll:()=>{lessons().flat().forEach(k=>S.done[k]=true);const at=nowStr();
   Object.keys(TASKS).forEach(id=>{if(S.subs[id])return;const t=TASKS[id];S.subs[id]=t.kind==='uc'?{rows:sampleUC(S.profile),at,v:1}:{fields:t.sample(S.profile),at,v:1};S.subs[id].feedback={text:ruleFeedback(id,subText(id)),by:'rule',at};});go('complete');toast('Đã mô phỏng học xong và nộp đủ bài tập');},
@@ -155,11 +155,15 @@ const ACT={
  liveRemind:()=>{S.liveRemind=true;render();toast('Đã đặt nhắc lịch buổi Live Zoom');},
  offline:()=>{S.offline=true;render();toast('Đã ghi nhận quan tâm Offline Executive Briefing');},
  // AI Assistant & hỗ trợ
- asstToggle:()=>{T.asstOpen=!T.asstOpen;T.notifOpen=false;T.handoff=false;if(T.asstOpen)T.focus='asst';render();},
- notifToggle:()=>{T.notifOpen=!T.notifOpen;T.asstOpen=false;render();},
+ asstToggle:()=>{T.asstOpen=!T.asstOpen;if(T.asstOpen)ACT.chatTab({v:T.tab});else render();},
+ // mở khung chat đúng tab; bấm lại nút đang mở thì đóng
+ openChat:d=>{if(T.asstOpen&&T.tab===d.v){T.asstOpen=false;render();return;}T.asstOpen=true;ACT.chatTab(d);},
+ chatTab:d=>{T.tab=d.v;if(d.v==='expert')S.expert.unread=0;T.focus=d.v==='expert'?'expert':'asst';render();},
+ // Trợ lý AI chưa trả lời được → sang tab chuyên gia, điền sẵn câu hỏi gần nhất để anh/chị sửa rồi gửi
+ toExpert:()=>{const last=[...S.asst].reverse().find(m=>m.role==='user');T.expertDraft=last?last.text:'';T.asstOpen=true;ACT.chatTab({v:'expert'});},
+ expertAsk:d=>{expertSend(d.q);},
  asstAsk:d=>{askAssistant(d.q);},
- handoff:()=>{T.handoff=true;render();},
- handoffCancel:()=>{T.handoff=false;render();}
+ 
 };
 
 /* ---------- xử lý form (data-f="…") ---------- */
@@ -189,7 +193,7 @@ const FORMS={
   toast(prev?'Đã nộp lại bài tập. Đang nhận xét…':'Đã nộp bài tập. Đang nhận xét…');
   feedbackFor(id);},
  asstSend:f=>{const q=f.q.value.trim();if(!q)return;askAssistant(q);},
- handoffSubmit:f=>{const q=f.q.value.trim()||'Cần hỗ trợ thêm';T.handoff=false;createTicket(q);T.asstOpen=true;render();}
+ expertSend:f=>{const q=f.q.value.trim();if(!q)return;f.q.value='';expertSend(q);T.focus='expert';render();}
 };
 
 /* ---------- gắn sự kiện ---------- */
@@ -197,13 +201,13 @@ document.addEventListener('click',e=>{const a=e.target.closest('[data-a]');if(!a
 document.addEventListener('submit',e=>{const f=e.target.closest('[data-f]');if(!f)return;e.preventDefault();const fn=FORMS[f.dataset.f];if(fn)fn(f);});
 window.addEventListener('popstate',e=>{
  const st=e.state;if(!st||!SCREENS[st.screen])return;
- if(st.screen==='lesson'&&!(S.plan&&S.plan.lessons[st.lesson]))return;
+ if(st.screen==='lesson'&&!(S.plan&&S.plan.lessons[st.lesson]&&lessonOpen(st.lesson)))return;
  if(S.screen==='lesson'&&st.screen==='learn')T.focusLesson=S.lesson;
  if(S.screen==='lesson'&&st.screen==='outputs'&&S.from==='outputs')T.focusEl='out-'+S.fromEx;
  S.from=st.from||null;S.screen=st.screen;if(st.screen==='lesson'&&st.lesson!==S.lesson){S.lesson=st.lesson;S.unit=null;}
  T.err={};T.draft=null;T.editEx=null;render();landScroll();
 });
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&(T.asstOpen||T.notifOpen)){T.asstOpen=false;T.notifOpen=false;render();}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&T.asstOpen){T.asstOpen=false;render();}});
 
 /* ---------- khởi động ---------- */
 // dọn dữ liệu cũ còn lưu trong trình duyệt từ các phiên bản demo trước
@@ -214,7 +218,10 @@ try{fixOb();}catch(e){S.ob={flow:[],i:0,msgs:[],multi:[],done:false};}
 if(S.profile&&S.profile.days&&!S.profile.minPerSession)S.profile.minPerSession=30;
 if(S.screen==='lesson'&&!(S.plan&&S.plan.lessons[S.lesson]))S.screen='learn';
 S.asst=S.asst.filter(m=>!m.pending);
-S.tickets.forEach(scheduleTicket);
+// bản lưu cũ: yêu cầu hỗ trợ dạng ticket → chuyển sang khung chat chuyên gia
+if(!S.expert||!Array.isArray(S.expert.msgs))S.expert={id:null,msgs:[],unread:0,pending:false};
+if(S.tickets){S.tickets.forEach(t=>{if(!S.expert.id)S.expert.id=t.id;S.expert.msgs.push({role:'user',text:t.q});if(t.reply)S.expert.msgs.push({role:'expert',text:t.reply});});delete S.tickets;}
+scheduleExpert();
 // biết có AI hay không thì cập nhật chấm trạng thái trên thanh demo
 SAMPLE_P.then(s=>{T.ai=!!s;document.querySelectorAll('[data-ai]').forEach(el=>el.outerHTML=aiDot());});
 render();hist(true);

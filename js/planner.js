@@ -193,6 +193,9 @@ async function generate(request){
 const lessons=()=>S.plan?S.plan.lessons:[];
 const lessonDone=i=>lessons()[i].every(k=>S.done[k]);
 function nextLesson(){const i=lessons().findIndex((_,j)=>!lessonDone(j));return i;}
+// Học tuần tự: chỉ mở các bài đã học và bài đang học; bài sau mở khi học xong bài trước
+function lessonOpen(i){const n=nextLesson();return n<0||i<=n;}
+const lockMsg=i=>`Bài ${i+1} sẽ mở sau khi anh/chị học xong Bài ${nextLesson()+1}.`;
 function lessonOfUnit(key){return lessons().findIndex(ks=>ks.includes(key));}
 function reasonsFor(keys){const ids=[...new Set(keys.map(k=>U(k).id))];return ids.map(id=>{const it=S.plan.items.find(i=>i.id===id);return it?it.reason:'';}).filter(Boolean);}
 function planStats(){const ls=lessons();const all=ls.flat();const mods=LIB.filter(x=>x.type==='module');

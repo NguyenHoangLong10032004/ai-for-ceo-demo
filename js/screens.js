@@ -22,27 +22,37 @@ function header(){
 function secHead(eyebrow,title,sub){return `<div class="sec-head"><span class="eyebrow">${eyebrow}</span><h2 class="h2">${title}</h2>${sub?`<p class="sub">${sub}</p>`:''}</div>`;}
 function footer(){return `<footer class="ftr"><div class="wrap"><span>© Học viện Siêu Tăng Trưởng · Bản demo prototype luồng AI for CEO do BlueBolt thực hiện.</span><span>Case và dữ liệu trong demo là minh họa.</span></div></footer>`;}
 function priceTag(){return `<span class="tnum" style="font-weight:800;font-size:28px;letter-spacing:-.02em">${money(COURSE.price)}</span><span class="strike tnum">${money(COURSE.list)}</span><span class="promo">${ic('tag',13)} ${COURSE.promo} · −${OFF}%</span>`;}
-// Nút AI Assistant + thông báo nổi góc phải dưới
+// Khung chat nổi góc phải dưới: 2 tab tách riêng, Trợ lý AI (trả lời ngay) và Chuyên gia (người thật)
 function fab(){
- const unread=S.tickets.filter(t=>t.status!=='Đã tiếp nhận').length;
+ const E=S.expert,unread=E.unread||0,learnMode=S.enrolled;
  let panel='';
  if(T.asstOpen){
-  const learnMode=S.enrolled;
-  const chips=learnMode?['Giải thích phần này theo góc nhìn CEO','Năng lực này áp dụng gì cho công ty tôi?','Bài tiếp theo là gì?']:['Khóa học có phù hợp với tôi không?','Có dạy dùng ChatGPT, viết prompt không?','Học phí và ưu đãi thế nào?'];
-  const msgs=S.asst.length?S.asst:[{role:'bot',text:learnMode?`Chào anh/chị ${firstName()}! Em là AI Learning Assistant. Em trả lời dựa trên nội dung chính thức của khóa học và hồ sơ công ty anh/chị.`:'Chào anh/chị! Em có thể giải đáp về khóa AI for CEO: nội dung, cách học, thời gian và học phí.'}];
-  const lastUser=[...S.asst].reverse().find(m=>m.role==='user');
-  panel=`<div class="asst" role="dialog" aria-label="AI Learning Assistant"><div class="card chat">
-  <div class="chat-h"><span class="bot-av">${ic('spark')}</span><div><b>${learnMode?'AI Learning Assistant':'Tư vấn khóa học'}</b><span>${T.ai?'Trả lời bằng AI, dựa trên nội dung chính thức':'Trả lời theo nội dung soạn sẵn'}</span></div><button class="x" data-a="asstToggle" aria-label="Đóng">${ic('x')}</button></div>
-  <div class="chat-log" id="asst-log">${msgs.map((m,i)=>`<div class="msg ${m.role==='user'?'user':'bot'} ${m.pending?'typing':''}" id="am-${i}">${m.pending&&!m.text?'Đang soạn câu trả lời…':fmt(m.text)}</div>${m.handoff&&!T.handoff?`<div><button class="chip" data-a="handoff">${ic('headset',14)} Chuyển cho chuyên gia</button></div>`:''}`).join('')}</div>
-  ${T.handoff?`<form class="handoff" data-f="handoffSubmit"><label class="hint" for="ho-q">Nội dung gửi chuyên gia</label><textarea class="inp" id="ho-q" name="q" rows="3">${esc(lastUser?lastUser.text:'')}</textarea><div style="display:flex;gap:8px"><button class="btn btn-primary btn-sm">Gửi yêu cầu</button><button type="button" class="btn btn-line btn-sm" data-a="handoffCancel">Hủy</button></div></form>`:`<div class="chips">${chips.map(c=>`<button class="chip" data-a="asstAsk" data-q="${esc(c)}">${esc(c)}</button>`).join('')}</div>`}
-  <form class="chat-in" data-f="asstSend"><input class="inp" id="asst-in" name="q" autocomplete="off" placeholder="Hỏi về nội dung khóa học…" ${T.asstBusy?'disabled':''}><button class="send" aria-label="Gửi" ${T.asstBusy?'disabled':''}>${ic('send')}</button></form>
-  ${learnMode&&!T.handoff?`<div class="asst-foot"><span>AI chưa trả lời được?</span><button class="btn-link" data-a="handoff">Gửi cho chuyên gia</button></div>`:''}
-  </div></div>`;
- } else if(T.notifOpen){
-  panel=`<div class="notif card" role="dialog" aria-label="Thông báo"><div style="display:flex;justify-content:space-between;align-items:center"><h4>Yêu cầu hỗ trợ</h4><button class="icon-btn" data-a="notifToggle" aria-label="Đóng">${ic('x')}</button></div>
-  ${S.tickets.length?S.tickets.slice().reverse().map(t=>`<div class="tk"><div class="top"><b>#${t.id}</b><span class="pill ${t.status==='Đã phản hồi'?'ok':'wait'}">${t.status}</span></div><span class="muted">${esc(t.q)}</span>${t.reply?`<span>${esc(t.reply)}</span>`:''}</div>`).join(''):'<p class="muted">Chưa có yêu cầu hỗ trợ nào.</p>'}</div>`;
+  const isAI=T.tab!=='expert';
+  const tabs=`<div class="chat-tabs" role="tablist" aria-label="Chọn người trò chuyện">
+   <button role="tab" aria-selected="${isAI}" class="${isAI?'on':''}" data-a="chatTab" data-v="ai">${ic('bot',16)} Trợ lý AI</button>
+   <button role="tab" aria-selected="${!isAI}" class="${!isAI?'on':''}" data-a="chatTab" data-v="expert">${ic('headset',16)} Chuyên gia${unread&&isAI?`<span class="cnt">${unread}</span>`:''}</button>
+   <button class="x" data-a="asstToggle" aria-label="Đóng">${ic('x')}</button></div>`;
+  let body;
+  if(isAI){
+   // [nhãn ngắn hiển thị, câu hỏi đầy đủ gửi cho AI]
+   const chips=learnMode?[['Giải thích theo góc nhìn CEO','Giải thích phần này theo góc nhìn CEO'],['Áp dụng cho công ty tôi','Năng lực này áp dụng gì cho công ty tôi?'],['Bài tiếp theo','Bài tiếp theo là gì?']]:[['Có phù hợp với tôi?','Khóa học có phù hợp với tôi không?'],['Có dạy prompt không?','Có dạy dùng ChatGPT, viết prompt không?'],['Học phí & ưu đãi','Học phí và ưu đãi thế nào?']];
+   const msgs=S.asst.length?S.asst:[{role:'bot',text:learnMode?`Chào anh/chị ${firstName()}! Em là Trợ lý AI của khóa học. Em trả lời ngay, dựa trên nội dung chính thức của khóa học và hồ sơ công ty anh/chị.`:'Chào anh/chị! Em là Trợ lý AI, có thể giải đáp ngay về khóa AI for CEO: nội dung, cách học, thời gian và học phí.'}];
+   body=`<div class="chat-h"><span class="bot-av">${ic('bot')}</span><div><b>Trợ lý AI</b><span>Trả lời ngay · ${T.ai?'bằng AI, dựa trên nội dung chính thức':'theo nội dung soạn sẵn của khóa học'}</span></div></div>
+   <div class="chat-log" id="asst-log">${msgs.map((m,i)=>`<div class="msg ${m.role==='user'?'user':'bot'} ${m.pending?'typing':''}" id="am-${i}">${m.pending&&!m.text?'Đang soạn câu trả lời…':fmt(m.text)}</div>${m.handoff?`<div><button class="chip" data-a="toExpert">${ic('headset',14)} Nhắn chuyên gia câu này</button></div>`:''}`).join('')}</div>
+   <div class="chips">${chips.map(([t,q])=>`<button class="chip" data-a="asstAsk" data-q="${esc(q)}" title="${esc(q)}">${esc(t)}</button>`).join('')}</div>
+   <form class="chat-in" data-f="asstSend"><input class="inp" id="asst-in" name="q" autocomplete="off" placeholder="Hỏi Trợ lý AI về nội dung khóa học…" aria-label="Câu hỏi cho Trợ lý AI" ${T.asstBusy?'disabled':''}><button class="send" aria-label="Gửi cho Trợ lý AI" ${T.asstBusy?'disabled':''}>${ic('send')}</button></form>
+   <div class="asst-foot"><span>AI chưa trả lời được?</span><button class="btn-link" data-a="toExpert">Nhắn chuyên gia ${ic('arrow',13)}</button></div>`;
+  }else{
+   const msgs=[{role:'expert',text:expertHello()},...E.msgs];
+   body=`<div class="chat-h expert-h"><span class="bot-av ex-av" aria-hidden="true">${EXPERT.name.split(' ').map(w=>w[0]).join('')}</span><div><b>${EXPERT.name} · ${learnMode?EXPERT.role:'Tư vấn viên'}</b><span><i class="online"></i>Người thật · trả lời trong giờ làm việc${E.id?` · Yêu cầu #${E.id}`:''}</span></div></div>
+   <div class="chat-log" id="ex-log">${msgs.map(m=>m.role==='sys'?`<div class="msg sys">${esc(m.text)}</div>`:`<div class="msg ${m.role==='user'?'user':'expert'}">${m.role==='expert'?`<small>${esc(EXPERT.name)}${m.at?` · ${m.at}`:''}</small>`:''}${fmt(m.text)}${m.role==='user'&&m.at?`<small class="r">${m.at}</small>`:''}</div>`).join('')}${T.expertTyping?`<div class="msg expert typing">${esc(EXPERT.name)} đang soạn tin…</div>`:''}</div>
+   ${E.msgs.length?'':`<div class="chips">${(learnMode?['Hỏi về bài tập của tôi','Hóa đơn & thanh toán','Đổi lịch học']:['Tư vấn học phí cho doanh nghiệp','Hình thức thanh toán']).map(c=>`<button class="chip" data-a="expertAsk" data-q="${esc(c)}">${esc(c)}</button>`).join('')}</div>`}
+   <form class="chat-in" data-f="expertSend"><input class="inp" id="ex-in" name="q" autocomplete="off" value="${esc(T.expertDraft||'')}" placeholder="Nhắn cho chuyên gia…" aria-label="Tin nhắn cho chuyên gia"><button class="send" aria-label="Gửi cho chuyên gia">${ic('send')}</button></form>
+   <div class="asst-foot"><span>Cần câu trả lời ngay?</span><button class="btn-link" data-a="chatTab" data-v="ai">Hỏi Trợ lý AI ${ic('arrow',13)}</button></div>`;
+  }
+  panel=`<div class="asst" role="dialog" aria-label="${isAI?'Trò chuyện với Trợ lý AI':'Trò chuyện với chuyên gia'}"><div class="card chat ${isAI?'':'is-expert'}">${tabs}${body}</div></div>`;
  }
- return `${panel}<div class="fab"><button class="main" data-a="asstToggle" aria-label="Mở AI Assistant">${ic('chat',20)}</button><button data-a="notifToggle" aria-label="Thông báo">${ic('bell',20)}${unread?`<span class="dot">${unread}</span>`:''}</button></div>`;
+ return `${panel}<div class="fab"><button class="main" data-a="openChat" data-v="ai" aria-label="Hỏi Trợ lý AI" title="Hỏi Trợ lý AI">${ic('bot',22)}</button><button data-a="openChat" data-v="expert" aria-label="Nhắn chuyên gia${unread?`, ${unread} tin chưa đọc`:''}" title="Nhắn chuyên gia">${ic('headset',20)}${unread?`<span class="dot">${unread}</span>`:''}</button></div>`;
 }
 
 /* ---------- 1. Landing ---------- */
@@ -195,7 +205,7 @@ function onboarding(){
  <div class="page-head"><span class="eyebrow">AI for CEO · Onboarding</span><h2 class="h2">Chào mừng anh/chị ${esc(firstName())}</h2><p class="sub" style="max-width:none">12 module đi qua 5 chương, từ "AI biết" đến "AI tự thực hiện công việc". Trợ lý lộ trình sẽ chia khóa thành bài học theo số ngày anh/chị muốn hoàn thành.</p>
  <div class="phases">${PHASES.map((x,i)=>`<span><b>${i+1}</b>${x.name}</span>`).join('')}</div></div>
  <div class="two"><div class="card chat">
-  <div class="chat-h"><span class="bot-av">${ic('spark')}</span><div><b>Trợ lý lộ trình</b><span>Cá nhân hóa lộ trình theo hồ sơ của anh/chị</span></div><span class="step-count" aria-live="polite">${S.ob.done?`${ic('check',14)} Hồ sơ đã đủ`:`Câu ${Math.min(S.ob.i+1,S.ob.flow.length)}/${S.ob.flow.length}`}</span></div>
+  <div class="chat-h"><span class="bot-av">${ic('bot')}</span><div><b>Trợ lý lộ trình</b><span>Cá nhân hóa lộ trình theo hồ sơ của anh/chị</span></div><span class="step-count" aria-live="polite">${S.ob.done?`${ic('check',14)} Hồ sơ đã đủ`:`Câu ${Math.min(S.ob.i+1,S.ob.flow.length)}/${S.ob.flow.length}`}</span></div>
   <div class="chat-log" id="ob-log">${S.ob.msgs.map(m=>`<div class="msg ${m.role}">${fmt(m.text)}</div>`).join('')}${T.obTyping?'<div class="msg bot typing">Đang soạn…</div>':''}</div>
   <div class="chips">${chips}</div>
   <form class="chat-in" data-f="obSend"><input class="inp" id="ob-in" name="t" autocomplete="off" placeholder="${st==='days'?'Ví dụ: 10 ngày, 3 tuần…':st==='problem'?'Mô tả bài toán của công ty…':'Hoặc gõ câu trả lời…'}"><button class="send" aria-label="Gửi">${ic('send')}</button></form>
@@ -216,12 +226,13 @@ function lessonListHTML(active,opt={}){
   const firsts=ks.filter(k=>{const u=U(k);return (u.kind==='video'&&u.part===0)||u.kind==='extra';});
   const rs=opt.why?reasonsFor(firsts):[];const vd=ks.filter(k=>S.done[k]).length;
   const title=esc(lessonTitle(ks,i,P.lessons));
-  const status=done?`<span class="pill ok">Đã học</span>`:cur?`<span class="pill blue">Hôm nay</span>`:vd?`<span class="pill wait tnum">${vd}/${ks.length} phần</span>`:'';
-  return `<li class="lrow ${done?'done':''} ${cur?'cur':''}" id="lr-${opt.key||'list'}-${i}">
+  const locked=active&&!lessonOpen(i);
+  const status=done?`<span class="pill ok">Đã học</span>`:cur?`<span class="pill blue">Hôm nay</span>`:locked?`<span class="pill lock" title="${esc(lockMsg(i))}">${ic('lock',11)} Chưa mở</span>`:vd?`<span class="pill wait tnum">${vd}/${ks.length} phần</span>`:'';
+  return `<li class="lrow ${done?'done':''} ${cur?'cur':''} ${locked?'locked':''}" id="lr-${opt.key||'list'}-${i}">
    <span class="dot" aria-hidden="true">${i+1}${done?`<i class="tick">${ic('check',10)}</i>`:''}</span>
    <div class="lbody">
     <div class="lmeta"><span class="tnum">Ngày ${i+1} · ${esc(dayDate(i))}</span>${mods.map(x=>`<span class="mt">${x.type==='module'?`Module ${modNo(x)}`:TYPE_LABEL[x.type]}</span>`).join('')}</div>
-    <div class="tt">${active?`<button data-a="openLesson" data-v="${i}">${title}</button>`:title}</div>
+    <div class="tt">${active&&!locked?`<button data-a="openLesson" data-v="${i}">${title}</button>`:title}</div>
     <ul class="lcontent">${ks.map(k=>{const u=U(k),l=unitLine(u);return `<li class="${S.done[k]?'done':''}">${ic(S.done[k]?'check':l.icon,14)}<span>${esc(l.t)}</span><span class="m tnum">${u.m} phút</span></li>`;}).join('')}</ul>
     ${rs.length?`<p class="why">${ic('spark',13)}<span>${esc(rs.join(' · '))}</span></p>`:''}
    </div>
@@ -332,7 +343,8 @@ function exerciseView(id){
   <div class="form-foot"><button type="button" class="btn-link" data-a="exSample" data-v="${id}">Điền gợi ý theo công ty của tôi</button><div style="display:flex;gap:8px">${s0?`<button type="button" class="btn btn-ghost" data-a="cancelEdit">Hủy</button>`:''}<button class="btn btn-primary">${ic('send',15)} ${s0?'Nộp lại':'Nộp bài tập'}</button></div></div></form>`;
 }
 function lesson(){
- const P=S.plan;const li=S.lesson;const ks=P&&P.lessons[li];if(!ks){S.screen='learn';return learn();}
+ const P=S.plan;if(P&&!lessonOpen(S.lesson)){S.lesson=nextLesson();S.unit=null;}
+ const li=S.lesson;const ks=P&&P.lessons[li];if(!ks){S.screen='learn';return learn();}
  if(!S.unit||!ks.includes(S.unit))S.unit=ks.find(k=>!S.done[k])||ks[0];
  const u=U(S.unit),x=L[u.id],pos=ks.indexOf(S.unit),doneN=ks.filter(k=>S.done[k]).length;
  const needArt=u.kind==='exercise'&&!S.subs[u.id];
@@ -348,7 +360,8 @@ function lesson(){
  <div class="lsn">
   <div style="display:grid;gap:24px">${player}${unitContent(u)}<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">${nextBtn}<button class="btn btn-line" data-a="asstLesson">${ic('chat',16)} Hỏi AI về phần này</button></div></div>
   <aside class="sticky" style="display:grid;gap:14px"><div><b style="font-size:14px">Trong bài ${li+1}</b><p class="hint">${ks.length} video · ${lessonMin(ks)} phút</p></div>${list}
-   <div style="display:flex;justify-content:space-between;gap:8px">${li>0?`<button class="btn btn-ghost btn-sm" data-a="openLesson" data-v="${li-1}">${ic('back',15)} Bài ${li}</button>`:'<span></span>'}${li<P.lessons.length-1?`<button class="btn btn-ghost btn-sm" data-a="openLesson" data-v="${li+1}">Bài ${li+2} ${ic('arrow',15)}</button>`:''}</div></aside>
+   <div style="display:flex;justify-content:space-between;gap:8px">${li>0?`<button class="btn btn-ghost btn-sm" data-a="openLesson" data-v="${li-1}">${ic('back',15)} Bài ${li}</button>`:'<span></span>'}${li<P.lessons.length-1?(lessonOpen(li+1)?`<button class="btn btn-ghost btn-sm" data-a="openLesson" data-v="${li+1}">Bài ${li+2} ${ic('arrow',15)}</button>`:`<button class="btn btn-ghost btn-sm" disabled title="${esc(lockMsg(li+1))}">${ic('lock',14)} Bài ${li+2}</button>`):''}</div>
+   ${li<P.lessons.length-1&&!lessonOpen(li+1)?`<p class="hint">${ic('lock',13)} Bài ${li+2} mở sau khi anh/chị học xong bài này.</p>`:''}</aside>
  </div></section>`;
 }
 
@@ -356,14 +369,14 @@ function lesson(){
 function outputs(){
  const ids=Object.keys(TASKS),n=subsCount();
  return `<section class="wrap page">
- <div class="crumbs"><button data-a="go" data-to="mycourses">Khóa học của tôi</button><span>/</span><button data-a="go" data-to="learn">AI for CEO</button><span>/</span><span>Bài tập của tôi</span></div>
- <div class="page-head" style="display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap"><div style="display:grid;gap:8px"><span class="eyebrow">Bài tập của tôi</span><h2 class="h2">${n}/${ids.length} bài tập đã nộp</h2><p class="sub">Mọi bài làm và nhận xét được lưu tại đây. Đây là bộ output anh/chị mang về công ty sau khóa học.</p></div>
- <button class="btn btn-line" data-a="exportAll" ${n?'':'disabled'}>${ic('file',16)} Tải tất cả (.txt)</button></div>
+ <div class="lsn-top"><button class="btn btn-line btn-sm" data-a="outputsBack">${ic('back',15)} Danh sách bài học</button>
+  <div class="crumbs"><button data-a="go" data-to="mycourses">Khóa học của tôi</button><span>/</span><button data-a="outputsBack">AI for CEO</button><span>/</span><span>Bài tập của tôi</span></div></div>
+ <div class="page-head" style="display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap"><div style="display:grid;gap:8px"><span class="eyebrow">Bài tập của tôi</span><h2 class="h2">${n}/${ids.length} bài tập đã nộp</h2><p class="sub">Mọi bài làm và nhận xét được lưu tại đây. Đây là bộ output anh/chị mang về công ty sau khóa học.</p></div></div>
  <div class="bar" style="max-width:520px;margin-bottom:24px"><i style="width:${Math.round(n/ids.length*100)}%"></i></div>
  <div class="grid g2">${ids.map(id=>{const s=S.subs[id],t=TASKS[id],li=lessonOfUnit('E:'+id);const prev=s?clip(subText(id).replace(/\n+/g,' · '),170):'';
   return `<article class="card pad out" id="out-${id}"><div class="ex-h"><div><span class="t">Module ${modNo(L[id])} · ${esc(L[id].cap)}${li>=0?` · Bài ${li+1}`:''}</span><h3 class="h3">${esc(t.title)}</h3></div>${s?`<span class="pill ok">Đã nộp</span>`:`<span class="pill wait">Chưa nộp</span>`}</div>
   ${s?`<p class="prev">${esc(prev)}</p><p class="hint">${ic('clock',13)} ${esc(s.at)}${s.v>1?` · nộp lần ${s.v}`:''}${s.file?` · ${ic('file',13)} ${esc(s.file.name)}`:''}${s.feedback&&s.feedback.text?' · có nhận xét':''}</p>`:`<p class="prev muted">Bài tập nằm cuối Module ${modNo(L[id])}${li>=0?`, trong Bài ${li+1} của lộ trình`:''}.</p>`}
-  <div>${li>=0?`<button class="btn ${s?'btn-line':'btn-primary'} btn-sm" data-a="openEx" data-v="${id}">${s?'Xem & sửa':'Làm bài tập'} ${ic('arrow',15)}</button>`:''}</div></article>`;}).join('')}</div>
+  <div>${li<0?'':s||lessonOpen(li)?`<button class="btn ${s?'btn-line':'btn-primary'} btn-sm" data-a="openEx" data-v="${id}">${s?'Xem & sửa':'Làm bài tập'} ${ic('arrow',15)}</button>`:`<span class="hint">${ic('lock',13)} Mở khi anh/chị học tới Bài ${li+1}</span>`}</div></article>`;}).join('')}</div>
  </section>`;
 }
 
@@ -376,7 +389,7 @@ function complete(){
  const head=`<div class="crumbs"><button data-a="go" data-to="mycourses">Khóa học của tôi</button><span>/</span><button data-a="go" data-to="learn">AI for CEO</button><span>/</span><span>Hoàn thành chương trình</span></div>`;
  const checkCard=`<article class="card pad"><h3 class="h3" style="margin-bottom:8px">Điều kiện hoàn thành</h3><ul class="checks">${checks.map(([l,v,d])=>`<li><span class="st ${d?'ok':'no'}">${ic(d?'check':'x',12)}</span><span>${l}</span><b class="tnum">${v}</b></li>`).join('')}</ul></article>`;
  if(!ok)return `<section class="wrap narrow page">${head}<div class="page-head"><span class="eyebrow">Hoàn thành</span><h2 class="h2">Anh/chị còn thiếu một vài bước</h2><p class="sub">Học hết các bài và nộp đủ bài tập để nhận certificate.</p></div><div style="display:grid;gap:18px">${checkCard}
-  ${missing.length?`<article class="card pad"><h3 class="h3" style="margin-bottom:12px">Bài học chưa xong</h3><ul class="promise">${missing.map(i=>`<li>${ic('arrow')}<button class="btn-link" style="text-align:left" data-a="openLesson" data-v="${i}">Bài ${i+1}: ${esc(lessonTitle(lessons()[i]))}</button></li>`).join('')}</ul></article>`:''}
+  ${missing.length?`<article class="card pad"><h3 class="h3" style="margin-bottom:12px">Bài học chưa xong</h3><ul class="promise">${missing.map(i=>lessonOpen(i)?`<li>${ic('arrow')}<button class="btn-link" style="text-align:left" data-a="openLesson" data-v="${i}">Bài ${i+1}: ${esc(lessonTitle(lessons()[i]))}</button></li>`:`<li class="muted">${ic('lock')}<span>Bài ${i+1}: ${esc(lessonTitle(lessons()[i]))}</span></li>`).join('')}</ul></article>`:''}
   <div><button class="btn btn-primary btn-lg" data-a="go" data-to="learn">Tiếp tục học ${ic('arrow')}</button></div></div></section>`;
  const p=S.profile;const rows=S.subs.M12.rows;
  return `<section class="wrap page">${head}
@@ -384,7 +397,7 @@ function complete(){
  <div class="grid g2" style="margin-top:24px;align-items:start">
   <article class="card pad"><h3 class="h3" style="margin-bottom:12px">3 use case anh/chị chọn</h3><div class="tbl-wrap"><table class="uct"><thead><tr><th>Use case</th><th>Phòng ban</th><th>Năng lực AI</th></tr></thead><tbody>${rows.map(r=>`<tr><td><b>${esc(r.uc)}</b>${r.why?`<div class="hint">${esc(r.why)}</div>`:''}</td><td>${esc(GOALS[r.dept]||'')}</td><td>${esc(r.cap)}</td></tr>`).join('')}</tbody></table></div>
    <div class="kv" style="margin-top:16px"><div><span>Bài học</span><b class="tnum">${st.lessonsDone}/${st.n}</b></div><div><span>Bài tập đã nộp</span><b class="tnum">${subsCount()}/${Object.keys(TASKS).length}</b></div><div><span>Thời gian học</span><b class="tnum">${hours(st.min)} giờ</b></div></div>
-   <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px"><button class="btn btn-line btn-sm" data-a="go" data-to="outputs">${ic('file',15)} Xem bộ bài tập</button><button class="btn btn-ghost btn-sm" data-a="exportAll">Tải tất cả (.txt)</button></div></article>
+   <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px"><button class="btn btn-line btn-sm" data-a="go" data-to="outputs">${ic('file',15)} Xem bộ bài tập</button></div></article>
   <div style="display:grid;gap:16px">${checkCard}
    <article class="card pad event"><span class="tag">Live Zoom tiếp theo</span><h3>${LIVE.title}</h3><p>${LIVE.when}. Học viên đã hoàn thành vẫn tham gia các buổi cập nhật hằng tháng.</p><div>${S.liveRemind?`<span class="pill ok">${ic('check',12)} Đã đặt nhắc lịch</span>`:`<button class="btn btn-line btn-sm" data-a="liveRemind">${ic('bell',15)} Nhắc tôi</button>`}</div></article></div>
  </div>

@@ -94,14 +94,36 @@ async function askAssistant(q){
  msg.handoff=msg.text.includes('[CHUYEN_CHUYEN_GIA]');msg.text=msg.text.replace('[CHUYEN_CHUYEN_GIA]','').trim();delete msg.pending;
  T.asstBusy=false;T.focus='asst';render();
 }
-// Chuyển câu hỏi cho chuyên gia (mô phỏng trạng thái xử lý)
-function createTicket(q){
- const id='HT-'+(1024+S.tickets.length);const t={id,q,status:'Đã tiếp nhận',reply:'',at:Date.now()};S.tickets.push(t);
- S.asst.push({role:'bot',text:`Em đã chuyển câu hỏi cho chuyên gia, mã yêu cầu **#${id}**. Anh/chị theo dõi trạng thái ở biểu tượng chuông góc dưới màn hình.`});
- scheduleTicket(t);toast(`Đã gửi yêu cầu #${id} cho chuyên gia`);
+/* ---------- Chat với chuyên gia hỗ trợ (người thật, mô phỏng) ---------- */
+// Tách riêng khỏi AI: tab "Chuyên gia" trong khung chat. Tin nhắn đầu tiên tạo mã yêu cầu hỗ trợ.
+const EXPERT={name:'Minh Thư',role:'Chuyên gia hỗ trợ học viên',hours:'8:00–18:00, thứ Hai đến thứ Bảy'};
+const expertTime=()=>new Date().toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'});
+// Lời chào khi chưa có tin nhắn nào
+function expertHello(){
+ return S.enrolled?`Chào anh/chị ${firstName()}, em là ${EXPERT.name}, ${EXPERT.role.toLowerCase()} của Học viện. Anh/chị nhắn trực tiếp cho em về nội dung bài học, bài tập, lịch học, thanh toán hoặc hóa đơn. Em trả lời trong giờ làm việc (${EXPERT.hours}).`
+  :`Chào anh/chị, em là ${EXPERT.name}, tư vấn viên của Học viện. Anh/chị cần tư vấn về khóa AI for CEO, học phí hay hình thức thanh toán cho doanh nghiệp thì nhắn em ở đây.`;
 }
-function scheduleTicket(t){
- if(t.status==='Đã phản hồi')return;
- setTimeout(()=>{const x=S.tickets.find(k=>k.id===t.id);if(!x)return;x.status='Chuyên gia đang xử lý';render();
-  setTimeout(()=>{const y=S.tickets.find(k=>k.id===t.id);if(!y)return;y.status='Đã phản hồi';y.reply=`Chào anh/chị ${firstName()}, chuyên gia Học viện đã xem câu hỏi và sẽ trả lời chi tiết trong buổi Live Zoom gần nhất, hoặc gọi lại trong giờ làm việc nếu anh/chị cần sớm hơn.`;render();},6000);},3500);
+// Câu trả lời mô phỏng của chuyên gia (hệ thống thật: CSKH trả lời từ trang quản trị, FR-31–32)
+function expertAnswer(q){
+ const s=q.toLowerCase(),cur=S.enrolled&&S.screen==='lesson'&&S.plan?`Bài ${S.lesson+1}`:'';
+ if(/hóa đơn|vat|xuất|thanh toán|chuyển khoản|hoàn tiền/.test(s))return `Dạ em đã chuyển yêu cầu sang bộ phận kế toán. Hóa đơn VAT được gửi qua email trong 24 giờ làm việc. Nếu cần sửa thông tin công ty trên hóa đơn, anh/chị nhắn em tên công ty và mã số thuế đúng nhé.`;
+ if(/bài tập|nộp|nhận xét|chấm/.test(s))return `Dạ em đã xem bài tập của anh/chị${cur?` ở ${cur}`:''}. Chuyên gia nội dung sẽ góp ý chi tiết ngay trong khung chat này trước 17:00 hôm nay. Anh/chị cứ học tiếp bài sau, không cần chờ.`;
+ if(/lịch|bận|dời|đổi ngày|live|zoom/.test(s))return `Dạ được ạ. Buổi Live Zoom gần nhất là ${LIVE.when}, em sẽ gửi link vào email trước 1 ngày. Nếu anh/chị muốn đổi số ngày học, anh/chị vào "Điều chỉnh lộ trình", tiến độ đã học vẫn được giữ.`;
+ if(/học phí|giá|ưu đãi|doanh nghiệp|nhiều người|tập thể/.test(s))return `Dạ học phí hiện là ${money(COURSE.price)} (${COURSE.promo.toLowerCase()}). Doanh nghiệp đăng ký từ 3 người trở lên có giá riêng, anh/chị để lại số điện thoại, em gọi tư vấn trong hôm nay.`;
+ return `Dạ em đã nhận câu hỏi${cur?` về ${cur}`:''}. Em đang chuyển cho chuyên gia nội dung và sẽ trả lời anh/chị ngay trong khung chat này trong hôm nay. Nếu cần gấp, anh/chị để lại số điện thoại, em gọi lại ạ.`;
+}
+function expertSend(q){
+ const E=S.expert;
+ if(!E.id){E.id='HT-'+(1024+Math.floor(Math.random()*900));E.msgs.push({role:'sys',text:`Đã tạo yêu cầu hỗ trợ #${E.id}. Chuyên gia trả lời ngay trong khung chat này.`});}
+ E.msgs.push({role:'user',text:q,at:expertTime()});E.pending=true;T.expertDraft='';
+ render();toast(`Đã gửi tin nhắn cho chuyên gia · #${E.id}`);scheduleExpert();
+}
+// Mô phỏng: chuyên gia "đang soạn tin" rồi trả lời; khung chat đang đóng thì tăng số tin chưa đọc
+function scheduleExpert(){
+ const E=S.expert;if(!E.pending)return;
+ setTimeout(()=>{T.expertTyping=true;render();
+  setTimeout(()=>{const last=[...E.msgs].reverse().find(m=>m.role==='user');T.expertTyping=false;E.pending=false;
+   E.msgs.push({role:'expert',text:expertAnswer(last?last.text:''),at:expertTime()});
+   if(!(T.asstOpen&&T.tab==='expert')){E.unread=(E.unread||0)+1;toast(`${EXPERT.name} vừa trả lời tin nhắn của anh/chị`);}
+   render();},3000);},1500);
 }
