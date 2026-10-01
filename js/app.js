@@ -8,8 +8,8 @@
 const LS='aiceo-demo-v6';
 const DEFAULT=()=>({screen:'landing',eval:null,fit:null,nurture:false,order:null,pay:{status:null,method:'qr',sim:'success',support:false},enrolled:false,
  profile:{},ob:{flow:[],i:0,msgs:[],multi:[],done:false},plan:null,adjustLog:[],done:{},subs:{},lesson:0,unit:null,
- expert:{id:null,msgs:[],unread:0,pending:false},asst:[],completedAt:null,liveRemind:false,offline:false});
-const T={gen:null,ai:null,asstOpen:false,tab:"ai",expertDraft:"",expertTyping:false,asstBusy:false,obTyping:false,focus:null,err:{},ph:{}};
+ expert:{id:null,msgs:[],unread:0,pending:false},mails:[],asst:[],completedAt:null,liveRemind:false,offline:false});
+const T={gen:null,ai:null,asstOpen:false,tab:"ai",expertDraft:"",expertTyping:false,mailOpen:null,asstBusy:false,obTyping:false,focus:null,err:{},ph:{}};
 function load(){try{const r=localStorage.getItem(LS);if(r){return Object.assign(DEFAULT(),JSON.parse(r));}}catch(e){}return DEFAULT();}
 function save(){try{localStorage.setItem(LS,JSON.stringify(S));}catch(e){}}
 let S=load();
@@ -52,7 +52,7 @@ function render(){
  const scr=SCREENS[S.screen]||landing;
  // giữ chữ đang gõ dở trong ô chat chuyên gia khi màn hình vẽ lại (vd. chuyên gia vừa trả lời)
  const exIn=document.getElementById('ex-in'),exFocus=exIn&&document.activeElement===exIn;if(exIn)T.expertDraft=exIn.value;
- $app.innerHTML=demoBar()+header()+`<main>${scr()}</main>`+footer()+fab();
+ $app.innerHTML=demoBar()+header()+`<main>${scr()}</main>`+footer()+fab()+mailView();
  save();
  // khả năng tiếp cận: vùng chat đọc được bằng trình đọc màn hình, lỗi có role=alert
  document.querySelectorAll('.chat-log').forEach(el=>{el.scrollTop=el.scrollHeight;el.setAttribute('role','log');el.setAttribute('aria-live','polite');});
@@ -107,6 +107,11 @@ const ACT={
  go:d=>{if(['mycourses','learn','complete','syllabus','onboarding','outputs'].includes(d.to))ensureFor(d.to);T.editEx=null;go(d.to);},
  jump:d=>{ensureFor(d.to);go(d.to);},
  // trang bài học → quay lại danh sách bài học, cuộn tới đúng bài đang xem
+ // hộp thư mô phỏng: xem email tự động đã gửi cho học viên
+ mailOpen:d=>{const m=S.mails.find(x=>x.id===d.v)||S.mails[0];if(!m){toast('Hộp thư chưa có email nào. Email xác nhận được gửi khi thanh toán thành công','bad');return;}m.read=true;T.mailOpen=m.id;T.asstOpen=false;render();},
+ mailResend:d=>{resendRealEmail(d.v);},
+ mailClose:()=>{T.mailOpen=null;render();},
+ mailCta:()=>{T.mailOpen=null;ensureFor('mycourses');go('mycourses');toast('Đã mở khóa học từ email xác nhận');},
  backToList:()=>{T.focusLesson=S.lesson;S.from=null;T.editEx=null;go('learn');},
  // bài tập mở từ "Bài tập của tôi" → quay lại đó, cuộn tới đúng thẻ bài tập
  // Bài tập của tôi → danh sách bài học, cuộn tới bài đang học
@@ -122,7 +127,7 @@ const ACT={
  // thanh toán
  invToggle:(d,el)=>{const b=document.getElementById('inv-box');if(b)b.hidden=!el.checked;},
  paySim:d=>{S.pay.sim=d.v;document.querySelectorAll('[data-a="paySim"]').forEach(b=>b.classList.toggle('on',b.dataset.v===d.v));save();},
- payRetry:()=>{S.pay.status='processing';S.pay.sim='success';render();setTimeout(()=>{S.pay.status='success';S.enrolled=true;render();},1300);},
+ payRetry:()=>{S.pay.status='processing';S.pay.sim='success';render();setTimeout(()=>{S.pay.status='success';S.enrolled=true;S.order.paidAt=today();sendConfirmEmail();render();},1300);},
  payChange:()=>{S.pay.status=null;S.pay.support=false;render();},
  paySupport:()=>{S.pay.support=true;render();},
  // onboarding
@@ -177,7 +182,7 @@ const FORMS={
   if(o.invoice&&!String(o.invName||'').trim()){T.err={checkout:'Chưa có tên công ty trên hóa đơn. Nhập tên công ty, hoặc bỏ chọn "Xuất hóa đơn cho công ty".',field:'c-invname'};render();return;}
   T.err={};S.pay.method=o.method;S.order={...o,code:(S.order&&S.order.code)||'AICEO-'+Math.floor(100000+Math.random()*900000)};S.profile.name=o.name;S.profile.company=o.company;
   S.pay.status='processing';S.pay.support=false;render();window.scrollTo(0,0);
-  setTimeout(()=>{if(S.pay.sim==='fail'){S.pay.status='failed';toast('Thanh toán chưa thành công','bad');}else{S.pay.status='success';S.enrolled=true;S.order.paidAt=today();toast('Thanh toán thành công, khóa học đã được kích hoạt');}render();},1400);},
+  setTimeout(()=>{if(S.pay.sim==='fail'){S.pay.status='failed';toast('Thanh toán chưa thành công','bad');}else{S.pay.status='success';S.enrolled=true;S.order.paidAt=today();toast('Thanh toán thành công, khóa học đã được kích hoạt');setTimeout(()=>{sendConfirmEmail();render();},1800);}render();},1400);},
  obSend:f=>{const t=f.t.value.trim();if(!t)return;obText(t);},
  adjSend:f=>{const q=f.q.value.trim();if(!q)return;generate(q);},
  exSubmit:async f=>{
@@ -197,7 +202,7 @@ const FORMS={
 };
 
 /* ---------- gắn sự kiện ---------- */
-document.addEventListener('click',e=>{const a=e.target.closest('[data-a]');if(!a||a.disabled)return;const fn=ACT[a.dataset.a];if(!fn)return;if(a.tagName!=='INPUT')e.preventDefault();fn(a.dataset,a,e);});
+document.addEventListener('click',e=>{if(e.target.classList&&e.target.classList.contains('mail-ov')){ACT.mailClose();return;}const a=e.target.closest('[data-a]');if(!a||a.disabled)return;const fn=ACT[a.dataset.a];if(!fn)return;if(a.tagName!=='INPUT')e.preventDefault();fn(a.dataset,a,e);});
 document.addEventListener('submit',e=>{const f=e.target.closest('[data-f]');if(!f)return;e.preventDefault();const fn=FORMS[f.dataset.f];if(fn)fn(f);});
 window.addEventListener('popstate',e=>{
  const st=e.state;if(!st||!SCREENS[st.screen])return;
@@ -207,7 +212,7 @@ window.addEventListener('popstate',e=>{
  S.from=st.from||null;S.screen=st.screen;if(st.screen==='lesson'&&st.lesson!==S.lesson){S.lesson=st.lesson;S.unit=null;}
  T.err={};T.draft=null;T.editEx=null;render();landScroll();
 });
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&T.asstOpen){T.asstOpen=false;render();}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&T.mailOpen){ACT.mailClose();return;}if(e.key==='Escape'&&T.asstOpen){T.asstOpen=false;render();}});
 
 /* ---------- khởi động ---------- */
 // dọn dữ liệu cũ còn lưu trong trình duyệt từ các phiên bản demo trước

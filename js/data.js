@@ -27,6 +27,7 @@ cal:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16
 book:'<path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2V5Z"/><path d="M4 19a2 2 0 0 1 2-2h13"/>',
 chev:'<path d="m9 6 6 6-6 6"/>',
 bot:'<rect x="4" y="8" width="16" height="12" rx="3.5"/><path d="M12 8V5"/><circle cx="12" cy="3.5" r="1.5"/><circle cx="9" cy="14" r="1.3" fill="currentColor" stroke="none"/><circle cx="15" cy="14" r="1.3" fill="currentColor" stroke="none"/><path d="M2 12.5v3M22 12.5v3"/>',
+mail:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>',
 lock:'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
 file:'<path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9l-6-6Z"/><path d="M14 3v6h6M8 13h8M8 17h5"/>'
 };
@@ -192,6 +193,13 @@ const COURSE={list:12000000,price:8800000,promo:'Ưu đãi ra mắt tháng đầ
  perks:['12 module video demo quay sẵn, chia thành bài học theo lịch của anh/chị','12 bài tập áp dụng cho chính công ty, lưu thành bộ output mang về','Lộ trình cá nhân hóa theo số ngày muốn hoàn thành và phòng ban quan tâm','Live Zoom hằng tháng "AI đến đâu rồi?": năng lực mới, demo mới, hỏi đáp','AI Learning Assistant hỏi đáp 24/7 theo nội dung khóa học','Ưu tiên đăng ký Offline Executive Briefing','Certificate và cộng đồng CEO AI Community']};
 const SAVE=COURSE.list-COURSE.price, OFF=Math.round(SAVE/COURSE.list*100);
 const TOTAL_MIN=LIB.filter(x=>x.req).reduce((a,x)=>a+x.min,0);
+// Phương thức thanh toán (dùng ở form đăng ký và email xác nhận)
+const PAY_METHODS={qr:"Chuyển khoản QR (VietQR)",vnpay:"VNPay: ATM, ví điện tử",card:"Thẻ Visa/Mastercard",company:"Chuyển khoản công ty theo hóa đơn"};
+// Thông tin Học viện dùng trong email và mục hỗ trợ. Email, hotline, địa chỉ là MINH HỌA, cần thay bằng thông tin thật
+// Gửi email THẬT qua EmailJS (emailjs.com). Để trống = chỉ gửi vào Hộp thư mô phỏng.
+// Lấy 3 mã trong tài khoản EmailJS: Email Services → Service ID · Email Templates → Template ID · Account → Public Key
+const EMAILJS={serviceId:"",templateId:"",publicKey:""};
+const ACADEMY={name:"Học viện Siêu Tăng Trưởng",sender:"no-reply@sieutangtruong.vn",support:"hotro@sieutangtruong.vn",hotline:"1900 0000",zalo:"Zalo OA Siêu Tăng Trưởng",hours:"8:00–18:00, thứ Hai đến thứ Bảy",web:"sieutangtruong.vn",address:"100 Nguyễn Văn Lượng, Gò Vấp, TP.HCM",billing:"ketoan@sieutangtruong.vn"};
 const LIVE={title:'AI đến đâu rồi? · Tháng 10/2026',when:'20:00, thứ Năm 15/10/2026',len:'75 phút · Zoom'};
 
 /* ---------- cấu hình lộ trình & demo ---------- */
