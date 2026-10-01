@@ -62,7 +62,23 @@ function render(){
  if(T.err.field){const f=document.getElementById(T.err.field);if(f){f.setAttribute('aria-invalid','true');f.focus({preventScroll:false});}}
  if(T.focus){const id={ob:'ob-in',asst:'asst-in',adj:'adj-in'}[T.focus];const el=document.getElementById(id);if(el)el.focus({preventScroll:true});T.focus=null;}
 }
-function go(to){S.screen=to;T.err={};T.draft=null;render();window.scrollTo(0,0);}
+function go(to){S.screen=to;T.err={};T.draft=null;render();hist();landScroll();}
+// Lịch sử trình duyệt: nút Back của trình duyệt / vuốt quay lại trên điện thoại cũng quay về màn trước
+function hist(replace){
+ const st={screen:S.screen,lesson:S.lesson,from:S.from||null},cur=history.state;
+ if(!replace&&cur&&cur.screen===st.screen&&cur.lesson===st.lesson&&cur.from===st.from)return;
+ try{history[replace?'replaceState':'pushState'](st,'');}catch(e){}
+}
+// Sau khi chuyển màn: về đầu trang, hoặc cuộn tới đúng mục vừa rời khỏi (bài học / thẻ bài tập)
+function landScroll(){
+ const i=T.focusLesson,id=T.focusEl;T.focusLesson=null;T.focusEl=null;
+ const el=document.getElementById(id||(i!=null?'lr-learn-'+i:''));
+ if(!el){window.scrollTo(0,0);return;}
+ el.scrollIntoView({block:'center'});el.classList.add('flash');
+ const b=el.querySelector('.tt button,[data-a="openEx"]');if(b)b.focus({preventScroll:true});
+}
+// Trang bài học mở từ "Bài tập của tôi" thì quay lại đó, còn lại quay về danh sách bài học
+function lessonBack(){return S.from==='outputs'?{a:'backToOutputs',t:'Bài tập của tôi'}:{a:'backToList',t:'Danh sách bài học'};}
 // Phản hồi hệ thống: thông báo ngắn sau mỗi thao tác quan trọng
 let toastTimer;
 function toast(msg,kind='ok'){const el=document.getElementById('toast');if(!el)return;el.className=kind==='bad'?'bad':'';el.innerHTML=ic(kind==='bad'?'x':'check',18)+`<span>${esc(msg)}</span>`;requestAnimationFrame(()=>el.classList.add('show'));clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),3200);}
@@ -84,16 +100,20 @@ function advance(){
  if(pos<ks.length-1){S.unit=ks[pos+1];render();window.scrollTo(0,0);return;}
  if(lessonDone(S.lesson))toast(`Hoàn thành Bài ${S.lesson+1}/${S.plan.lessons.length}`);
  const n=nextLesson();if(n<0){go('complete');return;}
- S.lesson=n;S.unit=null;render();window.scrollTo(0,0);
+ S.lesson=n;S.unit=null;S.from=null;render();hist();window.scrollTo(0,0);
 }
 
 /* ---------- xử lý nút bấm (data-a="…") ---------- */
 const ACT={
  go:d=>{if(['mycourses','learn','complete','syllabus','onboarding','outputs'].includes(d.to))ensureFor(d.to);T.editEx=null;go(d.to);},
  jump:d=>{ensureFor(d.to);go(d.to);},
+ // trang bài học → quay lại danh sách bài học, cuộn tới đúng bài đang xem
+ backToList:()=>{T.focusLesson=S.lesson;S.from=null;T.editEx=null;go('learn');},
+ // bài tập mở từ "Bài tập của tôi" → quay lại đó, cuộn tới đúng thẻ bài tập
+ backToOutputs:()=>{T.focusEl='out-'+S.fromEx;S.from=null;T.editEx=null;go('outputs');},
  reset:()=>{S=DEFAULT();PREVIEW=null;Object.assign(T,{gen:null,asstOpen:false,notifOpen:false,handoff:false,asstBusy:false,obTyping:false,err:{}});go('landing');toast('Đã làm lại demo từ đầu');},
  scrollTo:d=>{const el=document.getElementById(d.v);if(el)el.scrollIntoView({behavior:'smooth'});},
- // danh sách bài học: thu gọn / mở ra chặng
+ // danh sách bài học: thu gọn / mở ra chương
  phToggle:d=>{const a=T.ph[d.k]||[];const v=+d.v;T.ph[d.k]=a.includes(v)?a.filter(x=>x!==v):[...a,v];render();},
  phAll:d=>{const n=document.querySelectorAll(`[data-a="phToggle"][data-k="${d.k}"]`).length;T.ph[d.k]=d.v==='1'?[...Array(n).keys()]:[];render();},
  // khóa học của tôi → vào đúng bước theo trạng thái
@@ -116,7 +136,7 @@ const ACT={
  fixPace:d=>{const p0={...S.profile},was=!!(S.plan&&S.plan.wasActive);S.profile.minPerSession=+d.v;S.plan=rulePlan(S.profile);S.plan.wasActive=was;S.adjustLog.push({role:'bot',text:describeChanges(p0,S.profile)});render();},
  acceptPlan:()=>{if(!S.plan||S.plan.warning)return;const was=S.plan.wasActive;S.plan.accepted=true;S.plan.wasActive=true;go('learn');toast(was?'Đã lưu lộ trình mới':'Đã xác nhận lộ trình. Bắt đầu Bài 1 nhé!');},
  // học
- openLesson:d=>{S.lesson=+d.v;S.unit=null;go('lesson');},
+ openLesson:d=>{S.lesson=+d.v;S.unit=null;S.from=null;go('lesson');},
  selUnit:d=>{S.unit=d.v;render();},
  playUnit:()=>{if(U(S.unit).kind==='exercise')return;S.done[S.unit]=true;render();},
  markNext:()=>{S.done[S.unit]=true;advance();},
@@ -126,7 +146,7 @@ const ACT={
  ucSample:()=>{sampleUC(S.profile).forEach((r,i)=>{const s=(n,v)=>{const el=document.getElementById(n+i);if(el)el.value=v;};s('uc',r.uc);s('dept',r.dept);s('cap',r.cap);s('why',r.why);});},
  editEx:d=>{T.editEx=d.v;T.err={};render();},
  cancelEdit:()=>{T.editEx=null;T.err={};T.draft=null;render();},
- openEx:d=>{const li=lessonOfUnit('E:'+d.v);if(li<0)return;S.lesson=li;S.unit='E:'+d.v;T.editEx=null;go('lesson');},
+ openEx:d=>{const li=lessonOfUnit('E:'+d.v);if(li<0)return;S.lesson=li;S.unit='E:'+d.v;S.from='outputs';S.fromEx=d.v;T.editEx=null;go('lesson');},
  exportAll:()=>{try{exportAll();toast('Đã tải file bài tập (.txt)');}catch(e){toast('Chưa tải được file. Anh/chị thử lại nhé','bad');}},
  // công cụ demo
  simulateAll:()=>{lessons().flat().forEach(k=>S.done[k]=true);const at=nowStr();
@@ -175,6 +195,14 @@ const FORMS={
 /* ---------- gắn sự kiện ---------- */
 document.addEventListener('click',e=>{const a=e.target.closest('[data-a]');if(!a||a.disabled)return;const fn=ACT[a.dataset.a];if(!fn)return;if(a.tagName!=='INPUT')e.preventDefault();fn(a.dataset,a,e);});
 document.addEventListener('submit',e=>{const f=e.target.closest('[data-f]');if(!f)return;e.preventDefault();const fn=FORMS[f.dataset.f];if(fn)fn(f);});
+window.addEventListener('popstate',e=>{
+ const st=e.state;if(!st||!SCREENS[st.screen])return;
+ if(st.screen==='lesson'&&!(S.plan&&S.plan.lessons[st.lesson]))return;
+ if(S.screen==='lesson'&&st.screen==='learn')T.focusLesson=S.lesson;
+ if(S.screen==='lesson'&&st.screen==='outputs'&&S.from==='outputs')T.focusEl='out-'+S.fromEx;
+ S.from=st.from||null;S.screen=st.screen;if(st.screen==='lesson'&&st.lesson!==S.lesson){S.lesson=st.lesson;S.unit=null;}
+ T.err={};T.draft=null;T.editEx=null;render();landScroll();
+});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&(T.asstOpen||T.notifOpen)){T.asstOpen=false;T.notifOpen=false;render();}});
 
 /* ---------- khởi động ---------- */
@@ -189,4 +217,4 @@ S.asst=S.asst.filter(m=>!m.pending);
 S.tickets.forEach(scheduleTicket);
 // biết có AI hay không thì cập nhật chấm trạng thái trên thanh demo
 SAMPLE_P.then(s=>{T.ai=!!s;document.querySelectorAll('[data-ai]').forEach(el=>el.outerHTML=aiDot());});
-render();
+render();hist(true);

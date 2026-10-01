@@ -331,7 +331,7 @@ details.skipped ul{margin:12px 0 0;padding-left:18px;display:grid;gap:6px;font-s
 .gen li:nth-child(2){animation-delay:.4s}.gen li:nth-child(3){animation-delay:.8s}.gen li:nth-child(4){animation-delay:1.2s}
 @keyframes fadein{from{opacity:.2}to{opacity:1}}
 
-/* ---------- danh sách bài học theo chặng (thu gọn / mở ra) ---------- */
+/* ---------- danh sách bài học theo chương (thu gọn / mở ra) ---------- */
 .ph-tools{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin:18px 0 10px}
 .ph-tools>div{display:flex;gap:4px}
 .phases-list{display:grid;gap:10px}
@@ -404,6 +404,13 @@ ol.lessons{list-style:none;margin:0;padding:0 16px}
 .pill.blue{background:var(--blue-soft);color:var(--blue)}
 
 /* ---------- trang bài học ---------- */
+/* nút quay lại danh sách bài học ở đầu trang bài học */
+.lsn-top{display:flex;gap:14px 18px;align-items:center;flex-wrap:wrap;margin-bottom:20px}
+.lsn-top .crumbs{margin-bottom:0}
+/* bài vừa rời khỏi được tô nhẹ khi quay lại danh sách */
+.lrow.flash,.out.flash{animation:flash 1.8s ease-out}
+@keyframes flash{0%,40%{background:var(--blue-soft)}100%{background:transparent}}
+@media (prefers-reduced-motion:reduce){.lrow.flash,.out.flash{animation:none;background:var(--blue-soft)}}
 .lesson h1{font-size:clamp(26px,3.4vw,36px);font-weight:800;letter-spacing:-.025em}
 .lesson .meta{display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-size:13.5px;color:var(--muted)}
 .lesson .meta .ty{font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:12px;color:var(--blue)}
