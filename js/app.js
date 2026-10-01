@@ -7,9 +7,9 @@
 // S: trạng thái lưu vào trình duyệt (localStorage). T: trạng thái tạm, mất khi tải lại trang.
 const LS='aiceo-demo-v6';
 const DEFAULT=()=>({screen:'landing',eval:null,fit:null,nurture:false,order:null,pay:{status:null,method:'qr',sim:'success',support:false},enrolled:false,
- profile:{},ob:{flow:[],i:0,msgs:[],multi:[],done:false},plan:null,adjustLog:[],done:{},subs:{},lesson:0,unit:null,
+ profile:{},ob:{flow:[],i:0,msgs:[],multi:[],done:false},plan:null,adjustLog:[],done:{},doneAt:{},subs:{},lesson:0,unit:null,
  expert:{id:null,msgs:[],unread:0,pending:false},mails:[],asst:[],completedAt:null,liveRemind:false,offline:false});
-const T={gen:null,ai:null,asstOpen:false,tab:"ai",expertDraft:"",expertTyping:false,mailOpen:null,asstBusy:false,obTyping:false,focus:null,err:{},ph:{}};
+const T={gen:null,ai:null,asstOpen:false,tab:"ai",expertDraft:"",expertTyping:false,mailOpen:null,share:null,shareCap:null,dashFilter:'all',asstBusy:false,obTyping:false,focus:null,err:{},ph:{}};
 function load(){try{const r=localStorage.getItem(LS);if(r){return Object.assign(DEFAULT(),JSON.parse(r));}}catch(e){}return DEFAULT();}
 function save(){try{localStorage.setItem(LS,JSON.stringify(S));}catch(e){}}
 let S=load();
@@ -51,8 +51,10 @@ const $app=document.getElementById('app');
 function render(){
  const scr=SCREENS[S.screen]||landing;
  // giữ chữ đang gõ dở trong ô chat chuyên gia khi màn hình vẽ lại (vd. chuyên gia vừa trả lời)
+ const capEl=document.getElementById('share-cap');if(capEl)T.shareCap=capEl.value;
  const exIn=document.getElementById('ex-in'),exFocus=exIn&&document.activeElement===exIn;if(exIn)T.expertDraft=exIn.value;
- $app.innerHTML=demoBar()+header()+`<main>${scr()}</main>`+footer()+fab()+mailView();
+ $app.innerHTML=demoBar()+header()+`<main>${scr()}</main>`+footer()+fab()+mailView()+shareView();
+ if(T.share)drawShare();
  save();
  // khả năng tiếp cận: vùng chat đọc được bằng trình đọc màn hình, lỗi có role=alert
  document.querySelectorAll('.chat-log').forEach(el=>{el.scrollTop=el.scrollHeight;el.setAttribute('role','log');el.setAttribute('aria-live','polite');});
@@ -60,6 +62,15 @@ function render(){
  if(T.err.field){const f=document.getElementById(T.err.field);if(f){f.setAttribute('aria-invalid','true');f.focus({preventScroll:false});}}
  if(exFocus&&!T.focus)T.focus='expert';
  if(T.focus){const id={ob:'ob-in',asst:'asst-in',adj:'adj-in',expert:'ex-in'}[T.focus];const el=document.getElementById(id);if(el)el.focus({preventScroll:true});T.focus=null;}
+}
+// đánh dấu xong 1 phần (video/bài tập) và ghi lại ngày xong để Dashboard tính thời gian hoàn thành
+function markDone(k){S.done[k]=true;if(!S.doneAt[k])S.doneAt[k]=Date.now();}
+// Công cụ demo: giả lập đã học xong h bài đầu, mỗi ngày một bài (bài cuối xong hôm nay)
+function simulateUpTo(h){
+ const ls=lessons();h=Math.max(0,Math.min(h,ls.length));S.plan.start=dayStart(Date.now())-Math.max(0,h-1)*DAY;S.done={};S.doneAt={};
+ ls.slice(0,h).forEach((ks,i)=>ks.forEach((k,j)=>{S.done[k]=true;S.doneAt[k]=planDay(i)+(8+i%4)*36e5+j*6e5;}));
+ Object.keys(TASKS).forEach(id=>{const k='E:'+id;if(!S.done[k]){delete S.subs[id];return;}if(S.subs[id])return;const t=TASKS[id],at=new Date(S.doneAt[k]).toLocaleString('vi-VN',{hour:'2-digit',minute:'2-digit',day:'2-digit',month:'2-digit',year:'numeric'});
+  S.subs[id]=t.kind==='uc'?{rows:sampleUC(S.profile),at,v:1}:{fields:t.sample(S.profile),at,v:1};S.subs[id].feedback={text:ruleFeedback(id,subText(id)),by:'rule',at};});
 }
 function go(to){S.screen=to;T.err={};T.draft=null;render();hist();landScroll();}
 // Lịch sử trình duyệt: nút Back của trình duyệt / vuốt quay lại trên điện thoại cũng quay về màn trước
@@ -83,7 +94,7 @@ let toastTimer;
 function toast(msg,kind='ok'){const el=document.getElementById('toast');if(!el)return;el.className=kind==='bad'?'bad':'';el.innerHTML=ic(kind==='bad'?'x':'check',18)+`<span>${esc(msg)}</span>`;requestAnimationFrame(()=>el.classList.add('show'));clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),3200);}
 // Khi nhảy thẳng tới một bước bằng thanh demo: tự nạp dữ liệu mẫu còn thiếu
 function ensureFor(to){
- if(to==='outputs')to='learn';
+ if(to==='outputs'||to==='dashboard')to='learn';
  const need=['mycourses','onboarding','syllabus','learn','complete'].includes(to);
  if(need&&!S.enrolled){S.order=S.order||{code:'AICEO-'+Math.floor(100000+Math.random()*900000),name:SAMPLE_PROFILE.name,phone:'0912 345 678',email:'long.nguyen@minhan.vn',company:SAMPLE_PROFILE.company,invoice:false,method:'qr',paidAt:today()};S.pay.status='success';S.enrolled=true;}
  if(to==='onboarding'&&!S.ob.flow.length&&!S.ob.done)startOb();
@@ -104,7 +115,7 @@ function advance(){
 
 /* ---------- xử lý nút bấm (data-a="…") ---------- */
 const ACT={
- go:d=>{if(['mycourses','learn','complete','syllabus','onboarding','outputs'].includes(d.to))ensureFor(d.to);T.editEx=null;go(d.to);},
+ go:d=>{if(['mycourses','dashboard','learn','complete','syllabus','onboarding','outputs'].includes(d.to))ensureFor(d.to);T.editEx=null;go(d.to);},
  jump:d=>{ensureFor(d.to);go(d.to);},
  // trang bài học → quay lại danh sách bài học, cuộn tới đúng bài đang xem
  // hộp thư mô phỏng: xem email tự động đã gửi cho học viên
@@ -144,8 +155,8 @@ const ACT={
  // học
  openLesson:d=>{if(!lessonOpen(+d.v)){toast(lockMsg(+d.v),'bad');return;}S.lesson=+d.v;S.unit=null;S.from=null;go('lesson');},
  selUnit:d=>{S.unit=d.v;render();},
- playUnit:()=>{if(U(S.unit).kind==='exercise')return;S.done[S.unit]=true;render();},
- markNext:()=>{S.done[S.unit]=true;advance();},
+ playUnit:()=>{if(U(S.unit).kind==='exercise')return;markDone(S.unit);render();},
+ markNext:()=>{markDone(S.unit);advance();},
  asstLesson:()=>{T.asstOpen=true;T.tab="ai";askAssistant('Giải thích phần này theo góc nhìn CEO và công ty tôi có thể dùng ở đâu?');},
  // bài tập
  exSample:d=>{const id=d.v,t=TASKS[id];if(t.kind==='uc'){ACT.ucSample();return;}const v=t.sample(S.profile);t.fields.forEach(f=>{const el=document.getElementById('ex-'+f.k);if(el&&v[f.k]!=null)el.value=v[f.k];});},
@@ -154,8 +165,20 @@ const ACT={
  cancelEdit:()=>{T.editEx=null;T.err={};T.draft=null;render();},
  openEx:d=>{const li=lessonOfUnit('E:'+d.v);if(li<0)return;if(!S.subs[d.v]&&!lessonOpen(li)){toast(lockMsg(li),'bad');return;}S.lesson=li;S.unit='E:'+d.v;S.from='outputs';S.fromEx=d.v;T.editEx=null;go('lesson');},
  // công cụ demo
- simulateAll:()=>{lessons().flat().forEach(k=>S.done[k]=true);const at=nowStr();
-  Object.keys(TASKS).forEach(id=>{if(S.subs[id])return;const t=TASKS[id];S.subs[id]=t.kind==='uc'?{rows:sampleUC(S.profile),at,v:1}:{fields:t.sample(S.profile),at,v:1};S.subs[id].feedback={text:ruleFeedback(id,subText(id)),by:'rule',at};});go('complete');toast('Đã mô phỏng học xong và nộp đủ bài tập');},
+ simulateAll:d=>{simulateUpTo(lessons().length);go(d&&d.v==='dash'?'dashboard':'complete');toast('Đã mô phỏng học xong và nộp đủ bài tập');},
+ simulateHalf:()=>{simulateUpTo(Math.ceil(lessons().length/2));render();toast('Đã mô phỏng học xong một nửa khóa');},
+ // Dashboard & chia sẻ
+ dashFilter:d=>{T.dashFilter=d.v;render();},
+ shareOpen:d=>{T.share=d.v;T.shareCap=null;T.asstOpen=false;render();},
+ shareClose:()=>{T.share=null;render();},
+ shareDownload:async()=>{if(await shareDownload())toast('Đã tải ảnh về máy');},
+ // mở cửa sổ Facebook ngay trong lúc bấm (tránh bị chặn popup), rồi tải ảnh + sao chép nội dung
+ shareFb:async()=>{const cap=(document.getElementById('share-cap')||{}).value||shareCaption(T.share);const url=location.href.split('#')[0];
+  if(navigator.clipboard)navigator.clipboard.writeText(cap).catch(()=>{});
+  window.open('https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(url),'fbshare','width=640,height=640');
+  const ok=await shareDownload();toast(ok?'Đã tải ảnh và sao chép nội dung. Dán nội dung vào Facebook rồi đính kèm ảnh':'Đã sao chép nội dung, mở Facebook để đăng');},
+ shareNative:async()=>{const b=await shareBlob();if(!b)return;const file=new File([b],shareFileName(),{type:'image/png'});const cap=(document.getElementById('share-cap')||{}).value||'';
+  if(navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file],text:cap});toast('Đã mở chia sẻ');}catch(e){}}else{await shareDownload();toast('Thiết bị không hỗ trợ chia sẻ ảnh trực tiếp, ảnh đã được tải về');}},
  // sự kiện
  liveRemind:()=>{S.liveRemind=true;render();toast('Đã đặt nhắc lịch buổi Live Zoom');},
  offline:()=>{S.offline=true;render();toast('Đã ghi nhận quan tâm Offline Executive Briefing');},
@@ -192,7 +215,7 @@ const FORMS={
    const empty=t.fields.filter(f2=>f2.type!=='select'&&!fields[f2.k]);if(empty.length){T.err={ex:`Phần "${empty[0].label}" còn trống. Điền câu trả lời, hoặc bấm "Điền gợi ý theo công ty của tôi".`,field:'ex-'+empty[0].k};T.draft={id,fields};render();return;}data={fields};}
   T.draft=null;
   const fileEl=f.querySelector('input[type=file]');const file=fileEl&&fileEl.files&&fileEl.files[0]?await readFile(fileEl.files[0]):(prev&&prev.file)||null;
-  T.err={};T.editEx=null;S.subs[id]={...data,file,at:nowStr(),v:prev?(prev.v||1)+1:1};S.done['E:'+id]=true;
+  T.err={};T.editEx=null;S.subs[id]={...data,file,at:nowStr(),v:prev?(prev.v||1)+1:1};markDone('E:'+id);
   save();
   if(file&&file.data){try{localStorage.setItem(LS,JSON.stringify(S));}catch(e){S.subs[id].file={name:file.name,size:file.size,type:file.type};}}
   toast(prev?'Đã nộp lại bài tập. Đang nhận xét…':'Đã nộp bài tập. Đang nhận xét…');
@@ -202,8 +225,10 @@ const FORMS={
 };
 
 /* ---------- gắn sự kiện ---------- */
-document.addEventListener('click',e=>{if(e.target.classList&&e.target.classList.contains('mail-ov')){ACT.mailClose();return;}const a=e.target.closest('[data-a]');if(!a||a.disabled)return;const fn=ACT[a.dataset.a];if(!fn)return;if(a.tagName!=='INPUT')e.preventDefault();fn(a.dataset,a,e);});
+document.addEventListener('click',e=>{if(e.target.classList&&e.target.classList.contains('mail-ov')){T.mailOpen=null;T.share=null;render();return;}const a=e.target.closest('[data-a]');if(!a||a.disabled)return;const fn=ACT[a.dataset.a];if(!fn)return;if(a.tagName!=='INPUT')e.preventDefault();fn(a.dataset,a,e);});
 document.addEventListener('submit',e=>{const f=e.target.closest('[data-f]');if(!f)return;e.preventDefault();const fn=FORMS[f.dataset.f];if(fn)fn(f);});
+// Dashboard: bản đồ hành trình đổi số cột theo bề rộng màn hình
+let rsz;window.addEventListener('resize',()=>{clearTimeout(rsz);rsz=setTimeout(()=>{if(S.screen==='dashboard'&&!T.share)render();},250);});
 window.addEventListener('popstate',e=>{
  const st=e.state;if(!st||!SCREENS[st.screen])return;
  if(st.screen==='lesson'&&!(S.plan&&S.plan.lessons[st.lesson]&&lessonOpen(st.lesson)))return;
@@ -212,7 +237,7 @@ window.addEventListener('popstate',e=>{
  S.from=st.from||null;S.screen=st.screen;if(st.screen==='lesson'&&st.lesson!==S.lesson){S.lesson=st.lesson;S.unit=null;}
  T.err={};T.draft=null;T.editEx=null;render();landScroll();
 });
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&T.mailOpen){ACT.mailClose();return;}if(e.key==='Escape'&&T.asstOpen){T.asstOpen=false;render();}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&(T.mailOpen||T.share)){T.mailOpen=null;T.share=null;render();return;}if(e.key==='Escape'&&T.asstOpen){T.asstOpen=false;render();}});
 
 /* ---------- khởi động ---------- */
 // dọn dữ liệu cũ còn lưu trong trình duyệt từ các phiên bản demo trước

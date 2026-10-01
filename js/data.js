@@ -28,6 +28,19 @@ book:'<path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2V5Z"/><path d="M4 19a2 2 
 chev:'<path d="m9 6 6 6-6 6"/>',
 bot:'<rect x="4" y="8" width="16" height="12" rx="3.5"/><path d="M12 8V5"/><circle cx="12" cy="3.5" r="1.5"/><circle cx="9" cy="14" r="1.3" fill="currentColor" stroke="none"/><circle cx="15" cy="14" r="1.3" fill="currentColor" stroke="none"/><path d="M2 12.5v3M22 12.5v3"/>',
 mail:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>',
+eye:'<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/>',
+pen:'<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>',
+search:'<circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/>',
+code:'<path d="m8 8-5 4 5 4M16 8l5 4-5 4M14 4l-4 16"/>',
+link:'<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>',
+zap:'<path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z"/>',
+shield:'<path d="M12 3 4 6v6c0 5 3.4 8.3 8 9 4.6-.7 8-4 8-9V6l-8-3Z"/>',
+map:'<path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2Z"/><path d="M9 4v14M15 6v14"/>',
+chart:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
+flag:'<path d="M5 21V4M5 4h11l-2 4 2 4H5"/>',
+download:'<path d="M12 4v11M7 10l5 5 5-5M5 20h14"/>',
+share:'<circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="m8.2 10.8 7.6-4.4M8.2 13.2l7.6 4.4"/>',
+fb:'<path d="M14 8h3V4h-3a4 4 0 0 0-4 4v3H7v4h3v7h4v-7h3l1-4h-4V8Z" fill="currentColor" stroke="none"/>',
 lock:'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
 file:'<path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9l-6-6Z"/><path d="M14 3v6h6M8 13h8M8 17h5"/>'
 };
@@ -200,6 +213,10 @@ const PAY_METHODS={qr:"Chuyển khoản QR (VietQR)",vnpay:"VNPay: ATM, ví đi�
 // Lấy 3 mã trong tài khoản EmailJS: Email Services → Service ID · Email Templates → Template ID · Account → Public Key
 const EMAILJS={serviceId:"",templateId:"",publicKey:""};
 const ACADEMY={name:"Học viện Siêu Tăng Trưởng",sender:"no-reply@sieutangtruong.vn",support:"hotro@sieutangtruong.vn",hotline:"1900 0000",zalo:"Zalo OA Siêu Tăng Trưởng",hours:"8:00–18:00, thứ Hai đến thứ Bảy",web:"sieutangtruong.vn",address:"100 Nguyễn Văn Lượng, Gò Vấp, TP.HCM",billing:"ketoan@sieutangtruong.vn"};
+// Dashboard: bản đồ 10 năng lực AI = Module 02–11 (Module 01 là khởi động, Module 12 là đích đến)
+const CAP_MAP=[{id:"M02",icon:"book",color:"#1747C9"},{id:"M03",icon:"eye",color:"#0E7490"},{id:"M04",icon:"pen",color:"#DB2777"},{id:"M05",icon:"search",color:"#7C3AED"},{id:"M06",icon:"code",color:"#4F46E5"},{id:"M07",icon:"link",color:"#0F766E"},{id:"M08",icon:"zap",color:"#EA580C"},{id:"M09",icon:"bot",color:"#B45309"},{id:"M10",icon:"users",color:"#15803D"},{id:"M11",icon:"shield",color:"#DC2626"}];
+// màu từng chương trên bản đồ hành trình
+const PHASE_COLOR={P1:"#1747C9",P2:"#DB2777",P3:"#7C3AED",P4:"#EA580C",P5:"#15803D"};
 const LIVE={title:'AI đến đâu rồi? · Tháng 10/2026',when:'20:00, thứ Năm 15/10/2026',len:'75 phút · Zoom'};
 
 /* ---------- cấu hình lộ trình & demo ---------- */

@@ -293,7 +293,7 @@ function learn(){
  return `<section class="wrap page">
  <div class="crumbs"><button data-a="go" data-to="mycourses">Khóa học của tôi</button><span>/</span><span>AI for CEO</span></div>
  <div class="page-head" style="display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap"><div style="display:grid;gap:8px"><span class="eyebrow">AI for CEO</span><h2 class="h2">Chào anh/chị ${esc(firstName())}</h2></div>
- <button class="btn btn-ghost" data-a="go" data-to="syllabus">${ic('refresh',16)} Điều chỉnh lộ trình</button></div>
+ <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-line" data-a="go" data-to="dashboard">${ic('chart',16)} Dashboard</button><button class="btn btn-ghost" data-a="go" data-to="syllabus">${ic('refresh',16)} Điều chỉnh lộ trình</button></div></div>
  <div class="two"><div style="display:grid;gap:18px">
   ${ni>=0?`<div class="today"><span class="lbl">Bài hôm nay · Bài ${ni+1}/${st.n} · ${dayLabel(ni,P.profile)}</span><h2>${esc(lessonTitle(todayKs))}</h2>
   <ul>${todayKs.map(k=>{const u=U(k),l=unitLine(u);return `<li class="${S.done[k]?'done':''}">${ic(S.done[k]?'check':l.icon,16)}<span>${esc(l.t)}</span><span class="m">${u.m} phút</span></li>`;}).join('')}</ul>
@@ -306,7 +306,7 @@ function learn(){
  <aside class="sticky" style="display:grid;gap:16px">
   <div class="card pad"><div class="ring"><svg width="84" height="84" viewBox="0 0 84 84" aria-hidden="true"><circle cx="42" cy="42" r="34" fill="none" stroke="var(--bg-2)" stroke-width="8"/><circle cx="42" cy="42" r="34" fill="none" stroke="var(--blue)" stroke-width="8" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C*(1-st.pct/100)}" transform="rotate(-90 42 42)"/></svg><div><b class="tnum">${st.lessonsDone}/${st.n}</b><span class="muted">bài học đã hoàn thành</span></div></div>
   <div class="kv" style="margin-top:18px"><div><span>Module năng lực</span><b class="tnum">${st.modsDone}/${st.mods}</b></div><div><span>Bài tập đã nộp</span><b class="tnum">${subsCount()}/${Object.keys(TASKS).length}</b></div></div>
-  <div style="display:grid;gap:6px;margin-top:16px;padding-top:14px;border-top:1px solid var(--line)"><button class="btn btn-line btn-sm btn-block" data-a="go" data-to="outputs">${ic('file',15)} Bài tập của tôi</button><button class="btn btn-ghost btn-sm btn-block" data-a="go" data-to="complete">${ic('award',15)} Điều kiện hoàn thành</button></div></div>
+  <div style="display:grid;gap:6px;margin-top:16px;padding-top:14px;border-top:1px solid var(--line)"><button class="btn btn-line btn-sm btn-block" data-a="go" data-to="dashboard">${ic('chart',15)} Xem Dashboard</button><button class="btn btn-line btn-sm btn-block" data-a="go" data-to="outputs">${ic('file',15)} Bài tập của tôi</button><button class="btn btn-ghost btn-sm btn-block" data-a="go" data-to="complete">${ic('award',15)} Điều kiện hoàn thành</button></div></div>
   <div class="card pad event"><span class="tag">Live Zoom hằng tháng</span><h3>${LIVE.title}</h3><p>${LIVE.when} · ${LIVE.len}. Năng lực mới, demo mới và hỏi đáp CEO.</p><div>${S.liveRemind?`<span class="pill ok">${ic('check',12)} Đã đặt nhắc lịch (mô phỏng)</span>`:`<button class="btn btn-line btn-sm" data-a="liveRemind">${ic('bell',15)} Nhắc tôi</button>`}</div></div>
   <div class="card pad event"><span class="tag">Tùy chọn</span><h3>Offline Executive Briefing</h3><p>Nửa ngày, số lượng giới hạn.</p><div>${S.offline?`<span class="pill ok">${ic('check',12)} Đã ghi nhận quan tâm</span>`:`<button class="btn btn-ghost btn-sm" data-a="offline">Đăng ký quan tâm ${ic('arrow',14)}</button>`}</div></div>
  </aside></div></section>`;
@@ -398,7 +398,7 @@ function complete(){
  <div class="grid g2" style="margin-top:24px;align-items:start">
   <article class="card pad"><h3 class="h3" style="margin-bottom:12px">3 use case anh/chị chọn</h3><div class="tbl-wrap"><table class="uct"><thead><tr><th>Use case</th><th>Phòng ban</th><th>Năng lực AI</th></tr></thead><tbody>${rows.map(r=>`<tr><td><b>${esc(r.uc)}</b>${r.why?`<div class="hint">${esc(r.why)}</div>`:''}</td><td>${esc(GOALS[r.dept]||'')}</td><td>${esc(r.cap)}</td></tr>`).join('')}</tbody></table></div>
    <div class="kv" style="margin-top:16px"><div><span>Bài học</span><b class="tnum">${st.lessonsDone}/${st.n}</b></div><div><span>Bài tập đã nộp</span><b class="tnum">${subsCount()}/${Object.keys(TASKS).length}</b></div><div><span>Thời gian học</span><b class="tnum">${hours(st.min)} giờ</b></div></div>
-   <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px"><button class="btn btn-line btn-sm" data-a="go" data-to="outputs">${ic('file',15)} Xem bộ bài tập</button></div></article>
+   <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px"><button class="btn btn-line btn-sm" data-a="go" data-to="outputs">${ic('file',15)} Xem bộ bài tập</button><button class="btn btn-line btn-sm" data-a="go" data-to="dashboard">${ic('map',15)} Xem bản đồ hành trình</button></div></article>
   <div style="display:grid;gap:16px">${checkCard}
    <article class="card pad event"><span class="tag">Live Zoom tiếp theo</span><h3>${LIVE.title}</h3><p>${LIVE.when}. Học viên đã hoàn thành vẫn tham gia các buổi cập nhật hằng tháng.</p><div>${S.liveRemind?`<span class="pill ok">${ic('check',12)} Đã đặt nhắc lịch</span>`:`<button class="btn btn-line btn-sm" data-a="liveRemind">${ic('bell',15)} Nhắc tôi</button>`}</div></article></div>
  </div>
@@ -411,4 +411,4 @@ function complete(){
 }
 
 /* ---------- đăng ký màn hình ---------- */
-const SCREENS={landing,checkout,mycourses,onboarding,syllabus,learn,lesson,complete,outputs};
+const SCREENS={landing,checkout,mycourses,onboarding,syllabus,learn,lesson,complete,outputs,dashboard};
