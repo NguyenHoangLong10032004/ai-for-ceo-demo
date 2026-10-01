@@ -1,0 +1,9 @@
+# File tạm của Windows / Office
+Thumbs.db
+desktop.ini
+~$*
+*.tmp
+
+# Cấu hình cá nhân của editor
+.vscode/
+.claude/settings.local.json
