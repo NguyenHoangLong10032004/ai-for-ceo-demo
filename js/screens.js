@@ -15,7 +15,7 @@ function header(){
  const inCourse=['mycourses','onboarding','syllabus','learn','lesson','complete','outputs'].includes(S.screen);
  return `<header class="hdr"><div class="wrap">
  <button class="logo" data-a="go" data-to="landing" aria-label="Trang chủ"><img class="logo-img" src="img/logo.png" onerror="this.onerror=null;this.src='../Logo.png'" alt="Siêu Tăng Trưởng" width="1725" height="237"></button>
- <nav class="nav"><button class="${!inCourse?'on':''}" data-a="go" data-to="landing">AI for CEO</button><button data-a="go" data-to="landing">Khóa học</button><button data-a="go" data-to="landing">Tài nguyên</button><button data-a="go" data-to="landing">Cộng đồng</button>${S.enrolled?`<button class="${inCourse?'on':''}" data-a="go" data-to="mycourses">Khóa học của tôi</button>`:''}</nav>
+ <nav class="nav"><button class="${!inCourse?'on':''}" data-a="go" data-to="landing">AI for CEO</button><button data-a="go" data-to="landing">Khóa học</button><button data-a="go" data-to="landing">Thử thách</button><button data-a="go" data-to="landing">Blog / Tin tức</button>${S.enrolled?`<button class="${inCourse?'on':''}" data-a="go" data-to="mycourses">Khóa học của tôi</button>`:''}</nav>
  <div class="hdr-r">${name?`<button class="me" data-a="go" data-to="mycourses"><span class="avatar">${esc(name.trim().split(/\s+/).pop()[0]||'N')}</span><span class="n">${esc(name)}</span></button>`:`<button class="btn btn-ghost btn-sm" data-a="go" data-to="checkout">Đăng nhập</button><button class="btn btn-primary btn-sm" data-a="go" data-to="checkout">Đăng ký</button>`}</div>
  </div></header>`;
 }
