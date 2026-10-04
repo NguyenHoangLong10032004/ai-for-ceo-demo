@@ -8,10 +8,12 @@
 const LS='aiceo-demo-v6';
 const DEFAULT=()=>({screen:'landing',eval:null,fit:null,nurture:false,order:null,pay:{status:null,method:'qr',sim:'success',support:false},enrolled:false,
  profile:{},ob:{flow:[],i:0,msgs:[],multi:[],done:false},plan:null,adjustLog:[],done:{},doneAt:{},subs:{},lesson:0,unit:null,
- expert:{id:null,msgs:[],unread:0,pending:false},mails:[],zalo:[],remind:{...REMIND_DEFAULT},feedback:null,asst:[],completedAt:null,liveRemind:false,offline:false});
-const T={gen:null,ai:null,asstOpen:false,tab:"ai",expertDraft:"",expertTyping:false,mailOpen:null,share:null,shareCap:null,dashFilter:'all',fbDraft:null,fbEdit:false,remindOpen:false,remindDraft:null,remindPreview:null,zaloOpen:false,asstBusy:false,obTyping:false,focus:null,err:{},ph:{}};
+ expert:{id:null,msgs:[],unread:0,pending:false},mails:[],zalo:[],comm:{joined:false,posts:[],comments:{},likes:{},gotLikes:{},events:{}},remind:{...REMIND_DEFAULT},feedback:null,asst:[],completedAt:null,liveRemind:false,offline:false});
+const T={gen:null,ai:null,asstOpen:false,tab:"ai",expertDraft:"",expertTyping:false,mailOpen:null,share:null,shareCap:null,dashFilter:'all',fbDraft:null,fbEdit:false,remindOpen:false,commTab:'feed',commCat:'all',commPost:null,commWrite:false,commDraft:null,commQ:'',remindDraft:null,remindPreview:null,zaloOpen:false,asstBusy:false,obTyping:false,focus:null,err:{},ph:{}};
 function load(){try{const r=localStorage.getItem(LS);if(r){return Object.assign(DEFAULT(),JSON.parse(r));}}catch(e){}return DEFAULT();}
-function save(){try{localStorage.setItem(LS,JSON.stringify(S));}catch(e){}}
+// chỉ ghi khi dữ liệu thật sự đổi (tránh 2 tab khóa học + cộng đồng ghi qua lại liên tục)
+let lastSaved=null;
+function save(){try{const j=JSON.stringify(S);if(j===lastSaved)return;localStorage.setItem(LS,j);lastSaved=j;}catch(e){}}
 let S=load();
 
 /* ---------- tiện ích chung ---------- */
@@ -51,12 +53,13 @@ const $app=document.getElementById('app');
 function render(){
  const scr=SCREENS[S.screen]||landing;
  // giữ chữ đang gõ dở trong ô chat chuyên gia khi màn hình vẽ lại (vd. chuyên gia vừa trả lời)
+ const cmT=document.getElementById('cm-title'),cmB=document.getElementById('cm-body'),cmC=document.getElementById('cm-cat');if(cmT&&cmB&&T.commWrite)T.commDraft={title:cmT.value,body:cmB.value,cat:cmC?cmC.value:'ask'};
  const capEl=document.getElementById('share-cap');if(capEl)T.shareCap=capEl.value;
  const exIn=document.getElementById('ex-in'),exFocus=exIn&&document.activeElement===exIn;if(exIn)T.expertDraft=exIn.value;
  $app.innerHTML=demoBar()+header()+`<main>${scr()}</main>`+footer()+fab()+mailView()+shareView()+remindView()+zaloView();
  if(T.share)drawShare();
  if(document.getElementById('cert-cv'))drawCert();
- save();
+ if(!T.syncing)save(); // vẽ lại do tab kia vừa lưu thì không lưu ngược lại
  // khả năng tiếp cận: vùng chat đọc được bằng trình đọc màn hình, lỗi có role=alert
  document.querySelectorAll('.chat-log').forEach(el=>{el.scrollTop=el.scrollHeight;el.setAttribute('role','log');el.setAttribute('aria-live','polite');});
  document.querySelectorAll('.err').forEach(el=>{el.setAttribute('role','alert');if(!el.querySelector('.ic'))el.insertAdjacentHTML('afterbegin',ic('x',16));});
@@ -76,9 +79,11 @@ function simulateUpTo(h){
 function go(to){S.screen=to;T.err={};T.draft=null;render();hist();landScroll();}
 // Lịch sử trình duyệt: nút Back của trình duyệt / vuốt quay lại trên điện thoại cũng quay về màn trước
 function hist(replace){
- const st={screen:S.screen,lesson:S.lesson,from:S.from||null},cur=history.state;
- if(!replace&&cur&&cur.screen===st.screen&&cur.lesson===st.lesson&&cur.from===st.from)return;
- try{history[replace?'replaceState':'pushState'](st,'');}catch(e){}
+ const cm=S.screen==='community',st={screen:S.screen,lesson:S.lesson,from:S.from||null,ct:cm?T.commTab:null,cp:cm?T.commPost:null},cur=history.state;
+ if(!replace&&cur&&cur.screen===st.screen&&cur.lesson===st.lesson&&cur.from===st.from&&cur.ct===st.ct&&cur.cp===st.cp)return;
+ // tab cộng đồng giữ #community trên đường dẫn; rời cộng đồng thì bỏ, để tải lại trang không quay về cộng đồng
+ const url=cm?'#community':location.pathname+location.search;
+ try{history[replace?'replaceState':'pushState'](st,'',url);}catch(e){}
 }
 // Sau khi chuyển màn: về đầu trang, hoặc cuộn tới đúng mục vừa rời khỏi (bài học / thẻ bài tập)
 function landScroll(){
@@ -168,6 +173,17 @@ const ACT={
  // công cụ demo
  simulateAll:d=>{simulateUpTo(lessons().length);go(d&&d.v==='dash'?'dashboard':'complete');toast('Đã mô phỏng học xong và nộp đủ bài tập');},
  simulateHalf:()=>{simulateUpTo(Math.ceil(lessons().length/2));render();toast('Đã mô phỏng học xong một nửa khóa');},
+ // cộng đồng: luôn mở ở tab trình duyệt riêng (index.html#community)
+ openCommunity:()=>{if(S.screen==='community'){T.commTab='feed';T.commPost=null;render();window.scrollTo(0,0);return;}
+  const w=window.open(location.href.split('#')[0]+'#community','_blank');if(!w){go('community');toast('Trình duyệt chặn mở tab mới, cộng đồng được mở ngay tại đây');}},
+ commJoin:()=>{const c=document.getElementById('cm-agree');if(!c||!c.checked){T.err={cm:'Anh/chị đánh dấu ô "Tôi đồng ý với quy tắc cộng đồng" để tham gia.',field:'cm-agree'};render();return;}S.comm.joined=true;T.err={};T.commTab='feed';render();window.scrollTo(0,0);toast(`Chào mừng anh/chị đến ${COMM.name}!`);},
+ commTab:d=>{T.commTab=d.v;T.commPost=null;render();hist();window.scrollTo(0,0);},
+ commCat:d=>{T.commCat=d.v;render();},
+ commOpen:d=>{T.commPost=d.v;render();hist();window.scrollTo(0,0);},
+ commBack:()=>{T.commPost=null;render();hist();},
+ commLike:d=>{const L=S.comm.likes;if(L[d.v])delete L[d.v];else L[d.v]=true;render();},
+ commWrite:d=>{T.commWrite=d.v==='1';T.err={};if(!T.commWrite)T.commDraft=null;render();if(T.commWrite){const el=document.getElementById('cm-title');if(el)el.focus();}},
+ commEvent:d=>{S.comm.events[d.v]=true;render();toast(`Đã đăng ký: ${COMM_EVENTS[d.v].title}. Link tham gia sẽ gửi qua email`);},
  // nhắc lịch học (Email + Zalo OA)
  remindOpen:()=>{T.remindOpen=true;T.remindDraft={...S.remind,on:true};T.remindPreview=null;T.asstOpen=false;render();},
  remindClose:()=>{T.remindOpen=false;T.remindDraft=null;render();},
@@ -249,6 +265,13 @@ const FORMS={
    T.err={fb:`Còn thiếu: ${names.join(', ')}. Anh/chị chấm từ 1 đến 5 sao cho mỗi mục và chọn một điểm giới thiệu từ 0 đến 10.`,fbMiss:miss,field:'fbq-'+miss[0]};render();return;}
   S.feedback={...data,at:nowStr()};T.fbDraft=null;T.fbEdit=false;T.err={};render();
   const el=document.getElementById('feedback');if(el)el.scrollIntoView({block:'start'});toast('Cảm ơn anh/chị đã góp ý cho khóa học');},
+ // cộng đồng: đăng bài, bình luận, tìm thành viên
+ commPost:f=>{const title=f.title.value.trim(),body=f.body.value.trim(),cat=f.cat.value;T.commDraft={title,body,cat};
+  if(!title){T.err={cmPost:'Bài viết chưa có tiêu đề. Nhập một câu ngắn nói rõ nội dung chính.',field:'cm-title'};render();return;}
+  if(body.length<10){T.err={cmPost:'Nội dung còn quá ngắn. Viết thêm vài câu để cộng đồng hiểu bài toán của anh/chị.',field:'cm-body'};render();return;}
+  const id='u'+Date.now();S.comm.posts.unshift({id,by:meId,cat,title,body,at:Date.now(),likes:0,comments:[]});T.commWrite=false;T.commDraft=null;T.err={};T.commCat='all';render();toast('Đã đăng bài lên cộng đồng');commReact(id,false);},
+ commComment:f=>{const t=f.t.value.trim();if(!t)return;const id=f.dataset.id;(S.comm.comments[id]=S.comm.comments[id]||[]).push({by:meId,at:Date.now(),text:t});render();toast('Đã gửi bình luận');commReact(id,true);},
+ commSearch:f=>{T.commQ=f.q.value.trim();render();},
  expertSend:f=>{const q=f.q.value.trim();if(!q)return;f.q.value='';expertSend(q);T.focus='expert';render();}
 };
 
@@ -265,6 +288,7 @@ window.addEventListener('popstate',e=>{
  if(st.screen==='lesson'&&!(S.plan&&S.plan.lessons[st.lesson]&&lessonOpen(st.lesson)))return;
  if(S.screen==='lesson'&&st.screen==='learn')T.focusLesson=S.lesson;
  if(S.screen==='lesson'&&st.screen==='outputs'&&S.from==='outputs')T.focusEl='out-'+S.fromEx;
+ if(st.screen==='community'){T.commTab=st.ct||'feed';T.commPost=st.cp||null;}
  S.from=st.from||null;S.screen=st.screen;if(st.screen==='lesson'&&st.lesson!==S.lesson){S.lesson=st.lesson;S.unit=null;}
  T.err={};T.draft=null;T.editEx=null;render();landScroll();
 });
@@ -284,7 +308,13 @@ try{fixOb();}catch(e){S.ob={flow:[],i:0,msgs:[],multi:[],done:false};}
 if(S.profile&&S.profile.days&&!S.profile.minPerSession)S.profile.minPerSession=30;
 if(S.screen==='lesson'&&!(S.plan&&S.plan.lessons[S.lesson]))S.screen='learn';
 S.asst=S.asst.filter(m=>!m.pending);
-S.remind={...REMIND_DEFAULT,...(S.remind||{})};if(!Array.isArray(S.zalo))S.zalo=[];
+S.remind={...REMIND_DEFAULT,...(S.remind||{})};
+S.comm={joined:false,posts:[],comments:{},likes:{},gotLikes:{},events:{},...(S.comm||{})};
+// tab cộng đồng: mở bằng index.html#community
+if(location.hash==='#community'){S.screen='community';}
+else if(S.screen==='community'){S.screen=S.enrolled?'mycourses':'landing';}
+// 2 tab (khóa học + cộng đồng) dùng chung dữ liệu: tab kia lưu thì nạp lại, giữ màn hình của tab này
+window.addEventListener('storage',e=>{if(e.key!==LS||!e.newValue)return;const keep={screen:S.screen,lesson:S.lesson,unit:S.unit,from:S.from};try{S={...DEFAULT(),...JSON.parse(e.newValue),...keep};}catch(err){return;}T.syncing=true;try{render();}finally{T.syncing=false;}});if(!Array.isArray(S.zalo))S.zalo=[];
 // bản lưu cũ: yêu cầu hỗ trợ dạng ticket → chuyển sang khung chat chuyên gia
 if(!S.expert||!Array.isArray(S.expert.msgs))S.expert={id:null,msgs:[],unread:0,pending:false};
 if(S.tickets){S.tickets.forEach(t=>{if(!S.expert.id)S.expert.id=t.id;S.expert.msgs.push({role:'user',text:t.q});if(t.reply)S.expert.msgs.push({role:'expert',text:t.reply});});delete S.tickets;}
