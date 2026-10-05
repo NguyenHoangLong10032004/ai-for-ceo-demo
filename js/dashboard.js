@@ -218,7 +218,7 @@ async function drawShare(){
  try{await document.fonts.load('800 40px Roboto');await document.fonts.load('600 20px Roboto');}catch(e){}
  // ảnh Dashboard: khung chuẩn 1200×630; ảnh hành trình: cao theo số bài
  if(T.share==='cert'){cv.width=2000;cv.height=1414;await drawCert(cv);return;}
- cv.width=1200;cv.height=630;
+ if(T.share==='journey'){cv.width=JC.W;cv.height=JC.H;}else{cv.width=1200;cv.height=630;}
  const g=cv.getContext('2d');g.clearRect(0,0,cv.width,cv.height);
  (T.share==='journey'?drawJourneyCard:drawDashCard)(g);
 }
@@ -255,30 +255,105 @@ function drawDashCard(g){
  g.fillStyle='#667085';g.font=F(500,16);g.fillText('sieutangtruong.vn · #AIforCEO',60,598);
 }
 // thẻ chia sẻ Hành trình: các chặng đã đi qua, chặng hiện tại, năng lực mở khóa, tổng bài học / bài tập
-function journeyLayout(){return {H:630};}
+// thẻ chia sẻ Hành trình: khổ dọc 1080×1350 (4:5), vẽ đúng kiểu bản đồ đang chọn (T.jmVer), đi từ dưới lên
+const JC={W:1080,H:1350,x:60,y:250,w:960,h:900};
+function journeyLayout(){return {W:JC.W,H:JC.H};}
+// điểm trên đường gấp khúc theo tỉ lệ độ dài t (0..1)
+function jcAlong(P){
+ const seg=P.slice(1).map((p,k)=>Math.hypot(p[0]-P[k][0],p[1]-P[k][1])),tot=seg.reduce((a,b)=>a+b,0);
+ const at=t=>{let d=t*tot;for(let k=0;k<seg.length;k++){if(d<=seg[k]){const f=seg[k]?d/seg[k]:0;return [P[k][0]+(P[k+1][0]-P[k][0])*f,P[k][1]+(P[k+1][1]-P[k][1])*f];}d-=seg[k];}return P[P.length-1];};
+ const upTo=t=>{const out=[P[0]];let d=t*tot;for(let k=0;k<seg.length;k++){if(d<=seg[k]){out.push(at(t));break;}out.push(P[k+1]);d-=seg[k];}return out;};
+ return {at,upTo};
+}
+const jcLine=(g,P)=>{g.beginPath();P.forEach((p,k)=>k?g.lineTo(p[0],p[1]):g.moveTo(p[0],p[1]));};
+// chấm bài học: đã học = màu chương + ✓, đang học = viền + số, chưa mở = trắng viền xám
+function jcDot(g,x,y,r,j){
+ if(j.st==='cur'){g.fillStyle=j.color+'33';g.beginPath();g.arc(x,y,r+10,0,7);g.fill();}
+ g.fillStyle=j.st==='done'?j.color:'#fff';g.beginPath();g.arc(x,y,r,0,7);g.fill();
+ g.lineWidth=j.st==='cur'?5:3;g.strokeStyle=j.st==='done'?'#fff':j.st==='cur'?j.color:'#C9D1DD';g.stroke();
+ if(r>=13){g.textAlign='center';g.font=F(800,Math.round(r*.95));g.fillStyle=j.st==='done'?'#fff':j.st==='cur'?j.color:'#98A2B3';g.fillText(j.st==='done'?'✓':String(j.i+1),x,y+r*.34);g.textAlign='left';}
+}
+function jcPill(g,x,y,t,bg){g.font=F(700,18);const w=g.measureText(t).width+28;g.fillStyle=bg;rr(g,x-w/2,y-17,w,34,17);g.fill();g.fillStyle='#fff';g.textAlign='center';g.fillText(t,x,y+6);g.textAlign='left';}
+// nhãn chương ở mép trái/phải vùng bản đồ, có đường gióng tới chấm
+function jcChapter(g,j,c,x,y,left){
+ const tx=left?JC.x+4:JC.x+JC.w-4,lx=left?JC.x+230:JC.x+JC.w-230;
+ g.globalAlpha=c.state==='todo'?.55:1;
+ g.setLineDash([4,6]);g.strokeStyle=j.color;g.lineWidth=2;g.beginPath();g.moveTo(x,y);g.lineTo(lx,y);g.stroke();g.setLineDash([]);
+ g.textAlign=left?'left':'right';g.fillStyle=j.color;g.font=F(800,18);g.fillText(`Chương ${j.pi+1} · ${c.dn}/${c.idx.length}`,tx,y-6);
+ g.fillStyle='#172033';g.font=F(600,19);g.fillText(fitText(g,PHASES[j.pi].name,220),tx,y+18);g.textAlign='left';g.globalAlpha=1;
+}
+function jcGoal(g,x,y,done){
+ const gr=g.createLinearGradient(x-30,y-30,x+30,y+30);gr.addColorStop(0,'#F5B942');gr.addColorStop(1,'#EF8426');
+ g.fillStyle=gr;g.beginPath();g.arc(x,y,30,0,7);g.fill();g.fillStyle='#fff';g.font=F(800,28);g.textAlign='center';g.fillText('★',x,y+10);
+ g.fillStyle='#172033';g.font=F(800,20);g.fillText('Về đích',x,y+56);g.fillStyle='#667085';g.font=F(500,16);g.fillText(done?'Đã hoàn thành khóa học':'Nhận chứng nhận',x,y+78);g.textAlign='left';
+}
 function drawJourneyCard(g){
- const d=dashStats(),W=1200,H=630,ch=chapters(),name=S.profile.name||'Học viên';
- const bg=g.createLinearGradient(0,0,W,H);bg.addColorStop(0,'#F4F7FF');bg.addColorStop(1,'#FFF3F8');g.fillStyle=bg;g.fillRect(0,0,W,H);
- g.fillStyle='rgba(230,106,173,.07)';g.beginPath();g.arc(1120,30,190,0,7);g.fill();
+ const d=dashStats(),{W,H}=JC,J=jData(),name=S.profile.name||'Học viên',v=T.jmVer||1;
+ const bg=g.createLinearGradient(0,0,W,H);bg.addColorStop(0,'#F4F7FF');bg.addColorStop(1,'#FFF6EE');g.fillStyle=bg;g.fillRect(0,0,W,H);
+ g.fillStyle='rgba(124,92,252,.06)';g.beginPath();g.arc(W-60,40,220,0,7);g.fill();
  brand(g,true);
- g.fillStyle='#172033';g.font=F(700,36);g.fillText('Hành trình AI for CEO',60,160);
- g.fillStyle='#667085';g.font=F(500,20);g.fillText(fitText(g,name,900),60,194);
- // roadmap các chặng
- const nodes=[...ch.map(c=>({t:`Chương ${c.pi+1}`,n:c.ph.name,s:c.state,c:PHASE_COLOR[c.ph.id],sub:`${c.dn}/${c.idx.length} bài`})),{t:'Về đích',n:'3 use case',s:d.allDone?'done':'todo',c:'#F5B942',sub:d.allDone?'Hoàn thành':'Chứng nhận'}];
- const y=330,x0=120,x1=1080,step=(x1-x0)/(nodes.length-1);
- g.lineCap='round';g.lineWidth=6;g.strokeStyle='#DCE2EC';g.beginPath();g.moveTo(x0,y);g.lineTo(x1,y);g.stroke();
- const reach=nodes.findIndex(n=>n.s!=='done');const last=reach<0?nodes.length-1:reach;
- if(last>0||nodes[0].s==='cur'){const lg=g.createLinearGradient(x0,0,x1,0);lg.addColorStop(0,'#3874FF');lg.addColorStop(.5,'#7C5CFC');lg.addColorStop(1,'#E66AAD');g.strokeStyle=lg;g.beginPath();g.moveTo(x0,y);g.lineTo(x0+step*last,y);g.stroke();}
- nodes.forEach((n,i)=>{const x=x0+i*step;g.globalAlpha=n.s==='todo'?.45:1;
-  if(n.s==='cur'){g.fillStyle=n.c+'33';g.beginPath();g.arc(x,y,46,0,7);g.fill();}
-  g.fillStyle=n.s==='todo'?'#fff':n.c;g.beginPath();g.arc(x,y,34,0,7);g.fill();g.lineWidth=4;g.strokeStyle=n.s==='todo'?'#C9D1DD':'#fff';g.stroke();
-  g.fillStyle=n.s==='todo'?'#98A2B3':'#fff';g.font=F(800,24);g.textAlign='center';g.fillText(n.s==='done'?'✓':i===nodes.length-1?'★':String(i+1),x,y+9);
-  if(n.s==='cur'){g.font=F(700,14);const t='Đang ở đây',tw=g.measureText(t).width;g.fillStyle=n.c;rr(g,x-tw/2-10,y-86,tw+20,26,13);g.fill();g.fillStyle='#fff';g.fillText(t,x,y-68);}
-  g.fillStyle='#172033';g.font=F(700,17);g.fillText(n.t,x,y+66);g.fillStyle='#475467';g.font=F(500,14);wrapText(g,n.n,step-16,2).forEach((l,j)=>g.fillText(l,x,y+88+j*18));g.fillStyle='#667085';g.font=F(500,13);g.fillText(n.sub,x,y+130);
-  g.textAlign='left';g.globalAlpha=1;});
+ g.fillStyle='#172033';g.font=F(800,40);g.fillText('Hành trình AI for CEO',60,160);
+ g.fillStyle='#667085';g.font=F(500,22);g.fillText(fitText(g,`${name} · ${d.lessonsDone}/${d.N} bài đã đi qua`,940),60,198);
+ g.lineCap='round';g.lineJoin='round';
+ (v===2?jcMountain:v===3?jcStairs:jcRoad)(g,J,d);
  // số liệu cuối thẻ
- const nt=Object.keys(TASKS).length;[[`${d.lessonsDone}/${d.N}`,'bài học'],[`${d.subs}/${nt}`,'bài tập'],[`${d.caps}/${CAP_MAP.length}`,'năng lực mở khóa']].forEach(([v,l],i)=>{const x=60+i*260;g.fillStyle='#fff';rr(g,x,520,236,64,14);g.fill();g.strokeStyle='#E6EAF0';g.lineWidth=1.5;g.stroke();g.fillStyle='#172033';g.font=F(800,26);g.fillText(v,x+20,560);const vw=g.measureText(v).width;g.fillStyle='#667085';g.font=F(500,15);g.fillText(l,x+20+vw+10,560);});
- g.fillStyle='#667085';g.font=F(500,15);g.textAlign='right';g.fillText('sieutangtruong.vn',1140,560);g.textAlign='left';
+ const nt=Object.keys(TASKS).length;[[`${d.lessonsDone}/${d.N}`,'bài học'],[`${d.subs}/${nt}`,'bài tập'],[`${d.caps}/${CAP_MAP.length}`,'năng lực']].forEach(([val,l],i)=>{const x=60+i*318;g.fillStyle='#fff';rr(g,x,1196,300,76,16);g.fill();g.strokeStyle='#E6EAF0';g.lineWidth=1.5;g.stroke();g.fillStyle='#172033';g.font=F(800,30);g.fillText(val,x+22,1244);const vw=g.measureText(val).width;g.fillStyle='#667085';g.font=F(500,18);g.fillText(l,x+22+vw+10,1244);});
+ g.fillStyle='#667085';g.font=F(500,16);g.textAlign='center';g.fillText('sieutangtruong.vn · Học viện Siêu Tăng Trưởng',W/2,1316);g.textAlign='left';
+}
+// Kiểu 1: con đường uốn lượn (hình sin 3 vòng), đoạn đã đi tô đậm
+function jcRoad(g,J,d){
+ const N=J.length,cx=JC.x+JC.w/2,top=JC.y+110,bot=JC.y+JC.h-40,A=170,P=[];
+ for(let k=0;k<=240;k++){const u=k/240;P.push([cx+A*Math.sin(u*Math.PI*6),bot-u*(bot-top)]);}
+ const Pa=jcAlong(P),ci=J.findIndex(j=>j.st==='cur'),pos=J.map(j=>Pa.at((j.i+1)/(N+1)));
+ g.strokeStyle='#DCE2EC';g.lineWidth=46;jcLine(g,P);g.stroke();
+ g.strokeStyle='#2B3445';jcLine(g,Pa.upTo(ci<0?1:(ci+1)/(N+1)));g.stroke();
+ g.strokeStyle='rgba(255,255,255,.9)';g.lineWidth=2.5;g.setLineDash([12,12]);jcLine(g,P);g.stroke();g.setLineDash([]);
+ g.strokeStyle='#DCE2EC';g.lineWidth=46;g.beginPath();g.moveTo(cx,top);g.lineTo(cx,top-40);g.stroke();
+ const gap=(bot-top)/(N+1),r=Math.max(8,Math.min(20,gap*.42)),ch=chapters();
+ PHASES.forEach((_,p)=>{const k=J.findIndex(j=>j.pi===p);if(k<0)return;const [x,y]=pos[k];jcChapter(g,J[k],ch.find(c=>c.pi===p),x,y,x>=cx);});
+ J.forEach((j,k)=>jcDot(g,pos[k][0],pos[k][1],r,j));
+ if(ci>=0){const [x,y]=pos[ci];jcPill(g,x,y-r-30,'Đang ở đây · Bài '+(ci+1),'#EF8426');}
+ jcGoal(g,cx,JC.y+20,d.allDone);
+ g.fillStyle='#fff';rr(g,cx-70,bot+14,140,36,10);g.fill();g.strokeStyle='#E6EAF0';g.lineWidth=1.5;g.stroke();g.fillStyle='#172033';g.font=F(700,17);g.textAlign='center';g.fillText('Xuất phát',cx,bot+38);g.textAlign='left';
+}
+// Kiểu 2: leo núi: đường mòn zigzag lên đỉnh (cùng hình với trang Dashboard)
+function jcMountain(g,J,d){
+ const N=J.length,sx=JC.w/800,sy=(JC.h-30)/520,T2=([x,y])=>[JC.x+x*sx,JC.y+20+y*sy];
+ const P=[[250,492],[560,432],[270,362],[522,292],[322,222],[470,162],[382,104],[400,62]].map(T2);
+ const poly=pts=>{g.beginPath();pts.map(T2).forEach((p,k)=>k?g.lineTo(p[0],p[1]):g.moveTo(p[0],p[1]));g.closePath();};
+ g.fillStyle='#EFEBFF';poly([[0,500],[170,250],[300,380],[560,150],[800,470],[800,500]]);g.fill();
+ const mg=g.createLinearGradient(0,JC.y,0,JC.y+JC.h);mg.addColorStop(0,'#D6E2FF');mg.addColorStop(1,'#DDF3EF');g.fillStyle=mg;poly([[30,500],[400,40],[770,500]]);g.fill();
+ g.fillStyle='rgba(255,255,255,.92)';poly([[400,40],[452,105],[428,96],[408,116],[384,98],[352,106]]);g.fill();
+ const Pa=jcAlong(P),ci=J.findIndex(j=>j.st==='cur'),pos=J.map(j=>Pa.at((j.i+1)/(N+1)));
+ g.strokeStyle='rgba(23,32,51,.28)';g.lineWidth=4;g.setLineDash([9,10]);jcLine(g,P);g.stroke();g.setLineDash([]);
+ g.strokeStyle='#EF8426';g.lineWidth=7;jcLine(g,Pa.upTo(ci<0?1:(ci+1)/(N+1)));g.stroke();
+ const [fx,fy]=T2([400,62]);g.strokeStyle='#172033';g.lineWidth=3.5;g.beginPath();g.moveTo(fx,fy);g.lineTo(fx,fy-62);g.stroke();g.fillStyle='#EF8426';g.beginPath();g.moveTo(fx,fy-62);g.lineTo(fx+40,fy-48);g.lineTo(fx,fy-34);g.fill();
+ g.fillStyle='#EF8426';g.font=F(800,20);g.fillText('Về đích',fx+52,fy-48);g.fillStyle='#172033';g.font=F(600,17);g.fillText(d.allDone?'Đã hoàn thành khóa học':'Nhận chứng nhận',fx+52,fy-26);
+ const ch=chapters(),r=N>30?9:13;
+ PHASES.forEach((_,p)=>{const k=J.findIndex(j=>j.pi===p);if(k<0)return;const [x,y]=pos[k];jcChapter(g,J[k],ch.find(c=>c.pi===p),x,y,x<JC.x+JC.w/2);});
+ J.forEach((j,k)=>jcDot(g,pos[k][0],pos[k][1],j.st==='cur'?Math.max(r,16):r,j));
+ if(ci>=0){const [x,y]=pos[ci];jcPill(g,x,y+44,'Bạn đang ở đây','#EF8426');}
+ const [sx0,sy0]=P[0];g.fillStyle='#172033';g.font=F(700,18);g.textAlign='center';g.fillText('Xuất phát',sx0,sy0+36);g.textAlign='left';
+}
+// Kiểu 3: bậc thang: mỗi chương một bậc, chương sau cao hơn và lệch phải; bài học là ô số
+function jcStairs(g,J,d){
+ const ch=chapters(),n=ch.length,step=50,bw=JC.w-(n-1)*step,S0=34,GAP=7,perRow=Math.floor((bw-36+GAP)/(S0+GAP));
+ const hs=ch.map(c=>78+Math.ceil(c.idx.length/perRow)*(S0+GAP)+14),totH=hs.reduce((a,b)=>a+b,0)+(n-1)*14;
+ jcGoal(g,JC.x+JC.w-60,JC.y+30,d.allDone);
+ let y=JC.y+JC.h-30;
+ g.fillStyle='#fff';rr(g,JC.x,y-4,170,38,10);g.fill();g.strokeStyle='#E6EAF0';g.lineWidth=1.5;g.stroke();g.fillStyle='#667085';g.font=F(700,17);g.fillText('Xuất phát · Ngày 1',JC.x+16,y+21);
+ y-=14;const avail=JC.h-170,sc=Math.min(1,avail/totH);
+ ch.forEach((c,k)=>{const h=hs[k]*sc,x=JC.x+k*step,col=PHASE_COLOR[c.ph.id],todo=c.state==='todo';y-=h;
+  g.fillStyle=todo?'#fff':col+'14';rr(g,x,y,bw,h,16);g.fill();g.lineWidth=c.state==='cur'?3:1.5;g.strokeStyle=todo?'#E6EAF0':col+(c.state==='cur'?'':'55');g.stroke();
+  g.fillStyle=todo?'#D5DBE5':col;rr(g,x,y+h-7,bw,7,3);g.fill();
+  g.fillStyle=todo?'#EEF1F6':col;rr(g,x+18,y+16,40,40,11);g.fill();g.fillStyle=todo?'#98A2B3':'#fff';g.font=F(800,20);g.textAlign='center';g.fillText(c.state==='done'?'✓':String(c.pi+1),x+38,y+43);g.textAlign='left';
+  g.fillStyle=todo?'#98A2B3':col;g.font=F(800,16);g.fillText(`Chương ${c.pi+1}${c.state==='cur'?' · Đang ở đây':''}`,x+72,y+32);
+  g.fillStyle='#172033';g.font=F(700,20);g.fillText(fitText(g,c.ph.name,bw-200),x+72,y+56);
+  g.fillStyle='#667085';g.font=F(600,16);g.textAlign='right';g.fillText(`${c.dn}/${c.idx.length} bài`,x+bw-18,y+34);g.textAlign='left';
+  const s=S0*Math.min(1,sc+.15);c.idx.forEach((i,m)=>{const j=J[i],cx=x+18+(m%perRow)*(s+GAP),cy=y+70+Math.floor(m/perRow)*(s+GAP);
+   g.fillStyle=j.st==='done'?col:'#fff';rr(g,cx,cy,s,s,8);g.fill();g.lineWidth=j.st==='cur'?3:1.5;g.strokeStyle=j.st==='locked'?'#D5DBE5':col;g.stroke();
+   g.fillStyle=j.st==='done'?'#fff':j.st==='cur'?col:'#98A2B3';g.font=F(800,Math.round(s*.42));g.textAlign='center';g.fillText(j.st==='done'?'✓':String(i+1),cx+s/2,cy+s*.64);g.textAlign='left';});
+  y-=14;});
 }
 function shareBlob(){return new Promise(ok=>{const cv=document.getElementById('share-cv');if(!cv)return ok(null);try{cv.toBlob(b=>ok(b),'image/png');}catch(e){ok(null);}});}
 function shareFileName(){return T.share==='cert'?`chung-nhan-ai-for-ceo-${certCode()}.png`:T.share==='journey'?'hanh-trinh-ai-for-ceo.png':'dashboard-ai-for-ceo.png';}
