@@ -13,7 +13,7 @@ const Q={
  size:{q:()=>'Quy mô nhân sự hiện tại là bao nhiêu?',chips:()=>SIZES.map(x=>[x,x]),set:v=>{S.profile.size=v;}},
  level:{q:()=>'Hiện trạng sử dụng AI của anh/chị và công ty đang ở mức nào?',chips:()=>Object.entries(LEVELS).map(([k,v])=>[k,v]),set:v=>{S.profile.level=+v;}},
  goals:{multi:true,q:()=>'Anh/chị muốn thấy ví dụ AI ở phòng ban nào nhất? Chọn 1 đến 3 rồi bấm "Xong".',chips:()=>Object.entries(GOALS),set:v=>{S.profile.goals=v;}},
- problem:{q:()=>'Có bài toán nào anh/chị muốn xem AI giải được không? Ví dụ: "Vì sao chi phí quảng cáo tuần này tăng?". Anh/chị gõ bên dưới hoặc chọn gợi ý.',
+ problem:{q:()=>'Anh/chị muốn AI giải bài toán gì cho doanh nghiệp? Ví dụ: "Vì sao chi phí quảng cáo tuần này tăng?". Anh/chị gõ bên dưới hoặc chọn gợi ý.',
   chips:p=>{const o=(IND[p.industry]||IND['Khác']).uc;return [[o[0][0],o[0][0]],[o[2][0],o[2][0]],['__skip','Bỏ qua bước này']];},set:v=>{S.profile.problem=v==='__skip'?'':v;}},
  days:{q:()=>'Anh/chị muốn học và hoàn thành khóa trong bao lâu?',chips:()=>[['7','7 ngày'],['15','15 ngày'],['30','1 tháng'],['__custom','Tự nhập…']],set:v=>{S.profile.days=+v;}},
  pace:{q:()=>'Mỗi ngày học, anh/chị dành được khoảng bao nhiêu thời gian?',chips:()=>[['20','20 phút'],['30','30 phút'],['60','1 giờ']],set:v=>{S.profile.minPerSession=+v;}}};

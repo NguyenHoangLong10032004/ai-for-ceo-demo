@@ -366,11 +366,10 @@ async function shareDownload(){
 const certCode=()=>'STT-AICEO-'+((S.order&&S.order.code)||'000000').replace(/\D/g,'').slice(-6);
 // ngày cấp dạng 01/10/2026 (thêm số 0 cho ngày/tháng 1 chữ số)
 const certDate=()=>String(S.completedAt||today()).replace(/^(\d)\//,'0$1/').replace(/\/(\d)\//,'/0$1/');
-let CERT_LOGO=null; // logo chỉ vẽ được khi trang chạy qua http(s); mở file trực tiếp thì dùng chữ để ảnh vẫn tải về được
+let CERT_LOGO=null; // logo nhúng sẵn (LOGO_DATA trong data.js) nên vẽ được cả khi mở file trực tiếp mà ảnh vẫn tải về được
 function certLogo(){
- if(location.protocol==='file:')return Promise.resolve(null);
  if(CERT_LOGO)return Promise.resolve(CERT_LOGO);
- return new Promise(ok=>{const i=new Image();i.onload=()=>{CERT_LOGO=i;ok(i);};i.onerror=()=>ok(null);i.src='img/logo.png';});
+ return new Promise(ok=>{const i=new Image();i.onload=()=>{CERT_LOGO=i;ok(i);};i.onerror=()=>ok(null);i.src=LOGO_DATA;});
 }
 async function drawCert(target){
  const cv=target||document.getElementById('cert-cv');if(!cv)return;
@@ -386,29 +385,25 @@ async function drawCert(target){
  g.fillStyle='#FFFDF8';rr(g,90,90,W-180,H-180,16);g.fill();
  g.textAlign='center';g.textBaseline='alphabetic';
  // logo
- if(logo){const lw=360,lh=lw*logo.height/logo.width;g.drawImage(logo,cx-lw/2,150,lw,lh);}else{g.fillStyle='#0A4AAD';g.font=F(800,46);g.fillText('Siêu Tăng Trưởng',cx,200);}
+ if(logo){const lw=440,lh=lw*logo.height/logo.width;g.drawImage(logo,cx-lw/2,170,lw,lh);}else{g.fillStyle='#0A4AAD';g.font=F(800,46);g.fillText('Siêu Tăng Trưởng',cx,220);}
  // tiêu đề
- g.fillStyle='#141A26';g.font=F(800,84);g.fillText('CHỨNG NHẬN HOÀN THÀNH',cx,350);
- g.fillStyle='#8A6D1D';g.font=F(600,26);g.fillText('C E R T I F I C A T E   O F   C O M P L E T I O N',cx,400);
- g.fillStyle='#5B6472';g.font=F(500,32);g.fillText('Học viện Siêu Tăng Trưởng trân trọng chứng nhận',cx,490);
+ g.fillStyle='#141A26';g.font=F(800,84);g.fillText('CHỨNG NHẬN HOÀN THÀNH',cx,380);
+ g.fillStyle='#8A6D1D';g.font=F(600,32);g.fillText('C E R T I F I C A T E   O F   C O M P L E T I O N',cx,442);
+ g.fillStyle='#5B6472';g.font=F(500,40);g.fillText('Học viện Siêu Tăng Trưởng trân trọng chúc mừng',cx,545);
  // tên học viên
- g.fillStyle='#1747C9';g.font=F(800,104);g.fillText(fitText(g,p.name||'Học viên',1500),cx,620);
- g.strokeStyle='#C9A227';g.lineWidth=2;g.beginPath();g.moveTo(cx-460,656);g.lineTo(cx+460,656);g.stroke();
- g.fillStyle='#5B6472';g.font=F(500,32);g.fillText('đã hoàn thành chương trình',cx,false?780:740);
- g.fillStyle='#141A26';g.font=F(800,68);g.fillText('AI for CEO',cx,false?865:825);
- g.fillStyle='#5B6472';g.font=F(500,28);g.fillText('Chương trình 12 module về năng lực AI dành cho lãnh đạo doanh nghiệp',cx,false?915:875);
- // số liệu
- const stats=[[`${d.N}`,'bài học'],[`${Object.keys(TASKS).length}`,'bài tập áp dụng'],[`${d.caps}/${CAP_MAP.length}`,'năng lực AI'],[hm(d.minAll),'thời gian học']];
- const sy=false?1010:980,sw=330;stats.forEach(([v,l],i)=>{const x=cx+(i-1.5)*sw;g.fillStyle='#1747C9';g.font=F(800,40);g.fillText(v,x,sy);g.fillStyle='#5B6472';g.font=F(500,24);g.fillText(l,x,sy+36);if(i)g.fillStyle='#E6E8EC',g.fillRect(x-sw/2,sy-38,2,80);});
+ g.fillStyle='#1747C9';g.font=F(800,104);g.fillText(fitText(g,p.name||'Học viên',1500),cx,665);
+ g.strokeStyle='#C9A227';g.lineWidth=2;g.beginPath();g.moveTo(cx-460,705);g.lineTo(cx+460,705);g.stroke();
+ g.fillStyle='#5B6472';g.font=F(500,40);g.fillText('đã hoàn thành chương trình',cx,792);
+ g.fillStyle='#141A26';g.font=F(800,68);g.fillText('AI for CEO',cx,880);
  // con dấu
- const sx=cx,sY=1185;g.fillStyle='#C9A227';g.beginPath();for(let k=0;k<24;k++){const a=k/24*Math.PI*2,r=k%2?96:108;g.lineTo(sx+Math.cos(a)*r,sY+Math.sin(a)*r);}g.closePath();g.fill();
- g.fillStyle='#E9C65A';g.beginPath();g.arc(sx,sY,84,0,7);g.fill();g.strokeStyle='#8A6D1D';g.lineWidth=2;g.beginPath();g.arc(sx,sY,74,0,7);g.stroke();
- g.fillStyle='#6B5212';g.font=F(800,19);g.fillText('SIÊU TĂNG',sx,sY-12);g.fillText('TRƯỞNG',sx,sY+12);g.font=F(800,13);g.fillText('★ AI FOR CEO ★',sx,sY+38);
+ const sx=cx,sY=1115;g.fillStyle='#C9A227';g.beginPath();for(let k=0;k<24;k++){const a=k/24*Math.PI*2,r=k%2?125:140;g.lineTo(sx+Math.cos(a)*r,sY+Math.sin(a)*r);}g.closePath();g.fill();
+ g.fillStyle='#E9C65A';g.beginPath();g.arc(sx,sY,110,0,7);g.fill();g.strokeStyle='#8A6D1D';g.lineWidth=2.5;g.beginPath();g.arc(sx,sY,97,0,7);g.stroke();
+ g.fillStyle='#6B5212';g.font=F(800,25);g.fillText('SIÊU TĂNG',sx,sY-16);g.fillText('TRƯỞNG',sx,sY+16);g.font=F(800,17);g.fillText('★ AI FOR CEO ★',sx,sY+50);
  // ngày, mã, chữ ký
- g.textAlign='left';g.fillStyle='#5B6472';g.font=F(500,24);g.fillText('Ngày cấp',220,1170);g.fillStyle='#141A26';g.font=F(700,32);g.fillText(certDate(),220,1212);
- g.fillStyle='#5B6472';g.font=F(500,22);g.fillText('Mã chứng nhận: '+certCode(),220,1256);
- g.textAlign='center';g.strokeStyle='#2B3240';g.lineWidth=1.5;g.beginPath();g.moveTo(1440,1205);g.lineTo(1780,1205);g.stroke();
- g.fillStyle='#141A26';g.font=F(700,26);g.fillText('Đại diện Học viện',1610,1245);g.fillStyle='#5B6472';g.font=F(500,22);g.fillText('Học viện Siêu Tăng Trưởng',1610,1280);
+ g.textAlign='left';g.fillStyle='#5B6472';g.font=F(500,30);g.fillText('Ngày cấp',220,1092);g.fillStyle='#141A26';g.font=F(700,40);g.fillText(certDate(),220,1142);
+ g.fillStyle='#5B6472';g.font=F(500,28);g.fillText('Mã chứng nhận: '+certCode(),220,1192);
+ g.textAlign='center';g.strokeStyle='#2B3240';g.lineWidth=1.5;g.beginPath();g.moveTo(1410,1126);g.lineTo(1810,1126);g.stroke();
+ g.fillStyle='#141A26';g.font=F(700,32);g.fillText('Đại diện Học viện',1610,1172);g.fillStyle='#5B6472';g.font=F(500,28);g.fillText('Học viện Siêu Tăng Trưởng',1610,1212);
  g.textAlign='left';
 }
 function certBlob(){return new Promise(ok=>{const cv=document.getElementById('cert-cv');if(!cv)return ok(null);try{cv.toBlob(b=>ok(b),'image/png');}catch(e){ok(null);}});}

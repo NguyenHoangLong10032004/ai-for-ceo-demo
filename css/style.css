@@ -1366,3 +1366,35 @@ button.rm-node:hover .rm-ico{transform:translateY(-3px)}
 .js-cur{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding-top:8px;border-top:1px dashed color-mix(in srgb,var(--c) 35%,var(--surface));font-size:14.5px;font-weight:600}
 .js-start{justify-self:start;display:flex;gap:6px;align-items:center;font-size:14px;font-weight:600;color:var(--muted);padding:6px 12px;border-radius:10px;border:1px solid var(--line);background:var(--surface)}
 @media (max-width:640px){.js-step{width:100%;margin-left:0}.js-goal{justify-self:stretch}}
+
+/* tài khoản Học viện (bắt buộc trước khi đăng ký khóa học) */
+.req{color:var(--bad);font-weight:700}
+.ac-page{display:grid;justify-items:center}
+.ac{width:min(480px,100%);padding:28px;display:grid;gap:18px}
+.ac-h{display:grid;justify-items:center;gap:12px;text-align:center}
+.ac-h .logo-img{height:30px;width:auto}
+.ac-tabs{justify-self:stretch;display:grid;grid-template-columns:1fr 1fr}
+.ac-tabs button{text-align:center}
+.ac-form{display:grid;gap:14px}
+.ac-form .btn-link{justify-self:center}
+.inp[readonly]{background:var(--bg-2);color:var(--ink-2);cursor:not-allowed}
+.ck-acc{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:-12px}
+
+/* ô mật khẩu có nút ẩn/hiện */
+.pw{position:relative}
+.pw .inp{width:100%;padding-right:48px}
+.pw-t{position:absolute;right:4px;top:50%;transform:translateY(-50%);width:40px;height:40px;border:0;background:none;border-radius:8px;display:grid;place-items:center;color:var(--muted);cursor:pointer}
+.pw-t:hover{color:var(--ink);background:var(--bg-2)}
+.pw-t[aria-pressed="true"]{color:var(--blue)}
+.ac-terms{margin:0;text-align:center;font-size:14px;color:var(--muted);line-height:1.5}
+.ac-terms .btn-link,.ac-alt .btn-link{font-size:inherit;padding:0;min-height:0;display:inline}
+.ac-alt{margin:0;text-align:center;font-size:16px;color:var(--muted)}
+.ac-alt .btn-link{font-weight:700}
+.ac-forgot{margin:0;text-align:center}
+.ac-forgot .btn-link{color:var(--muted);font-weight:500;font-size:15px}
+.ac-forgot .btn-link:hover{color:var(--blue-ink)}
+
+/* thông báo xuất hóa đơn ở màn Đăng ký thành công */
+.inv-note{width:100%;max-width:520px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;text-align:left}
+.inv-note>div{flex:1;min-width:220px;display:grid;gap:2px}
+.inv-ico{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;background:var(--blue);color:#fff;flex:none}

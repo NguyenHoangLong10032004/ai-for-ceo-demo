@@ -6,7 +6,7 @@
 /* ---------- trạng thái ---------- */
 // S: trạng thái lưu vào trình duyệt (localStorage). T: trạng thái tạm, mất khi tải lại trang.
 const LS='aiceo-demo-v6';
-const DEFAULT=()=>({screen:'landing',eval:null,fit:null,nurture:false,order:null,pay:{status:null,method:'qr',sim:'success',support:false},enrolled:false,
+const DEFAULT=()=>({screen:'landing',account:null,loggedIn:false,eval:null,fit:null,nurture:false,order:null,pay:{status:null,method:'qr',sim:'success',support:false},enrolled:false,
  profile:{},ob:{flow:[],i:0,msgs:[],multi:[],done:false},plan:null,adjustLog:[],done:{},doneAt:{},subs:{},lesson:0,unit:null,
  expert:{id:null,msgs:[],unread:0,pending:false},mails:[],zalo:[],comm:{joined:false,posts:[],comments:{},likes:{},gotLikes:{},events:{}},remind:{...REMIND_DEFAULT},feedback:null,asst:[],completedAt:null,liveRemind:false,offline:false});
 const T={vp:{vol:80,muted:false,speed:1,quality:"auto",cc:false},gen:null,ai:null,asstOpen:false,tab:"ai",expertDraft:"",expertTyping:false,mailOpen:null,share:null,shareCap:null,dashFilter:'all',fbDraft:null,fbEdit:false,remindOpen:false,commTab:'feed',commCat:'all',commPost:null,commWrite:false,commDraft:null,commQ:'',remindDraft:null,remindPreview:null,zaloOpen:false,asstBusy:false,obTyping:false,focus:null,err:{},ph:{},cx:{},lx:{},clAll:{},drawer:null};
@@ -76,7 +76,7 @@ function simulateUpTo(h){
  Object.keys(TASKS).forEach(id=>{const k='E:'+id;if(!S.done[k]){delete S.subs[id];return;}if(S.subs[id])return;const t=TASKS[id],at=new Date(S.doneAt[k]).toLocaleString('vi-VN',{hour:'2-digit',minute:'2-digit',day:'2-digit',month:'2-digit',year:'numeric'});
   S.subs[id]=t.kind==='uc'?{rows:sampleUC(S.profile),at,v:1}:{fields:t.sample(S.profile),at,v:1};S.subs[id].feedback={text:ruleFeedback(id,subText(id)),by:'rule',at};});
 }
-function go(to){S.screen=to;T.err={};T.draft=null;render();hist();landScroll();}
+function go(to){if(to==='checkout'&&!S.loggedIn&&S.pay.status!=='success'){T.after='checkout';T.acTab=S.account?'login':'register';to='account';}S.screen=to;T.err={};T.draft=null;render();hist();landScroll();}
 // Lịch sử trình duyệt: nút Back của trình duyệt / vuốt quay lại trên điện thoại cũng quay về màn trước
 function hist(replace){
  const cm=S.screen==='community',st={screen:S.screen,lesson:S.lesson,from:S.from||null,ct:cm?T.commTab:null,cp:cm?T.commPost:null},cur=history.state;
@@ -102,7 +102,9 @@ function toast(msg,kind='ok'){const el=document.getElementById('toast');if(!el)r
 function ensureFor(to){
  if(to==='outputs'||to==='dashboard')to='learn';
  const need=['mycourses','onboarding','syllabus','learn','complete'].includes(to);
- if(need&&!S.enrolled){S.order=S.order||{code:'AICEO-'+Math.floor(100000+Math.random()*900000),name:SAMPLE_PROFILE.name,phone:'0912 345 678',email:'long.nguyen@minhan.vn',company:SAMPLE_PROFILE.company,invoice:false,method:'qr',paidAt:today()};S.pay.status='success';S.enrolled=true;}
+ if(need&&!S.account)S.account={name:SAMPLE_PROFILE.name,phone:'0912 345 678',email:'long.nguyen@minhan.vn',createdAt:today()};
+ if(need)S.loggedIn=true;
+ if(need&&!S.enrolled){S.order=S.order||{code:'AICEO-'+Math.floor(100000+Math.random()*900000),name:S.account.name,phone:S.account.phone,email:S.account.email,company:SAMPLE_PROFILE.company,invoice:false,method:'qr',paidAt:today()};S.pay.status='success';S.enrolled=true;}
  if(to==='onboarding'&&!S.ob.flow.length&&!S.ob.done)startOb();
  if(['syllabus','learn','complete'].includes(to)&&!profileComplete(S.profile)){
   S.profile={...SAMPLE_PROFILE,...(S.eval?{industry:S.eval.industry,size:S.eval.size,level:S.eval.level,goals:S.eval.goals}:{}),name:S.order.name,company:S.order.company};
@@ -123,10 +125,19 @@ function advance(){
 const ACT={
  go:d=>{if(['mycourses','dashboard','learn','complete','syllabus','onboarding','outputs'].includes(d.to))ensureFor(d.to);T.editEx=null;go(d.to);},
  jump:d=>{ensureFor(d.to);go(d.to);},
+ // tài khoản Học viện: bắt buộc có trước khi đăng ký mua khóa học
+ acOpen:d=>{T.acTab=d.v;T.after=null;T.acDraft=null;go('account');},
+ // ẩn/hiện mật khẩu: đổi trực tiếp, không vẽ lại để giữ chữ đang gõ
+ pwToggle:(d,b)=>{const i=document.getElementById(d.v);if(!i)return;const show=i.type==='password';i.type=show?'text':'password';const l=show?'Ẩn mật khẩu':'Hiện mật khẩu';b.setAttribute('aria-label',l);b.title=l;b.setAttribute('aria-pressed',String(show));b.innerHTML=ic(show?'eyeoff':'eye',18);i.focus();},
+ acForgot:()=>{const e=document.getElementById('l-email'),v=e&&e.value.trim();toast(v?`Đã gửi hướng dẫn đặt lại mật khẩu tới ${v} (mô phỏng)`:'Nhập email tài khoản rồi bấm Quên mật khẩu? để nhận hướng dẫn đặt lại',v?'ok':'bad');if(!v&&e)e.focus();},
+ acTab:d=>{T.acTab=d.v;T.err={};render();},
+ acSample:()=>{T.acDraft={name:SAMPLE_PROFILE.name,phone:'0912 345 678',email:'long.nguyen@minhan.vn'};T.err={};render();const p=document.getElementById('a-pass');if(p){p.value='matkhau123';p.focus();}},
+ acSwitch:()=>{S.loggedIn=false;T.acDraft=null;toast('Đã đăng xuất. Đăng nhập hoặc tạo tài khoản khác');go('checkout');},
  // trang bài học → quay lại danh sách bài học, cuộn tới đúng bài đang xem
  // hộp thư mô phỏng: xem email tự động đã gửi cho học viên
- mailOpen:d=>{const m=S.mails.find(x=>x.id===d.v)||S.mails[0];if(!m){toast('Hộp thư chưa có email nào. Email xác nhận được gửi khi thanh toán thành công','bad');return;}m.read=true;T.mailOpen=m.id;T.asstOpen=false;render();},
+ mailOpen:d=>{if(!d.v)ensureSampleInvoice();const m=S.mails.find(x=>x.id===d.v)||S.mails[0];if(!m){toast('Hộp thư chưa có email nào. Email xác nhận được gửi khi thanh toán thành công','bad');return;}m.read=true;T.mailOpen=m.id;T.asstOpen=false;render();},
  mailResend:d=>{resendRealEmail(d.v);},
+ invLookup:()=>{toast('Trang tra cứu hóa đơn điện tử thuộc nhà cung cấp hóa đơn, chưa có trong bản demo');},
  mailClose:()=>{T.mailOpen=null;render();},
  mailCta:()=>{T.mailOpen=null;ensureFor('mycourses');go('mycourses');toast('Đã mở khóa học từ email xác nhận');},
  backToList:()=>{T.focusLesson=S.lesson;S.from=null;T.editEx=null;go('learn');},
@@ -141,7 +152,7 @@ const ACT={
  // thanh toán
  invToggle:(d,el)=>{const b=document.getElementById('inv-box');if(b)b.hidden=!el.checked;},
  paySim:d=>{S.pay.sim=d.v;document.querySelectorAll('[data-a="paySim"]').forEach(b=>b.classList.toggle('on',b.dataset.v===d.v));save();},
- payRetry:()=>{S.pay.status='processing';S.pay.sim='success';render();setTimeout(()=>{S.pay.status='success';S.enrolled=true;S.order.paidAt=today();sendConfirmEmail();render();},1300);},
+ payRetry:()=>{S.pay.status='processing';S.pay.sim='success';render();setTimeout(()=>{S.pay.status='success';S.enrolled=true;S.order.paidAt=today();sendConfirmEmail();render();setTimeout(()=>{sendInvoiceEmail();render();},2600);},1300);},
  payChange:()=>{S.pay.status=null;S.pay.support=false;render();},
  paySupport:()=>{S.pay.support=true;render();},
  // onboarding
@@ -244,16 +255,35 @@ const ACT={
 
 /* ---------- xử lý form (data-f="…") ---------- */
 const FORMS={
- checkoutSubmit:f=>{const fd=new FormData(f);const o=Object.fromEntries(fd.entries());o.invoice=!!fd.get('invoice');
+ checkoutSubmit:f=>{if(!S.loggedIn||!S.account){go('checkout');return;}const fd=new FormData(f);const o=Object.fromEntries(fd.entries());o.invoice=!!fd.get('invoice');o.email=S.account.email;
   S.order={...(S.order||{}),...o};
-  if(!o.name.trim()){T.err={checkout:'Chưa có họ và tên. Nhập họ tên để tạo tài khoản học.',field:'c-name'};render();return;}
+  if(!o.name.trim()){T.err={checkout:'Chưa có họ và tên. Nhập họ tên người học.',field:'c-name'};render();return;}
+  if(!o.phone.trim()){T.err={checkout:'Chưa có số điện thoại / Zalo. Nhập số để Học viện liên hệ hỗ trợ.',field:'c-phone'};render();return;}
   if(!/^[0-9+\s().-]{9,}$/.test(o.phone.trim())){T.err={checkout:'Số điện thoại chưa đúng. Nhập ít nhất 9 chữ số, ví dụ: 0912 345 678.',field:'c-phone'};render();return;}
   if(!/^\S+@\S+\.\S+$/.test(o.email)){T.err={checkout:'Email chưa đúng định dạng. Ví dụ đúng: ten@congty.vn.',field:'c-email'};render();return;}
   if(o.invoice&&!String(o.taxId||'').trim()){T.err={checkout:'Chưa có mã số thuế. Nhập mã số thuế, hoặc bỏ chọn "Xuất hóa đơn cho công ty".',field:'c-tax'};render();return;}
   if(o.invoice&&!String(o.invName||'').trim()){T.err={checkout:'Chưa có tên công ty trên hóa đơn. Nhập tên công ty, hoặc bỏ chọn "Xuất hóa đơn cho công ty".',field:'c-invname'};render();return;}
+  if(o.invoice&&!String(o.invAddr||'').trim()){T.err={checkout:'Chưa có địa chỉ công ty. Nhập địa chỉ ghi trên hóa đơn, hoặc bỏ chọn "Xuất hóa đơn cho công ty".',field:'c-invaddr'};render();return;}
+  if(o.invoice&&!/^\S+@\S+\.\S+$/.test(String(o.invEmail||'').trim())){T.err={checkout:'Email nhận hóa đơn công ty chưa đúng. Nhập email kế toán, ví dụ: ketoan@congty.vn, hoặc bỏ chọn "Xuất hóa đơn cho công ty".',field:'c-invemail'};render();return;}
   T.err={};S.pay.method=o.method;S.order={...o,code:(S.order&&S.order.code)||'AICEO-'+Math.floor(100000+Math.random()*900000)};S.profile.name=o.name;S.profile.company=o.company;
   S.pay.status='processing';S.pay.support=false;render();window.scrollTo(0,0);
-  setTimeout(()=>{if(S.pay.sim==='fail'){S.pay.status='failed';toast('Thanh toán chưa thành công','bad');}else{S.pay.status='success';S.enrolled=true;S.order.paidAt=today();toast('Thanh toán thành công, khóa học đã được kích hoạt');setTimeout(()=>{sendConfirmEmail();render();},1800);}render();},1400);},
+  setTimeout(()=>{if(S.pay.sim==='fail'){S.pay.status='failed';toast('Thanh toán chưa thành công','bad');}else{S.pay.status='success';S.enrolled=true;S.order.paidAt=today();toast('Thanh toán thành công, khóa học đã được kích hoạt');setTimeout(()=>{sendConfirmEmail();render();setTimeout(()=>{sendInvoiceEmail();render();},2600);},1800);}render();},1400);},
+ acRegister:f=>{const fd=new FormData(f),v=k=>String(fd.get(k)||'').trim(),d={name:v('name'),phone:v('phone'),email:v('email').toLowerCase()};T.acDraft=d;
+  const bad=(m,field)=>{T.err={ac:m,field};render();};
+  if(!d.name)return bad('Chưa có họ và tên.','a-name');
+  if(!d.phone)return bad('Chưa có số điện thoại / Zalo.','a-phone');
+  if(!/^[0-9+\s().-]{9,}$/.test(d.phone))return bad('Số điện thoại chưa đúng. Nhập ít nhất 9 chữ số, ví dụ: 0912 345 678.','a-phone');
+  if(!d.email)return bad('Chưa có email.','a-email');
+  if(!/^\S+@\S+\.\S+$/.test(d.email))return bad('Email chưa đúng định dạng. Ví dụ đúng: ten@congty.vn.','a-email');
+  if(S.account&&S.account.email===d.email)return bad('Email này đã có tài khoản. Chọn "Đăng nhập" để vào tài khoản.','a-email');
+  if(v('pass').length<6)return bad('Mật khẩu cần ít nhất 6 ký tự.','a-pass');
+  S.account={...d,createdAt:today()};S.loggedIn=true;T.err={};T.acDraft=null;if(!S.enrolled)S.order=null;toast('Đã tạo tài khoản Học viện');const to=T.after||'landing';T.after=null;go(to);},
+ acLogin:f=>{const fd=new FormData(f),email=String(fd.get('email')||'').trim().toLowerCase(),pass=String(fd.get('pass')||'');T.acDraft={email};
+  const bad=(m,field)=>{T.err={ac:m,field};render();};
+  if(!/^\S+@\S+\.\S+$/.test(email))return bad('Email chưa đúng định dạng. Ví dụ đúng: ten@congty.vn.','l-email');
+  if(!S.account||S.account.email!==email)return bad('Email này chưa có tài khoản Học viện. Chọn "Tạo tài khoản" để đăng ký.','l-email');
+  if(!pass)return bad('Chưa nhập mật khẩu.','l-pass');
+  S.loggedIn=true;T.err={};T.acDraft=null;toast('Đăng nhập thành công');const to=T.after||'landing';T.after=null;go(to);},
  obSend:f=>{const t=f.t.value.trim();if(!t)return;obText(t);},
  adjSend:f=>{const q=f.q.value.trim();if(!q)return;generate(q);},
  exSubmit:async f=>{
@@ -325,6 +355,9 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&(T.mailOpen||T.shar
 /* ---------- khởi động ---------- */
 // dọn dữ liệu cũ còn lưu trong trình duyệt từ các phiên bản demo trước
 if(S.pay.status==='processing')S.pay.status=null;
+if(!PAY_METHODS[S.pay.method])S.pay.method='qr';
+// tài khoản Học viện: dữ liệu cũ đã đăng ký khóa thì tạo tài khoản từ đơn hàng
+if(S.enrolled&&!S.account&&S.order){S.account={name:S.order.name,phone:S.order.phone,email:S.order.email,createdAt:S.order.paidAt||today()};S.loggedIn=true;}
 if(!SCREENS[S.screen])S.screen='landing';
 if(!S.ob.flow.length&&!S.ob.done)S.eval=null; // bước Đánh giá đã bỏ: onboarding tự hỏi ngành, quy mô, mức AI, phòng ban
 try{fixOb();}catch(e){S.ob={flow:[],i:0,msgs:[],multi:[],done:false};}
