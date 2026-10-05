@@ -27,7 +27,7 @@ function unitLine(u){const x=L[u.id];
  if(u.kind==='video')return {icon:'video',t:`Video: ${PARTS[u.part]}`};
  if(u.kind==='exercise')return {icon:'file',t:`Bài tập: ${TASKS[u.id].title}`};
  if(u.kind==='review')return {icon:'book',t:'Ôn tập & liên hệ với công ty'};
- return {icon:'video',t:`${TYPE_LABEL[x.type]}: ${x.title}`};}
+ return {icon:'video',t:x.title.startsWith(TYPE_LABEL[x.type])?x.title:`${TYPE_LABEL[x.type]}: ${x.title}`};} // tránh lặp "Case: Case:"
 function unitsOf(items){const u=[];items.forEach(it=>{const x=L[it.id];if(x.type==='module'){x.parts.forEach((m,i)=>u.push(U(x.id+':'+i)));u.push(U('E:'+x.id));}else u.push(U(x.id));});return u;}
 // Số ngày nhiều hơn số phần nội dung: chèn bài "Ôn tập & liên hệ công ty" để mỗi ngày vẫn có 1 bài
 function addReviews(units,N){

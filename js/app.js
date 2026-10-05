@@ -9,7 +9,7 @@ const LS='aiceo-demo-v6';
 const DEFAULT=()=>({screen:'landing',eval:null,fit:null,nurture:false,order:null,pay:{status:null,method:'qr',sim:'success',support:false},enrolled:false,
  profile:{},ob:{flow:[],i:0,msgs:[],multi:[],done:false},plan:null,adjustLog:[],done:{},doneAt:{},subs:{},lesson:0,unit:null,
  expert:{id:null,msgs:[],unread:0,pending:false},mails:[],zalo:[],comm:{joined:false,posts:[],comments:{},likes:{},gotLikes:{},events:{}},remind:{...REMIND_DEFAULT},feedback:null,asst:[],completedAt:null,liveRemind:false,offline:false});
-const T={gen:null,ai:null,asstOpen:false,tab:"ai",expertDraft:"",expertTyping:false,mailOpen:null,share:null,shareCap:null,dashFilter:'all',fbDraft:null,fbEdit:false,remindOpen:false,commTab:'feed',commCat:'all',commPost:null,commWrite:false,commDraft:null,commQ:'',remindDraft:null,remindPreview:null,zaloOpen:false,asstBusy:false,obTyping:false,focus:null,err:{},ph:{}};
+const T={vp:{vol:80,muted:false,speed:1,quality:"auto",cc:false},gen:null,ai:null,asstOpen:false,tab:"ai",expertDraft:"",expertTyping:false,mailOpen:null,share:null,shareCap:null,dashFilter:'all',fbDraft:null,fbEdit:false,remindOpen:false,commTab:'feed',commCat:'all',commPost:null,commWrite:false,commDraft:null,commQ:'',remindDraft:null,remindPreview:null,zaloOpen:false,asstBusy:false,obTyping:false,focus:null,err:{},ph:{},cx:{},lx:{},clAll:{},drawer:null};
 function load(){try{const r=localStorage.getItem(LS);if(r){return Object.assign(DEFAULT(),JSON.parse(r));}}catch(e){}return DEFAULT();}
 // chỉ ghi khi dữ liệu thật sự đổi (tránh 2 tab khóa học + cộng đồng ghi qua lại liên tục)
 let lastSaved=null;
@@ -56,7 +56,7 @@ function render(){
  const cmT=document.getElementById('cm-title'),cmB=document.getElementById('cm-body'),cmC=document.getElementById('cm-cat');if(cmT&&cmB&&T.commWrite)T.commDraft={title:cmT.value,body:cmB.value,cat:cmC?cmC.value:'ask'};
  const capEl=document.getElementById('share-cap');if(capEl)T.shareCap=capEl.value;
  const exIn=document.getElementById('ex-in'),exFocus=exIn&&document.activeElement===exIn;if(exIn)T.expertDraft=exIn.value;
- $app.innerHTML=demoBar()+header()+`<main>${scr()}</main>`+footer()+fab()+mailView()+shareView()+remindView()+zaloView();
+ $app.innerHTML=demoBar()+header()+`<main>${scr()}</main>`+footer()+fab()+mailView()+shareView()+remindView()+zaloView()+drawerView();
  if(T.share)drawShare();
  if(document.getElementById('cert-cv'))drawCert();
  if(!T.syncing)save(); // vẽ lại do tab kia vừa lưu thì không lưu ngược lại
@@ -91,7 +91,7 @@ function landScroll(){
  const el=document.getElementById(id||(i!=null?'lr-learn-'+i:''));
  if(!el){window.scrollTo(0,0);return;}
  el.scrollIntoView({block:'center'});el.classList.add('flash');
- const b=el.querySelector('.tt button,[data-a="openEx"]');if(b)b.focus({preventScroll:true});
+ const b=el.querySelector('.cl-name,[data-a="openEx"]');if(b)b.focus({preventScroll:true});
 }
 // Trang bài học mở từ "Bài tập của tôi" thì quay lại đó, còn lại quay về danh sách bài học
 function lessonBack(){return S.from==='outputs'?{a:'backToOutputs',t:'Bài tập của tôi'}:{a:'backToList',t:'Danh sách bài học'};}
@@ -136,9 +136,6 @@ const ACT={
  backToOutputs:()=>{T.focusEl='out-'+S.fromEx;S.from=null;T.editEx=null;go('outputs');},
  reset:()=>{S=DEFAULT();PREVIEW=null;Object.assign(T,{gen:null,asstOpen:false,tab:"ai",expertDraft:"",expertTyping:false,asstBusy:false,obTyping:false,err:{}});go('landing');toast('Đã làm lại demo từ đầu');},
  scrollTo:d=>{const el=document.getElementById(d.v);if(el)el.scrollIntoView({behavior:'smooth'});},
- // danh sách bài học: thu gọn / mở ra chương
- phToggle:d=>{const a=T.ph[d.k]||[];const v=+d.v;T.ph[d.k]=a.includes(v)?a.filter(x=>x!==v):[...a,v];render();},
- phAll:d=>{const n=document.querySelectorAll(`[data-a="phToggle"][data-k="${d.k}"]`).length;T.ph[d.k]=d.v==='1'?[...Array(n).keys()]:[];render();},
  // khóa học của tôi → vào đúng bước theo trạng thái
  openCourse:()=>{if(!S.ob.done){if(!S.ob.flow.length)startOb();go('onboarding');}else if(!S.plan||!(S.plan.accepted||S.plan.wasActive))go('syllabus');else go('learn');},
  // thanh toán
@@ -157,11 +154,19 @@ const ACT={
  adjust:d=>{generate(d.q);},
  fixDays:d=>{const p0={...S.profile},was=!!(S.plan&&S.plan.wasActive);S.profile.days=+d.v;S.plan=rulePlan(S.profile);S.plan.wasActive=was;S.adjustLog.push({role:'bot',text:describeChanges(p0,S.profile)});render();},
  fixPace:d=>{const p0={...S.profile},was=!!(S.plan&&S.plan.wasActive);S.profile.minPerSession=+d.v;S.plan=rulePlan(S.profile);S.plan.wasActive=was;S.adjustLog.push({role:'bot',text:describeChanges(p0,S.profile)});render();},
- acceptPlan:()=>{if(!S.plan||S.plan.warning)return;const was=S.plan.wasActive;S.plan.accepted=true;S.plan.wasActive=true;go('learn');toast(was?'Đã lưu lộ trình mới':'Đã xác nhận lộ trình. Bắt đầu Bài 1 nhé!');},
+ acceptPlan:()=>{if(!S.plan||S.plan.warning)return;T.drawer=null;const was=S.plan.wasActive;S.plan.accepted=true;S.plan.wasActive=true;go('learn');toast(was?'Đã lưu lộ trình mới':'Đã xác nhận lộ trình. Bắt đầu Bài 1 nhé!');},
  // học
  openLesson:d=>{if(!lessonOpen(+d.v)){toast(lockMsg(+d.v),'bad');return;}S.lesson=+d.v;S.unit=null;S.from=null;go('lesson');},
  selUnit:d=>{S.unit=d.v;render();},
  playUnit:()=>{if(U(S.unit).kind==='exercise')return;markDone(S.unit);render();},
+ // thanh điều khiển video (mô phỏng): sửa DOM trực tiếp qua vpSync(), không render() để giữ toàn màn hình
+ vpMute:()=>{T.vp.muted=!T.vp.muted;if(!T.vp.muted&&!T.vp.vol)T.vp.vol=50;vpSync();},
+ vpMenu:(d,a)=>{const m=document.querySelector('.vp-menu');if(!m)return;m.hidden=!m.hidden;a.setAttribute('aria-expanded',String(!m.hidden));if(!m.hidden){const c=m.querySelector('[aria-checked="true"]');if(c)c.focus();}},
+ vpSet:d=>{const k=d.k,v=k==='speed'?+d.v:k==='cc'?d.v==='true':d.v;T.vp[k]=v;vpSync();const o=VP_OPTS[k].opts.find(x=>x[0]===v);toast(`${VP_OPTS[k].label}: ${o?o[1]:v}`);},
+ vpPop:()=>{const p=document.querySelector('.player');const w=window.open('','aiceo-video','width=820,height=480');if(!w){toast('Trình duyệt đã chặn cửa sổ mới. Vui lòng cho phép cửa sổ bật lên.','bad');return;}
+  const t=p?p.dataset.title:'',l=p?p.dataset.label:'';
+  w.document.open();w.document.write(`<!doctype html><html lang="vi"><head><meta charset="utf-8"><title>${t} · AI for CEO</title><style>body{margin:0;height:100vh;display:grid;place-items:center;background:radial-gradient(120% 90% at 80% 0%,#22304F,#172033 60%);color:#fff;font-family:Roboto,system-ui,sans-serif;text-align:center}main{display:grid;gap:12px;justify-items:center;padding:24px}small{font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;color:#AEB6CA;font-weight:700}h1{font-size:22px;margin:0;max-width:32ch}p{color:#AEB6CA;font-size:13px;margin:0}</style></head><body><main><small>${l}</small><h1>${t}</h1><p>Video mô phỏng. Bản thật sẽ phát tiếp video ở đúng vị trí đang xem.</p></main></body></html>`);w.document.close();w.focus();},
+ vpFull:()=>{const p=document.querySelector('.player');if(!p)return;if(document.fullscreenElement){document.exitFullscreen();return;}const f=p.requestFullscreen||p.webkitRequestFullscreen;if(!f){toast('Trình duyệt này chưa hỗ trợ toàn màn hình','bad');return;}const r=f.call(p);if(r&&r.catch)r.catch(()=>toast('Trình duyệt không cho phép toàn màn hình','bad'));},
  markNext:()=>{markDone(S.unit);advance();},
  asstLesson:()=>{T.asstOpen=true;T.tab="ai";askAssistant('Giải thích phần này theo góc nhìn CEO và công ty tôi có thể dùng ở đâu?');},
  // bài tập
@@ -173,6 +178,7 @@ const ACT={
  // công cụ demo
  simulateAll:d=>{simulateUpTo(lessons().length);go(d&&d.v==='dash'?'dashboard':'complete');toast('Đã mô phỏng học xong và nộp đủ bài tập');},
  simulateHalf:()=>{simulateUpTo(Math.ceil(lessons().length/2));render();toast('Đã mô phỏng học xong một nửa khóa');},
+ policy:()=>{toast('Trang Điều khoản & Bảo mật chưa có trong bản demo');},
  // cộng đồng: luôn mở ở tab trình duyệt riêng (index.html#community)
  openCommunity:()=>{if(S.screen==='community'){T.commTab='feed';T.commPost=null;render();window.scrollTo(0,0);return;}
   const w=window.open(location.href.split('#')[0]+'#community','_blank');if(!w){go('community');toast('Trình duyệt chặn mở tab mới, cộng đồng được mở ngay tại đây');}},
@@ -188,7 +194,7 @@ const ACT={
  remindOpen:()=>{T.remindOpen=true;T.remindDraft={...S.remind,on:true};T.remindPreview=null;T.asstOpen=false;render();},
  remindClose:()=>{T.remindOpen=false;T.remindDraft=null;render();},
  remindLater:()=>{S.remind.asked=true;render();toast('Anh/chị có thể bật nhắc lịch học bất cứ lúc nào ở thẻ chuỗi ngày học');},
- remindSave:()=>{const d=T.remindDraft||S.remind;if(d.on&&!d.email&&!d.zalo){toast('Chọn ít nhất một kênh nhắc: Email hoặc Zalo','bad');return;}S.remind={...d,asked:true};T.remindOpen=false;T.remindDraft=null;render();toast(S.remind.on?`Đã bật nhắc lịch học lúc ${S.remind.time} mỗi ngày`:'Đã tắt nhắc lịch học');},
+ remindSave:()=>{const d=T.remindDraft||S.remind;if(d.on&&!d.email&&!d.zalo){toast('Chọn ít nhất một kênh: Email hoặc Zalo','bad');return;}if(d.on&&!(d.days||[]).length){toast('Chọn ít nhất một ngày trong tuần','bad');return;}S.remind={...d,asked:true};T.remindOpen=false;T.remindDraft=null;render();toast(S.remind.on?`Đã lưu lịch nhắc: ${S.remind.time}, ${daysText(S.remind.days)}`:'Đã tắt nhắc lịch học');},
  remindTest:()=>{const d=T.remindDraft||S.remind;const keep=S.remind;S.remind={...d};const ok=sendReminder(T.remindPreview||remindKind());if(!ok)S.remind=keep;else{S.remind={...d,asked:true};}render();},
  zaloOpen:()=>{T.zaloOpen=true;S.zalo.forEach(m=>m.read=true);T.asstOpen=false;render();},
  zaloClose:()=>{T.zaloOpen=false;render();},
@@ -203,6 +209,14 @@ const ACT={
  goFeedback:()=>{T.focusEl='feedback';go('complete');},
  // Dashboard & chia sẻ
  dashFilter:d=>{T.dashFilter=d.v;render();},
+ jmVer:d=>{T.jmVer=+d.v;render();},
+ // danh sách bài theo chương: mở/thu chương, mở chi tiết 1 bài; ngăn trượt Vì sao / Điều chỉnh
+ cxToggle:d=>{const a=T.cx[d.k]||[],v=+d.v;T.cx[d.k]=a.includes(v)?a.filter(x=>x!==v):[...a,v];render();},
+ lxToggle:d=>{if(T.clAll[d.k]){T.clAll[d.k]=false;T.lx[d.k]=null;}else T.lx[d.k]=T.lx[d.k]===+d.v?null:+d.v;render();},
+ // mở hết chương + chi tiết mọi bài, hoặc thu gọn tất cả
+ clAll:d=>{const on=!T.clAll[d.k];T.clAll[d.k]=on;T.lx[d.k]=null;T.cx[d.k]=on?chapters().map(c=>c.pi):[];render();},
+ drawerOpen:d=>{T.drawer=d.v;T.asstOpen=false;render();if(d.v==='adjust'){const el=document.getElementById('adj-in');if(el)el.focus();}},
+ drawerClose:()=>{T.drawer=null;render();},
  shareOpen:d=>{T.share=d.v;T.shareCap=null;T.asstOpen=false;render();},
  shareClose:()=>{T.share=null;render();},
  shareDownload:async()=>{if(await shareDownload())toast('Đã tải ảnh về máy');},
@@ -276,10 +290,8 @@ const FORMS={
 };
 
 /* ---------- gắn sự kiện ---------- */
-document.addEventListener('click',e=>{if(e.target.classList&&e.target.classList.contains('mail-ov')){T.mailOpen=null;T.share=null;T.remindOpen=false;T.zaloOpen=false;render();return;}const a=e.target.closest('[data-a]');if(!a||a.disabled)return;const fn=ACT[a.dataset.a];if(!fn)return;if(a.tagName!=='INPUT')e.preventDefault();fn(a.dataset,a,e);});
+document.addEventListener('click',e=>{if(e.target.classList&&e.target.classList.contains('mail-ov')){T.mailOpen=null;T.share=null;T.remindOpen=false;T.zaloOpen=false;T.drawer=null;render();return;}const a=e.target.closest('[data-a]');if(!a||a.disabled)return;const fn=ACT[a.dataset.a];if(!fn)return;if(a.tagName!=='INPUT')e.preventDefault();fn(a.dataset,a,e);});
 document.addEventListener('submit',e=>{const f=e.target.closest('[data-f]');if(!f)return;e.preventDefault();const fn=FORMS[f.dataset.f];if(fn)fn(f);});
-// Dashboard: bản đồ hành trình đổi số cột theo bề rộng màn hình
-let rsz;window.addEventListener('resize',()=>{clearTimeout(rsz);rsz=setTimeout(()=>{if(S.screen==='dashboard'&&!T.share)render();},250);});
 // Dashboard: tooltip của biểu đồ khi rê chuột / dùng phím Tab
 ['pointermove','focusin'].forEach(t=>document.addEventListener(t,e=>{if(S.screen==='dashboard')chartTip(e);}));
 window.addEventListener('scroll',()=>{const t=document.getElementById('ch-tip');if(t)t.hidden=true;},{passive:true});
@@ -292,12 +304,23 @@ window.addEventListener('popstate',e=>{
  S.from=st.from||null;S.screen=st.screen;if(st.screen==='lesson'&&st.lesson!==S.lesson){S.lesson=st.lesson;S.unit=null;}
  T.err={};T.draft=null;T.editEx=null;render();landScroll();
 });
+// video: kéo âm lượng, đóng menu cài đặt khi bấm ra ngoài, cập nhật nút khi vào/thoát toàn màn hình
+function vpSync(){const p=document.querySelector('.player');if(!p)return;const c=p.querySelector('.vp-ctl'),fa=document.activeElement&&document.activeElement.dataset&&document.activeElement.dataset.a;
+ if(c){const exp=c.querySelector('[data-a="vpMenu"]').getAttribute('aria-expanded');c.outerHTML=vpControls();p.querySelector('[data-a="vpMenu"]').setAttribute('aria-expanded',exp);if(fa&&fa!=='vpSet'){const b=p.querySelector(`.vp-ctl [data-a="${fa}"]`);if(b)b.focus();}}
+ p.querySelectorAll('.vp-menu [data-k]').forEach(b=>{const k=b.dataset.k,v=k==='speed'?+b.dataset.v:k==='cc'?b.dataset.v==='true':b.dataset.v;b.setAttribute('aria-checked',String(T.vp[k]===v));});
+ const cc=p.querySelector('.vp-cc');if(T.vp.cc&&!cc)p.insertAdjacentHTML('beforeend',`<p class="vp-cc">${esc(p.dataset.title)}</p>`);else if(!T.vp.cc&&cc)cc.remove();
+ const sp=p.querySelector('.vp-speed');if(sp){sp.hidden=T.vp.speed===1;sp.textContent=String(T.vp.speed).replace('.',',')+'×';}}
+const vpCloseMenu=()=>{const m=document.querySelector('.vp-menu:not([hidden])');if(!m)return false;m.hidden=true;const b=document.querySelector('[data-a="vpMenu"]');if(b){b.setAttribute('aria-expanded','false');b.focus();}return true;};
+document.addEventListener('input',e=>{const t=e.target;if(!t.classList||!t.classList.contains('vp-vol'))return;const v=+t.value;T.vp.vol=v;T.vp.muted=v===0;t.style.setProperty('--v',v+'%');t.setAttribute('aria-valuetext',`Âm lượng ${v}%`);const b=t.previousElementSibling;if(b){b.innerHTML=ic(vpVolIc(),19);const l=T.vp.muted?'Bật tiếng':'Tắt tiếng';b.setAttribute('aria-label',l);b.title=l;}});
+document.addEventListener('click',e=>{if(!e.target.closest('.vp-menu,[data-a="vpMenu"]')){const m=document.querySelector('.vp-menu:not([hidden])');if(m){m.hidden=true;const b=document.querySelector('[data-a="vpMenu"]');if(b)b.setAttribute('aria-expanded','false');}}},true);
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&vpCloseMenu())e.stopImmediatePropagation();},true);
+['fullscreenchange','webkitfullscreenchange'].forEach(t=>document.addEventListener(t,vpSync));
 // góp ý: hiện chữ mô tả ngay khi chọn số sao
 document.addEventListener('change',e=>{
  // cài đặt nhắc lịch: cập nhật bản nháp và phần xem trước
- const rk=e.target.dataset&&e.target.dataset.rm;if(rk&&T.remindOpen){if(rk==='preview')T.remindPreview=e.target.value;else T.remindDraft={...(T.remindDraft||S.remind),[rk]:e.target.type==='checkbox'?e.target.checked:e.target.value};render();return;}
+ const rk=e.target.dataset&&e.target.dataset.rm;if(rk&&T.remindOpen){if(rk==='preview')T.remindPreview=e.target.value;else if(rk==='day'){const cur=(T.remindDraft||S.remind).days||[],v=+e.target.value;T.remindDraft={...(T.remindDraft||S.remind),days:e.target.checked?[...new Set([...cur,v])]:cur.filter(x=>x!==v)};}else T.remindDraft={...(T.remindDraft||S.remind),[rk]:e.target.type==='checkbox'?e.target.checked:e.target.value};render();return;}
  const n=e.target.name||'';if(n.startsWith('r_')){const s=document.querySelector(`.star-txt[data-for="${n}"]`);if(s)s.textContent=STAR_LABEL[+e.target.value];const fs=e.target.closest('.fb-q');if(fs)fs.classList.remove('bad');}if(n==='nps'){const fs=e.target.closest('.fb-q');if(fs)fs.classList.remove('bad');}});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&(T.mailOpen||T.share||T.remindOpen||T.zaloOpen)){T.mailOpen=null;T.share=null;T.remindOpen=false;T.zaloOpen=false;render();return;}if(e.key==='Escape'&&T.asstOpen){T.asstOpen=false;render();}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&(T.mailOpen||T.share||T.remindOpen||T.zaloOpen||T.drawer)){T.mailOpen=null;T.share=null;T.remindOpen=false;T.zaloOpen=false;T.drawer=null;render();return;}if(e.key==='Escape'&&T.asstOpen){T.asstOpen=false;render();}});
 
 /* ---------- khởi động ---------- */
 // dọn dữ liệu cũ còn lưu trong trình duyệt từ các phiên bản demo trước

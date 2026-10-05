@@ -18,7 +18,7 @@ function confirmEmail(o,opt={}){
  const invoice=o.invoice
   ?p(`Hóa đơn điện tử (VAT) sẽ được xuất cho <b>${esc(o.invName||o.company||'')}</b>${o.taxId?`, mã số thuế <b>${esc(o.taxId)}</b>`:''} và gửi tới email <b>${esc(o.email)}</b> trong vòng 24 giờ làm việc.`)+p(`Cần điều chỉnh thông tin hóa đơn, anh/chị gửi email tới <a href="mailto:${ACADEMY.billing}" style="color:#1747C9">${ACADEMY.billing}</a> kèm mã đơn <b>${esc(o.code)}</b>.`)
   :p(`Anh/chị chưa yêu cầu xuất hóa đơn công ty. Nếu cần hóa đơn VAT, anh/chị gửi tên công ty, mã số thuế, địa chỉ và mã đơn <b>${esc(o.code)}</b> tới <a href="mailto:${ACADEMY.billing}" style="color:#1747C9">${ACADEMY.billing}</a>.`);
- const html=`<div style="background:#F3F4F6;padding:24px 12px;font-family:'Be Vietnam Pro',Arial,Helvetica,sans-serif;color:#141A26">
+ const html=`<div style="background:#F3F4F6;padding:24px 12px;font-family:Roboto,Arial,Helvetica,sans-serif;color:#141A26">
 <span style="display:none;max-height:0;overflow:hidden;opacity:0">Thanh toán thành công. Khóa AI for CEO đã được kích hoạt, bước tiếp theo là Onboarding để nhận lộ trình cá nhân hóa.</span>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;margin:0 auto;background:#FFFFFF;border:1px solid #E6E8EC;border-radius:12px;border-collapse:separate">
 <tr><td style="padding:24px 32px;border-bottom:1px solid #E6E8EC"><img src="${logo}" alt="${ACADEMY.name}" width="180" style="display:block;height:auto;max-width:180px"></td></tr>

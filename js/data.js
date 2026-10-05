@@ -45,7 +45,13 @@ star:'<path d="M12 2.8l2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.2l-5.6 3 1.1-6.3-4.6-
 flame:'<path d="M12 2c1 3.5 5 5.6 5 10.5A5 5 0 0 1 12 22a5 5 0 0 1-5-5c0-2.4 1.3-3.9 2.5-5 .3 1.6 1.1 2.6 2 3 0-3.5-1-6.3.5-13Z" fill="currentColor" stroke="none"/>',
 thumb:'<path d="M7 10v11H4a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1h3Zm0 0 4-7a2 2 0 0 1 2.9 2.2L13 10h6a2 2 0 0 1 2 2.3l-1.2 7A2 2 0 0 1 17.8 21H7"/>',
 lock:'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
-file:'<path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9l-6-6Z"/><path d="M14 3v6h6M8 13h8M8 17h5"/>'
+file:'<path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9l-6-6Z"/><path d="M14 3v6h6M8 13h8M8 17h5"/>',
+vol:'<path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" fill="currentColor"/><path d="M15.5 9a4.5 4.5 0 0 1 0 6M18.5 6.5a8 8 0 0 1 0 11"/>',
+mute:'<path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" fill="currentColor"/><path d="m16 9.5 5 5M21 9.5l-5 5"/>',
+gear:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/>',
+popout:'<path d="M14 4h6v6M20 4l-8 8"/><path d="M18 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4"/>',
+full:'<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>',
+fullx:'<path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/>'
 };
 const ic=(n,s=18)=>`<svg class="ic" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${I[n]||''}</svg>`;
 
@@ -211,15 +217,15 @@ const SAVE=COURSE.list-COURSE.price, OFF=Math.round(SAVE/COURSE.list*100);
 const TOTAL_MIN=LIB.filter(x=>x.req).reduce((a,x)=>a+x.min,0);
 // Phương thức thanh toán (dùng ở form đăng ký và email xác nhận)
 const PAY_METHODS={qr:"Chuyển khoản QR (VietQR)",vnpay:"VNPay: ATM, ví điện tử",card:"Thẻ Visa/Mastercard",company:"Chuyển khoản công ty theo hóa đơn"};
-// Thông tin Học viện dùng trong email và mục hỗ trợ. Email, hotline, địa chỉ là MINH HỌA, cần thay bằng thông tin thật
+// Thông tin Học viện dùng ở chân trang, email và mục hỗ trợ (hotline, email info, địa chỉ, giờ làm việc lấy theo chân trang website user gửi; email kế toán vẫn là minh họa)
 // Gửi email THẬT qua EmailJS (emailjs.com). Để trống = chỉ gửi vào Hộp thư mô phỏng.
 // Lấy 3 mã trong tài khoản EmailJS: Email Services → Service ID · Email Templates → Template ID · Account → Public Key
 const EMAILJS={serviceId:"",templateId:"",publicKey:""};
-const ACADEMY={name:"Học viện Siêu Tăng Trưởng",sender:"no-reply@sieutangtruong.vn",support:"hotro@sieutangtruong.vn",hotline:"1900 0000",zalo:"Zalo OA Siêu Tăng Trưởng",hours:"8:00–18:00, thứ Hai đến thứ Bảy",web:"sieutangtruong.vn",address:"100 Nguyễn Văn Lượng, Gò Vấp, TP.HCM",billing:"ketoan@sieutangtruong.vn"};
-// Dashboard: bản đồ 10 năng lực AI = Module 02–11 (Module 01 là khởi động, Module 12 là đích đến)
-const CAP_MAP=[{id:"M02",icon:"book",color:"#1747C9"},{id:"M03",icon:"eye",color:"#0E7490"},{id:"M04",icon:"pen",color:"#DB2777"},{id:"M05",icon:"search",color:"#7C3AED"},{id:"M06",icon:"code",color:"#4F46E5"},{id:"M07",icon:"link",color:"#0F766E"},{id:"M08",icon:"zap",color:"#EA580C"},{id:"M09",icon:"bot",color:"#B45309"},{id:"M10",icon:"users",color:"#15803D"},{id:"M11",icon:"shield",color:"#DC2626"}];
+const ACADEMY={name:"Học viện Siêu Tăng Trưởng",sender:"no-reply@sieutangtruong.vn",support:"info@sieutangtruong.com",hotline:"0936 038 739",zalo:"Zalo OA Siêu Tăng Trưởng",hours:"9:00–18:00, thứ Hai đến thứ Sáu",workDays:"Thứ 2 – Thứ 6",workTime:"9:00 – 18:00",web:"sieutangtruong.vn",address:"100 Nguyễn Văn Lượng, Phường Gò Vấp, Hồ Chí Minh",billing:"ketoan@sieutangtruong.vn",footerWeb:"sieutangtruong.com",tagline:"Nền tảng cộng đồng & học tập, giúp bạn áp dụng AI để tăng trưởng kinh doanh nhanh chóng."};
+// Dashboard: Capacity Map 10 năng lực AI = Module 02–11 (màu theo brief ai_for_ceo_ui_redesign.md) (Module 01 là khởi động, Module 12 là đích đến)
+const CAP_MAP=[{id:"M02",icon:"book",color:"#1D4ED8"},{id:"M03",icon:"eye",color:"#0E7490"},{id:"M04",icon:"pen",color:"#DB2777"},{id:"M05",icon:"search",color:"#9333EA"},{id:"M06",icon:"code",color:"#4F46E5"},{id:"M07",icon:"link",color:"#0F766E"},{id:"M08",icon:"zap",color:"#EA580C"},{id:"M09",icon:"bot",color:"#B45309"},{id:"M10",icon:"users",color:"#15803D"},{id:"M11",icon:"shield",color:"#DC2626"}];
 // màu từng chương trên bản đồ hành trình
-const PHASE_COLOR={P1:"#1747C9",P2:"#DB2777",P3:"#7C3AED",P4:"#EA580C",P5:"#15803D"};
+const PHASE_COLOR={P1:"#3874FF",P2:"#7C5CFC",P3:"#18A999",P4:"#EF8426",P5:"#E66AAD"};
 // Góp ý sau khi hoàn thành khóa (đề xuất mới): 5 khía cạnh chấm 1–5 sao + gợi ý nhanh, điểm giới thiệu 0–10, nhận xét mở
 const FEEDBACK_ASPECTS=[
  {k:"course",label:"Khóa học nói chung",hint:"Khóa học đáp ứng kỳ vọng của anh/chị đến đâu",tags:["Đúng nhu cầu của CEO","Đáng thời gian bỏ ra","Mở ra góc nhìn mới","Chưa đủ sâu"]},
