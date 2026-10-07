@@ -147,7 +147,7 @@ function checkout(){
  const steps=['Xác nhận','Thông tin','Thanh toán','Hoàn tất'];const at=st==='success'?3:st?2:1;
  const stepper=`<div class="stepper">${steps.map((s,i)=>`<span class="${i<at?'ok':i===at?'on':''}"><i>${i<at?'✓':i+1}</i>${s}</span>`).join('')}</div>`;
  const summary=`<aside class="card pad sticky"><h3 class="h3" style="margin-bottom:10px">Đơn đăng ký</h3>
-  <div class="sum-row"><span class="k">Chương trình</span><span class="v">AI for CEO · Trọn khóa</span></div>
+  <div class="sum-row"><span class="k">Khóa học</span><span class="v">AI for CEO · Trọn khóa</span></div>
   <div class="sum-row"><span class="k">Học phí</span><span class="v tnum">${money(COURSE.list)}</span></div>
   <div class="sum-row disc"><span class="k">${COURSE.promo}</span><span class="v tnum">−${money(SAVE)}</span></div>
   <div class="sum-row" style="align-items:center"><span class="k">Tổng thanh toán</span><span class="v total tnum">${money(COURSE.price)}</span></div>
@@ -160,7 +160,7 @@ function checkout(){
  else if(st==='success')main=`<div class="card status"><span class="big ok">${ic('check',30)}</span><h3 class="h2" style="font-size:30px">Đăng ký thành công</h3><p class="muted" style="max-width:50ch">Thanh toán đã được ghi nhận và quyền truy cập khóa AI for CEO đã được kích hoạt cho <b>${esc(S.order.email)}</b>.${S.order.invoice?' Hóa đơn điện tử sẽ được xuất theo thông tin công ty đã cung cấp.':''}</p>
   <div style="width:100%;max-width:420px;text-align:left;border-top:1px solid var(--line)"><div class="sum-row"><span class="k">Mã đơn</span><span class="v tnum">${esc(S.order.code)}</span></div><div class="sum-row"><span class="k">Học viên</span><span class="v">${esc(S.order.name)}</span></div><div class="sum-row"><span class="k">Đã thanh toán</span><span class="v tnum">${money(COURSE.price)}</span></div><div class="sum-row"><span class="k">Trạng thái</span><span class="v"><span class="pill ok">Đã kích hoạt</span></span></div></div>
   <button class="btn btn-primary btn-lg" data-a="go" data-to="mycourses">Vào khóa học ${ic('arrow')}</button>
-  ${(cm=>cm?`<p class="hint mail-note">${ic('mail',14)} Email xác nhận đã được gửi tới <b>${esc(S.order.email)}</b>.</p>`:`<p class="hint mail-note">${ic('mail',14)} Đang gửi email xác nhận tới <b>${esc(S.order.email)}</b>…</p>`)(S.mails.find(m=>m.kind==='confirm'&&m.code===S.order.code))}${S.order.invoice?(im=>`<div class="callout info inv-note" role="status"><span class="inv-ico">${ic('file',18)}</span><div><b>${im?'Đã xuất hóa đơn điện tử':'Đang xuất hóa đơn điện tử…'}</b><span>${im?`Hóa đơn số <b>${esc((im.order.inv||{}).no||'')}</b> cho ${esc(S.order.invName||'')} đã được gửi tới <b>${esc(S.order.invEmail)}</b>.`:`Hóa đơn cho ${esc(S.order.invName||'')} sẽ được gửi tới <b>${esc(S.order.invEmail)}</b>.`}</span></div>${im?`<button class="btn btn-line btn-sm" data-a="mailOpen" data-v="${im.id}">Xem email hóa đơn</button>`:''}</div>`)(S.mails.find(m=>m.kind==='invoice'&&!m.sample&&m.code===S.order.code)):''}</div>`;
+  ${(cm=>cm?`<p class="hint mail-note">${ic('mail',14)} Đã gửi 2 email (xác nhận đăng ký, hướng dẫn truy cập khóa học) tới <b>${esc(S.order.email)}</b>${S.order.phone?` và tin nhắn Zalo OA tới <b>${esc(S.order.phone)}</b>`:''}.</p>`:`<p class="hint mail-note">${ic('mail',14)} Đang gửi email xác nhận tới <b>${esc(S.order.email)}</b>…</p>`)(S.mails.find(m=>m.kind==='confirm'&&m.code===S.order.code))}${S.order.invoice?(im=>`<div class="callout info inv-note" role="status"><span class="inv-ico">${ic('file',18)}</span><div><b>${im?'Đã xuất hóa đơn điện tử':'Đang xuất hóa đơn điện tử…'}</b><span>${im?`Hóa đơn số <b>${esc((im.order.inv||{}).no||'')}</b> cho ${esc(S.order.invName||'')} đã được gửi tới <b>${esc(S.order.invEmail)}</b>.`:`Hóa đơn cho ${esc(S.order.invName||'')} sẽ được gửi tới <b>${esc(S.order.invEmail)}</b>.`}</span></div></div>`)(S.mails.find(m=>m.kind==='invoice'&&!m.sample&&m.code===S.order.code)):''}</div>`;
  else main=`<form class="card form" data-f="checkoutSubmit" novalidate>
   <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><h3 class="h3">Thông tin người học</h3></div>
   <div class="row2"><div class="field"><label for="c-name">Họ và tên <span class="req" aria-hidden="true">*</span></label><input class="inp" id="c-name" name="name" value="${esc(o.name)}" required aria-required="true" autocomplete="name"></div><div class="field"><label for="c-phone">Số điện thoại / Zalo <span class="req" aria-hidden="true">*</span></label><input class="inp" id="c-phone" name="phone" type="tel" value="${esc(o.phone)}" required aria-required="true" autocomplete="tel"></div></div>
@@ -204,6 +204,15 @@ function account(){
   ${need?`<div class="callout info"><b>Cần tài khoản để đăng ký khóa học</b><span>Khóa AI for CEO được kích hoạt cho email của tài khoản Học viện.</span></div>`:''}
   <div class="seg ac-tabs" role="tablist" aria-label="Tài khoản"><button role="tab" aria-selected="${tab==='register'}" class="${tab==='register'?'on':''}" data-a="acTab" data-v="register">Tạo tài khoản</button><button role="tab" aria-selected="${tab==='login'}" class="${tab==='login'?'on':''}" data-a="acTab" data-v="login">Đăng nhập</button></div>
   ${tab==='login'?login:reg}</div></section>`;
+}
+
+// Ô "Sự kiện sắp tới" (gộp Live Zoom + Offline): chỉ hiện sự kiện chưa diễn ra, không có thì ẩn cả ô
+const upcomingEvents=()=>EVENTS.filter(e=>new Date(e.end).getTime()>Date.now());
+function eventsCard(){
+ const ev=upcomingEvents();if(!ev.length)return '';
+ return `<div class="card pad ev-card"><b class="ev-h">${ic('cal',16)} Sự kiện sắp tới</b><ul class="ev-list">${ev.map(e=>{const on=!!(S.evReg||{})[e.id];
+  return `<li><span class="ev-ico">${ic(e.icon,16)}</span><div><span class="tag">${e.type}</span><b>${esc(e.title)}</b><span class="hint">${esc(e.when)}</span>
+   <div>${on?`<span class="pill ok">${ic('check',12)} ${e.ok}</span>`:`<button class="btn btn-line btn-sm" data-a="evReg" data-v="${e.id}">${ic(e.actIcon,14)} ${e.act}</button>`}</div></div></li>`;}).join('')}</ul></div>`;
 }
 
 /* ---------- 3. Khóa học của tôi ---------- */
@@ -354,10 +363,9 @@ function learn(){
   <div class="card pad cl-links"><b>Lối tắt</b>
    <button data-a="go" data-to="outputs">${ic('file',16)}<span>Bài tập của tôi</span><small>${subsCount()}/${Object.keys(TASKS).length}</small></button>
    <button data-a="go" data-to="dashboard">${ic('chart',16)}<span>Dashboard</span></button>
-   <button data-a="openCommunity">${ic('users',16)}<span>Cộng đồng</span></button>
+   <button data-a="openCommunity" data-v="aiceo">${ic('users',16)}<span>Cộng đồng</span></button>
    <button data-a="go" data-to="complete">${ic('award',16)}<span>Điều kiện hoàn thành</span></button></div>
-  <div class="card pad cl-ev"><span class="tag">Live Zoom</span><b>${LIVE.title}</b><span class="hint">${LIVE.when}</span><div>${S.liveRemind?`<span class="pill ok">${ic('check',12)} Đã đặt nhắc</span>`:`<button class="btn btn-line btn-sm" data-a="liveRemind">${ic('bell',14)} Nhắc tôi</button>`}</div></div>
-  <div class="card pad cl-ev"><span class="tag">Tùy chọn</span><b>Offline Executive Briefing</b><span class="hint">Nửa ngày · số lượng giới hạn</span><div>${S.offline?`<span class="pill ok">${ic('check',12)} Đã ghi nhận</span>`:`<button class="btn btn-ghost btn-sm" data-a="offline">Quan tâm ${ic('arrow',14)}</button>`}</div></div></aside>`;
+  ${eventsCard()}</aside>`;
  return `<section class="wrap page cl-page"><div class="crumbs"><button data-a="go" data-to="mycourses">Khóa học của tôi</button><span>/</span><span>AI for CEO</span></div>
  ${head}<div class="two"><div style="display:grid;gap:20px;align-content:start">${remindAsk()}${next}
   <section class="cl-sec"><div class="cl-sec-h"><h2 class="h3">Lộ trình của tôi</h2><div class="cl-sec-r"><span class="hint">${chapters().length} chương · ${st.n} bài</span>${clToggleBtn('learn')}</div></div>${courseList('learn')}</section>
@@ -378,22 +386,52 @@ function unitContent(u){
  return `<div class="take"><span class="t">CEO takeaway</span><p class="big">${esc(x.take)}</p><div><b style="font-size:15px">3 câu hỏi mang về công ty</b><ol style="margin-top:8px">${x.qs.map(q=>`<li>${esc(q)}</li>`).join('')}</ol></div><p class="hint">Tiếp theo: bài tập cho công ty.</p></div>`;
 }
 // Bài tập: form nộp (lần đầu / sửa) hoặc kết quả đã nộp + nhận xét
+// Đề bài: lời dẫn + các câu cần trả lời (lấy từ TASKS)
+function exBrief(t){return t.kind==='uc'
+ ?{intro:'Chọn 3 việc trong công ty anh/chị muốn thử giao cho AI trước. Không cần biết cách triển khai. Với mỗi việc, ghi:',items:['Việc muốn AI làm','Phòng ban thực hiện','Năng lực AI sẽ dùng','Vì sao đáng thử: giá trị, dữ liệu sẵn có, ai phụ trách']}
+ :{intro:'Trả lời cho chính công ty của anh/chị.',items:[...t.fields.map(f=>f.label+(f.type==='select'?` (chọn 1: ${f.opts.join(' · ')})`:'')),...(t.linkTask?[t.linkTask]:[])]};}
+const exFileLink=f=>`${ic('file',16)}<span class="nm">${f.data?`<a href="${f.data}" download="${esc(f.name)}">${esc(f.name)}</a>`:esc(f.name)}</span><small>${kb(f.size||0)}</small>`;
+// Kết quả AI chấm: điểm tổng + Đạt/Cần bổ sung, 3 tiêu chí, nhận xét từng câu, điểm tốt / nên bổ sung, câu hỏi cho đội ngũ
+const exScore=v=>String(v).replace('.',',');
+function reviewHTML(id,f){
+ if(f.pending)return `<section class="rv pending" aria-live="polite"><div class="rv-h"><span class="t">${ic('spark',15)} AI đang chấm bài…</span></div><div class="rv-sk" aria-hidden="true"><i></i><i></i><i></i></div></section>`;
+ if(f.score==null)return f.text?`<div class="fb"><span class="t">Nhận xét</span><p>${fmt(f.text)}</p></div>`:'';
+ const t=TASKS[id],qs=t.kind==='uc'?['Use case 1','Use case 2','Use case 3',...(t.linkTask?['Link']:[])]:exBrief(t).items.map((_,i,a)=>'Câu '+(i+1));
+ const QI={link:['link','blue'],ok:['check','ok'],short:['alert','warn'],miss:['x','bad'],file:['clip','blue'],gen:['alert','warn']};
+ return `<section class="rv" aria-live="polite">
+  <div class="rv-h"><div><span class="t">${ic('spark',15)} Kết quả chấm · AI chấm tự động</span><small>Chấm lúc ${esc(f.at||'')}</small></div>
+   <div class="rv-score ${f.pass?'ok':'warn'}"><b class="tnum">${exScore(f.score)}</b><small>/10</small><span class="pill ${f.pass?'ok':'wait'}">${f.pass?'Đạt':'Cần bổ sung'}</span></div></div>
+  <div class="rv-crit">${f.crit.map(c=>`<div class="rv-c"><div class="rv-cl"><b>${esc(c.name)}</b><span>${esc(c.note)}</span></div><span class="rv-bar ${c.score>=7?'ok':c.score>=5?'warn':'bad'}"><i style="width:${c.score*10}%"></i></span><b class="tnum rv-cs">${exScore(c.score)}</b></div>`).join('')}</div>
+  <div class="rv-q"><h5>Nhận xét từng câu</h5><ul>${f.qs.map((q,i)=>{const [icn,cl]=QI[q.st]||QI.ok;return `<li><span class="rv-st ${cl}">${icn==='alert'?'!':ic(icn,12)}</span><b>${qs[i]||'Câu '+(i+1)}</b><span>${esc(q.note)}</span></li>`;}).join('')}</ul></div>
+  <div class="rv-2"><div class="rv-good"><h5>Điểm tốt</h5><ul>${f.good.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>${f.fix.length?`<div class="rv-fix"><h5>Nên bổ sung</h5><ul>${f.fix.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>`:''}</div>
+  ${f.ask?`<p class="rv-ask">${ic('chat',15)}<span><b>Câu hỏi nên hỏi đội ngũ:</b> ${esc(f.ask)}</span></p>`:''}</section>`;}
 function exerciseView(id){
- const t=TASKS[id],s0=S.subs[id],edit=!s0||T.editEx===id;
- // giữ lại những gì học viên đã nhập khi form báo lỗi
- const s=T.draft&&T.draft.id===id?{...(s0||{}),...T.draft,draft:true}:s0;
- const fb=s&&s.feedback?`<div class="fb ${s.feedback.pending?'typing':''}"><span class="t">${s.feedback.pending?'Đang nhận xét…':`Nhận xét ${s.feedback.by==='ai'?'bởi AI':'tự động'} · ${esc(s.feedback.at||'')}`}</span>${s.feedback.text?`<p>${fmt(s.feedback.text)}</p>`:''}</div>`:'';
- if(!edit)return `<div class="ex card"><div class="ex-h"><div><span class="t">Bài tập · Module ${modNo(L[id])}</span><h3 class="h3">${esc(t.title)}</h3></div><span class="pill ok">${ic('check',12)} Đã nộp ${esc(s.at)}${s.v>1?` · lần ${s.v}`:''}</span></div>
-  <div class="ex-out">${t.kind==='uc'?`<div class="tbl-wrap"><table class="uct"><thead><tr><th>Use case</th><th>Phòng ban</th><th>Năng lực AI</th></tr></thead><tbody>${s.rows.map(r=>`<tr><td><b>${esc(r.uc)}</b>${r.why?`<div class="hint">${esc(r.why)}</div>`:''}</td><td>${esc(GOALS[r.dept]||'')}</td><td>${esc(r.cap)}</td></tr>`).join('')}</tbody></table></div>`:t.fields.map(f=>`<div><span class="lab">${esc(f.label)}</span><p>${fmt(s.fields[f.k]||'')}</p></div>`).join('')}
-  ${s.file?`<div class="file">${ic('file',16)} ${s.file.data?`<a href="${s.file.data}" download="${esc(s.file.name)}">${esc(s.file.name)}</a>`:esc(s.file.name)} <span class="hint">${kb(s.file.size)}${s.file.data?'':' · demo chỉ lưu tên tệp lớn hơn 400 KB'}</span></div>`:''}</div>
+ const t=TASKS[id],s0=S.subs[id],edit=!s0||T.editEx===id,b=exBrief(t),m=exMode(t),sl=submitLabel(t),req=k=>m.need.includes(k)?' <span class="req">*</span>':'';
+ const brief=`<section class="ex-brief" aria-labelledby="exb-${id}"><h4 id="exb-${id}">${ic('file',17)} Đề bài</h4><p>${esc(b.intro)}</p><ol>${b.items.map(x=>`<li>${esc(x)}</li>`).join('')}</ol>
+  <dl class="ex-req"><div><dt>${ic('upload',15)} Hình thức nộp</dt><dd>${sl.main}${sl.opt?`<small>${sl.opt}</small>`:''}${t.linkHint&&m.allow.includes('link')?`<small>Link: ${esc(t.linkHint)}</small>`:''}${t.fileHint&&m.allow.includes('file')?`<small>Tệp: ${esc(t.fileHint)}</small>`:''}</dd></div><div><dt>${ic('spark',15)} Cách chấm</dt><dd>AI chấm tự động, thang 10 điểm, từ ${EX_PASS} điểm là Đạt<small>Tiêu chí: ${EX_CRIT.map(c=>c[1]).join(' · ')}. Có nhận xét từng câu.</small></dd></div></dl></section>`;
+ const head=`<div class="ex-h"><div><span class="t">Bài tập · Module ${modNo(L[id])} · khoảng ${t.min} phút</span><h3 class="h3">${esc(t.title)}</h3></div>${s0&&!edit?`<span class="pill ok">${ic('check',12)} Đã nộp ${esc(s0.at)}${s0.v>1?` · lần ${s0.v}`:''}</span>`:s0?'<span class="pill wait">Đang sửa bài đã nộp</span>':''}</div>`;
+ const fb=s0&&s0.feedback&&!edit?reviewHTML(id,s0.feedback):'';
+ if(!edit)return `<div class="ex card">${head}${brief}
+  <section class="ex-ans"><h4>${ic('check',17)} Bài làm của anh/chị</h4>
+   ${(s0.links||[]).length?`<ul class="ex-files ex-links">${s0.links.map(u=>`<li>${ic('link',16)}<span class="nm"><a href="${esc(u)}" target="_blank" rel="noopener noreferrer">${esc(u)}</a></span><small>Mở ↗</small></li>`).join('')}</ul>`:''}
+   ${s0.text?`<div class="ex-text">${fmt(s0.text)}</div>`:''}
+   ${(s0.files||[]).length?`<ul class="ex-files">${s0.files.map(f=>`<li>${exFileLink(f)}${f.data?'':'<small class="hint">demo chỉ lưu tên tệp &gt; 400 KB</small>'}</li>`).join('')}</ul>`:''}</section>
   ${fb}<div class="form-foot"><span class="hint">Bài làm được lưu trong mục "Bài tập của tôi".</span><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-line btn-sm" data-a="editEx" data-v="${id}">Sửa & nộp lại</button><button class="btn btn-ghost btn-sm" data-a="go" data-to="outputs">Xem tất cả bài tập</button></div></div></div>`;
- const body=t.kind==='uc'?(()=>{const rows=(s&&s.rows)||[{},{},{}];return `<div class="uc">${[0,1,2].map(i=>{const r=rows[i]||{};return `<div class="uc-row"><span class="n">${i+1}</span><div class="field"><label for="uc${i}">Use case</label><input class="inp" id="uc${i}" name="uc${i}" value="${esc(r.uc||'')}" placeholder="Việc muốn AI làm"></div><div class="field"><label for="dept${i}">Phòng ban</label><select class="inp" id="dept${i}" name="dept${i}">${Object.entries(GOALS).map(([k,v])=>`<option value="${k}" ${r.dept===k?'selected':''}>${v}</option>`).join('')}</select></div><div class="field"><label for="cap${i}">Năng lực AI</label><select class="inp" id="cap${i}" name="cap${i}">${CAPS.map(c=>`<option ${r.cap===c?'selected':''}>${c}</option>`).join('')}</select></div><div class="field why"><label for="why${i}">Vì sao đáng thử</label><input class="inp" id="why${i}" name="why${i}" value="${esc(r.why||'')}" placeholder="Giá trị, dữ liệu sẵn có, ai phụ trách…"></div></div>`;}).join('')}</div>`;})()
-  :t.fields.map(f=>{const v=s?s.fields[f.k]||'':'';const idf=`ex-${f.k}`;return `<div class="field"><label for="${idf}">${esc(f.label)}</label>${f.type==='select'?`<select class="inp" id="${idf}" name="${f.k}">${f.opts.map(o=>`<option ${o===v?'selected':''}>${esc(o)}</option>`).join('')}</select>`:f.type==='text'?`<input class="inp" id="${idf}" name="${f.k}" value="${esc(v)}">`:`<textarea class="inp" id="${idf}" name="${f.k}" rows="4">${esc(v)}</textarea>`}</div>`;}).join('');
- return `<form class="ex card" data-f="exSubmit" data-id="${id}"><div class="ex-h"><div><span class="t">Bài tập · Module ${modNo(L[id])} · khoảng ${t.min} phút</span><h3 class="h3">${esc(t.title)}</h3><p class="hint" style="margin-top:4px">${t.kind==='uc'?'Không cần biết cách triển khai. Chỉ cần chọn việc gì, ở phòng ban nào, dùng năng lực AI nào, và vì sao.':'Trả lời cho chính công ty của anh/chị. Không có đáp án đúng sai.'}</p></div>${s0?`<span class="pill wait">Đang sửa bài đã nộp</span>`:''}</div>
-  ${body}
-  <div class="field"><label for="ex-file">Đính kèm tệp (không bắt buộc)</label><input class="inp" type="file" id="ex-file" name="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.png,.jpg,.jpeg,.txt">${s0&&s0.file?`<span class="hint">Tệp hiện tại: ${esc(s0.file.name)}. Chọn tệp mới để thay.</span>`:''}</div>
-  ${T.err.ex?`<p class="err">${T.err.ex}</p>`:''}
-  <div class="form-foot"><button type="button" class="btn-link" data-a="exSample" data-v="${id}">Điền gợi ý theo công ty của tôi</button><div style="display:flex;gap:8px">${s0?`<button type="button" class="btn btn-ghost" data-a="cancelEdit">Hủy</button>`:''}<button class="btn btn-primary">${ic('send',15)} ${s0?'Nộp lại':'Nộp bài tập'}</button></div></div></form>`;
+ const text=T.draft&&T.draft.id===id?T.draft.text:(s0&&s0.text)||'',files=exFiles(id),bad=T.err.field==='ex-text',links=exDraftLinks(id);
+ return `<form class="ex card" data-f="exSubmit" data-id="${id}" novalidate>${head}${brief}
+  <section class="ex-ans"><h4>${ic('send',17)} Nộp bài làm</h4>
+   ${m.allow.includes('link')?`<div class="field"><span class="ex-lab"><span class="lab">Link bài làm${req('link')}</span><small class="hint">${t.linkHint?esc(t.linkHint):'Trang web, tài liệu online, video…'}</small></span>
+    <div class="ex-linkl">${links.map((u,i)=>`<div class="ex-link">${ic('link',17)}<input class="inp ex-link-i" id="ex-link${i}" type="url" inputmode="url" autocomplete="url" value="${esc(u)}" placeholder="https://…" aria-label="Link số ${i+1}"${T.err.field==='ex-link'+i?' aria-invalid="true" aria-describedby="ex-err"':''}>${links.length>1?`<button type="button" class="ex-x" data-a="exLinkRm" data-id="${id}" data-v="${i}" aria-label="Bỏ link số ${i+1}" title="Bỏ link">${ic('x',15)}</button>`:''}</div>`).join('')}
+    ${links.length<EX_LINKS?`<button type="button" class="btn-link ex-addl" data-a="exLinkAdd" data-id="${id}">+ Thêm link</button>`:''}</div></div>`:''}
+   ${m.allow.includes('text')?`<div class="field"><div class="ex-lab"><label for="ex-text">Trả lời bằng văn bản${req('text')}</label><button type="button" class="btn-link" data-a="exSample" data-v="${id}">Điền gợi ý theo công ty của tôi</button></div>
+    <textarea class="inp" id="ex-text" name="text" rows="8" placeholder="${t.kind==='uc'?'Use case 1: …&#10;Use case 2: …&#10;Use case 3: …':t.fields.map((_,i)=>`Câu ${i+1}: …`).join('&#10;')}"${bad?' aria-invalid="true" aria-describedby="ex-err"':''}>${esc(text)}</textarea></div>`:''}
+   ${m.allow.includes('file')?`<div class="field"><span class="ex-lab"><span class="lab">Đính kèm tệp từ máy${req('file')}</span><small class="hint">${files.length}/${EX_MAX} tệp</small></span>
+    <button type="button" class="ex-drop${T.err.field==='ex-drop'?' bad':''}" id="ex-drop" data-a="exPick" data-id="${id}"${files.length>=EX_MAX?' disabled':''}>${ic('upload',22)}<span><b>Kéo thả tệp vào đây</b> hoặc <u>chọn tệp từ máy</u></span><small>PDF, Word, Excel, PowerPoint, ảnh · tối đa ${EX_MAX} tệp, mỗi tệp ≤ 20 MB</small></button>
+    <input type="file" id="ex-file" data-id="${id}" multiple hidden accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.png,.jpg,.jpeg,.txt,.csv">
+    ${files.length?`<ul class="ex-files">${files.map((f,i)=>`<li>${exFileLink(f)}<button type="button" class="ex-x" data-a="exFileRm" data-id="${id}" data-v="${i}" aria-label="Bỏ tệp ${esc(f.name)}" title="Bỏ tệp">${ic('x',15)}</button></li>`).join('')}</ul>`:''}</div>`:''}
+   <p class="hint">${sl.main}${sl.opt?' · '+sl.opt.toLowerCase():''}.${m.need.length?' Mục có dấu * là bắt buộc.':''} Nộp xong, AI chấm và nhận xét ngay.</p></section>
+  ${T.err.ex?`<p class="err" id="ex-err" role="alert">${T.err.ex}</p>`:''}
+  <div class="form-foot"><span></span><div style="display:flex;gap:8px">${s0?`<button type="button" class="btn btn-ghost" data-a="cancelEdit">Hủy</button>`:''}<button class="btn btn-primary">${ic('send',15)} ${s0?'Nộp lại':'Nộp bài tập'}</button></div></div></form>`;
 }
 /* ---------- thanh điều khiển video (mô phỏng): âm lượng, cài đặt, cửa sổ riêng, toàn màn hình ----------
    thao tác sửa DOM trực tiếp (vpSync), không render() lại, để không bị thoát toàn màn hình */
@@ -442,7 +480,7 @@ function outputs(){
  <div class="bar" style="max-width:520px;margin-bottom:24px"><i style="width:${Math.round(n/ids.length*100)}%"></i></div>
  <div class="grid g2">${ids.map(id=>{const s=S.subs[id],t=TASKS[id],li=lessonOfUnit('E:'+id);const prev=s?clip(subText(id).replace(/\n+/g,' · '),170):'';
   return `<article class="card pad out" id="out-${id}"><div class="ex-h"><div><span class="t">Module ${modNo(L[id])} · ${esc(L[id].cap)}${li>=0?` · Bài ${li+1}`:''}</span><h3 class="h3">${esc(t.title)}</h3></div>${s?`<span class="pill ok">Đã nộp</span>`:`<span class="pill wait">Chưa nộp</span>`}</div>
-  ${s?`<p class="prev">${esc(prev)}</p><p class="hint">${ic('clock',13)} ${esc(s.at)}${s.v>1?` · nộp lần ${s.v}`:''}${s.file?` · ${ic('file',13)} ${esc(s.file.name)}`:''}${s.feedback&&s.feedback.text?' · có nhận xét':''}</p>`:`<p class="prev muted">Bài tập nằm cuối Module ${modNo(L[id])}${li>=0?`, trong Bài ${li+1} của lộ trình`:''}.</p>`}
+  ${s?`<p class="prev">${esc(prev)}</p><p class="hint">${ic('clock',13)} ${esc(s.at)}${s.v>1?` · nộp lần ${s.v}`:''}${(s.links||[]).length?` · ${ic('link',13)} ${s.links.length} link`:''}${(s.files||[]).length?` · ${ic('clip',13)} ${s.files.length} tệp`:''}${s.feedback&&s.feedback.score!=null?` · <b class="${s.feedback.pass?'ok-t':'warn-t'}">${exScore(s.feedback.score)}/10 ${s.feedback.pass?'Đạt':'Cần bổ sung'}</b>`:''}</p>`:`<p class="prev muted">Bài tập nằm cuối Module ${modNo(L[id])}${li>=0?`, trong Bài ${li+1} của lộ trình`:''}.</p>`}
   <div>${li<0?'':s||lessonOpen(li)?`<button class="btn ${s?'btn-line':'btn-primary'} btn-sm" data-a="openEx" data-v="${id}">${s?'Xem & sửa':'Làm bài tập'} ${ic('arrow',15)}</button>`:`<span class="hint">${ic('lock',13)} Mở khi anh/chị học tới Bài ${li+1}</span>`}</div></article>`;}).join('')}</div>
  </section>`;
 }
@@ -494,14 +532,14 @@ function complete(){
  if(!ok)return `<section class="wrap narrow page">${head}<div class="page-head"><span class="eyebrow">Hoàn thành</span><h2 class="h2">Anh/chị còn thiếu một vài bước</h2><p class="sub">Học hết các bài và nộp đủ bài tập để nhận certificate.</p></div><div style="display:grid;gap:18px">${checkCard}
   ${missing.length?`<article class="card pad"><h3 class="h3" style="margin-bottom:12px">Bài học chưa xong</h3><ul class="promise">${missing.map(i=>lessonOpen(i)?`<li>${ic('arrow')}<button class="btn-link" style="text-align:left" data-a="openLesson" data-v="${i}">Bài ${i+1}: ${esc(lessonTitle(lessons()[i]))}</button></li>`:`<li class="muted">${ic('lock')}<span>Bài ${i+1}: ${esc(lessonTitle(lessons()[i]))}</span></li>`).join('')}</ul></article>`:''}
   <div><button class="btn btn-primary btn-lg" data-a="go" data-to="learn">Tiếp tục học ${ic('arrow')}</button></div></div></section>`;
- const p=S.profile;const rows=S.subs.M12.rows;
+ const p=S.profile;const uc=S.subs.M12||{};
  return `<section class="wrap page">${head}
  <div class="cert-wrap"><canvas id="cert-cv" width="2000" height="1414" role="img" aria-label="Chứng nhận hoàn thành AI for CEO của ${esc(p.name||'')}, mã ${certCode()}"></canvas>
   <div class="cert-act"><button class="btn btn-primary" data-a="certDownload">${ic('download',16)} Tải chứng nhận (PNG)</button><button class="btn btn-line" data-a="certPrint">${ic('file',16)} In / Lưu PDF</button><button class="btn dh-btn-fb solid" data-a="certShare">${ic('fb',16)} Chia sẻ lên Facebook</button><span class="hint">Mã chứng nhận ${certCode()} · cấp ngày ${esc(certDate())}</span></div></div>
  <div style="margin-top:24px">${feedbackSection()}</div>
  <div class="grid g2" style="margin-top:24px;align-items:start">
-  <article class="card pad"><h3 class="h3" style="margin-bottom:12px">3 use case anh/chị chọn</h3><div class="tbl-wrap"><table class="uct"><thead><tr><th>Use case</th><th>Phòng ban</th><th>Năng lực AI</th></tr></thead><tbody>${rows.map(r=>`<tr><td><b>${esc(r.uc)}</b>${r.why?`<div class="hint">${esc(r.why)}</div>`:''}</td><td>${esc(GOALS[r.dept]||'')}</td><td>${esc(r.cap)}</td></tr>`).join('')}</tbody></table></div>
-   <div class="kv" style="margin-top:16px"><div><span>Bài học</span><b class="tnum">${st.lessonsDone}/${st.n}</b></div><div><span>Bài tập đã nộp</span><b class="tnum">${subsCount()}/${Object.keys(TASKS).length}</b></div><div><span>Thời gian học</span><b class="tnum">${hours(st.min)} giờ</b></div></div>
+  <article class="card pad"><h3 class="h3" style="margin-bottom:12px">3 use case anh/chị chọn</h3>${uc.text?`<div class="ex-text">${fmt(uc.text)}</div>`:''}${(uc.files||[]).length?`<ul class="ex-files">${uc.files.map(f=>`<li>${exFileLink(f)}</li>`).join('')}</ul>`:''}
+   <div class="kv" style="margin-top:16px"><div><span>Bài học</span><b class="tnum">${st.lessonsDone}/${st.n}</b></div><div><span>Bài tập đã nộp</span><b class="tnum">${subsCount()}/${Object.keys(TASKS).length}</b></div><div><span>Thời gian học</span><b class="tnum">${dashStats().studyDays} ngày</b></div></div>
    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px"><button class="btn btn-line btn-sm" data-a="go" data-to="outputs">${ic('file',15)} Xem bộ bài tập</button><button class="btn btn-line btn-sm" data-a="go" data-to="dashboard">${ic('map',15)} Xem bản đồ hành trình</button></div></article>
   <div style="display:grid;gap:16px">${checkCard}
    <article class="card pad event"><span class="tag">Live Zoom tiếp theo</span><h3>${LIVE.title}</h3><p>${LIVE.when}. Học viên đã hoàn thành vẫn tham gia các buổi cập nhật hằng tháng.</p><div>${S.liveRemind?`<span class="pill ok">${ic('check',12)} Đã đặt nhắc lịch</span>`:`<button class="btn btn-line btn-sm" data-a="liveRemind">${ic('bell',15)} Nhắc tôi</button>`}</div></article></div>
@@ -509,7 +547,7 @@ function complete(){
  <div class="bigq" style="margin-top:24px"><span>Câu hỏi mở cho chặng tiếp theo</span><p>"Nếu AI đã có những năng lực này, doanh nghiệp của tôi nên được thiết kế lại như thế nào?"</p></div>
  <div style="margin-top:24px">${secHead('Khi anh/chị sẵn sàng','Hành trình tiếp theo trong hệ sinh thái','Không bắt buộc. Mỗi bước giúp đi từ "hiểu" sang "áp dụng".')}
   <div class="eco">${[['Academy','Hiểu AI đang làm được gì',true],['CEO Self-reflection','Doanh nghiệp mình có cơ hội ở đâu?'],['DX Check-up / Blueprint','Map doanh nghiệp, xác định bài toán và ưu tiên'],['BlueBolt Software','Thiết kế, triển khai hệ thống AI và automation']].map(([t,d,h])=>`<div class="${h?'here':''}"><b>${t}${h?' · Anh/chị đang ở đây':''}</b><p>${d}</p></div>`).join('')}</div></div>
- <div class="grid g2" style="margin-top:16px"><article class="card pad" style="display:grid;gap:10px;align-content:start"><h3 class="h3">CEO AI Community</h3><p class="muted">Trao đổi use case, case study và kinh nghiệm với các CEO khác.</p><div><button class="btn btn-line" data-a="openCommunity">${ic('users',16)} Vào cộng đồng</button></div></article>
+ <div class="grid g2" style="margin-top:16px"><article class="card pad" style="display:grid;gap:10px;align-content:start"><h3 class="h3">CEO AI Community</h3><p class="muted">Trao đổi use case, case study và kinh nghiệm với các CEO khác.</p><div><button class="btn btn-line" data-a="openCommunity" data-v="aiceo">${ic('users',16)} Vào cộng đồng</button></div></article>
  <article class="card pad" style="display:grid;gap:10px;align-content:start"><h3 class="h3">Offline Executive Briefing</h3><p class="muted">Xem demo live và thảo luận 3 use case của anh/chị cùng chuyên gia.</p><div>${S.offline?`<span class="pill ok">${ic('check',12)} Đã ghi nhận quan tâm</span>`:`<button class="btn btn-line" data-a="offline">Đăng ký quan tâm</button>`}</div></article></div>
  </section>`;
 }

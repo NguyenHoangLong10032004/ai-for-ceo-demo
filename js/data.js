@@ -29,6 +29,7 @@ chev:'<path d="m9 6 6 6-6 6"/>',
 bot:'<rect x="4" y="8" width="16" height="12" rx="3.5"/><path d="M12 8V5"/><circle cx="12" cy="3.5" r="1.5"/><circle cx="9" cy="14" r="1.3" fill="currentColor" stroke="none"/><circle cx="15" cy="14" r="1.3" fill="currentColor" stroke="none"/><path d="M2 12.5v3M22 12.5v3"/>',
 mail:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>',
 eye:'<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/>',
+image:'<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-9 9"/>',
 eyeoff:'<path d="M10.6 5.1A10.6 10.6 0 0 1 12 5c6.4 0 10 7 10 7a17.6 17.6 0 0 1-2.7 3.6M6.6 6.6A17.5 17.5 0 0 0 2 12s3.6 7 10 7a9.9 9.9 0 0 0 5.4-1.6"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2M3 3l18 18"/>',
 pen:'<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>',
 search:'<circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/>',
@@ -40,6 +41,8 @@ map:'<path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2Z"/><path d="M9 4v14M15 6v14"/>'
 chart:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
 flag:'<path d="M5 21V4M5 4h11l-2 4 2 4H5"/>',
 download:'<path d="M12 4v11M7 10l5 5 5-5M5 20h14"/>',
+upload:'<path d="M12 15V4M7 9l5-5 5 5M5 20h14"/>',
+clip:'<path d="m21 11-8.6 8.6a5 5 0 0 1-7-7L14 4a3.4 3.4 0 0 1 4.9 4.9l-8.6 8.6a1.8 1.8 0 0 1-2.6-2.6L15.4 7"/>',
 share:'<circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="m8.2 10.8 7.6-4.4M8.2 13.2l7.6 4.4"/>',
 fb:'<path d="M14 8h3V4h-3a4 4 0 0 0-4 4v3H7v4h3v7h4v-7h3l1-4h-4V8Z" fill="currentColor" stroke="none"/>',
 star:'<path d="M12 2.8l2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.2l-5.6 3 1.1-6.3-4.6-4.4 6.3-.9L12 2.8Z" fill="currentColor" stroke="none"/>',
@@ -180,7 +183,7 @@ const LIB=[
 /* ---------- bài tập: mỗi module 1 bài, nằm ngay sau video D của module ---------- */
 const G=p=>(IND[p.industry]||IND['Khác']);
 const TASKS={
- M01:{title:'Công ty mình đang ở nấc nào?',min:3,fields:[{k:'level',label:'Công ty anh/chị đang dùng AI ở nấc nào?',type:'select',opts:['Chưa dùng AI','Chatbot trả lời câu hỏi','AI đa phương thức (đọc file, ảnh, giọng nói)','AI suy luận, phân tích nhiều bước','AI agent tự thực hiện công việc']},{k:'note',label:'Một việc cụ thể công ty đang dùng AI, hoặc nên dùng nhưng chưa dùng',type:'textarea'}],
+ M01:{title:'Công ty mình đang ở nấc nào?',min:3,submit:['text'],fields:[{k:'level',label:'Công ty anh/chị đang dùng AI ở nấc nào?',type:'select',opts:['Chưa dùng AI','Chatbot trả lời câu hỏi','AI đa phương thức (đọc file, ảnh, giọng nói)','AI suy luận, phân tích nhiều bước','AI agent tự thực hiện công việc']},{k:'note',label:'Một việc cụ thể công ty đang dùng AI, hoặc nên dùng nhưng chưa dùng',type:'textarea'}],
   sample:p=>({level:'Chatbot trả lời câu hỏi',note:`Một vài nhân viên dùng chatbot để viết nội dung, nhưng chưa ai dùng AI cho việc ${G(p).general}.`})},
  M02:{title:'Tài liệu nào AI nên đọc trước?',min:3,fields:[{k:'docs',label:'3 bộ tài liệu nội bộ anh/chị muốn AI đọc và trả lời câu hỏi trước',type:'textarea'},{k:'never',label:'Tài liệu nào tuyệt đối không đưa cho AI?',type:'text'}],
   sample:()=>({docs:'1. Chính sách giá và chiết khấu đại lý\n2. SOP bán hàng và CSKH\n3. Hợp đồng với 20 khách hàng lớn nhất',never:'Bảng lương, hồ sơ nhân sự, dữ liệu cá nhân khách hàng'})},
@@ -190,7 +193,7 @@ const TASKS={
   sample:()=>({cost:'Ảnh và bài đăng cho sản phẩm mới mỗi tháng, video ngắn cho quảng cáo; hiện thuê ngoài khoảng 30 triệu mỗi tháng.',review:'Trưởng phòng Marketing'})},
  M05:{title:'Câu hỏi kinh doanh hằng tuần',min:3,fields:[{k:'q',label:'Câu hỏi kinh doanh anh/chị muốn có câu trả lời mỗi tuần',type:'text'},{k:'data',label:'Dữ liệu để trả lời câu hỏi đó đang nằm ở đâu? Ai kiểm chứng kết luận?',type:'textarea'}],
   sample:()=>({q:'Vì sao doanh thu tuần này tăng hoặc giảm so với tuần trước, theo từng kênh?',data:'Dữ liệu bán hàng trên phần mềm POS, chi phí quảng cáo trên Meta Ads. Kế toán trưởng kiểm chứng.'})},
- M06:{title:'Công cụ nội bộ muốn AI xây thử',min:3,fields:[{k:'tool',label:'Mô tả bằng lời một công cụ nội bộ anh/chị muốn AI xây thử: ai dùng, để làm gì, hiển thị gì',type:'textarea'}],
+ M06:{title:'Công cụ nội bộ muốn AI xây thử',min:3,submit:['text','link'],linkTask:'Dùng một công cụ AI dựng thử bản nháp của công cụ này (trang web, ứng dụng hoặc dashboard) và nộp link xem được',linkHint:'Bản dựng thử, ví dụ trang web hoặc dashboard',fileHint:'Ảnh chụp màn hình hoặc bản phác thảo (nếu có)',fields:[{k:'tool',label:'Mô tả bằng lời một công cụ nội bộ anh/chị muốn AI xây thử: ai dùng, để làm gì, hiển thị gì',type:'textarea'}],
   sample:()=>({tool:'Trang dashboard cho ban giám đốc xem doanh số theo chi nhánh mỗi sáng: doanh thu hôm qua, so với cùng kỳ, 5 sản phẩm bán chạy, chi nhánh cần chú ý.'})},
  M07:{title:'Hệ thống nào AI được kết nối?',min:3,fields:[{k:'systems',label:'Liệt kê các hệ thống đang chứa dữ liệu công ty (CRM, quảng cáo, Drive, phần mềm kế toán…)',type:'textarea'},{k:'perm',label:'Anh/chị cho phép AI làm gì với các hệ thống này?',type:'select',opts:['Chỉ đọc dữ liệu','Đọc và tạo bản nháp, người duyệt mới gửi','Đọc và được phép cập nhật dữ liệu']}],
   sample:()=>({systems:'CRM (khách hàng, đơn hàng), Meta Ads và Google Ads, Google Drive (tài liệu), phần mềm kế toán.',perm:'Đọc và tạo bản nháp, người duyệt mới gửi'})},
@@ -204,6 +207,20 @@ const TASKS={
   sample:()=>({never:'1. Tuyển hoặc cho nghỉ việc nhân sự\n2. Duyệt chi và ký hợp đồng\n3. Trả lời khiếu nại nghiêm trọng của khách',rule:'Mọi số liệu AI tạo ra phải có người kiểm tra trước khi gửi ra ngoài công ty.'})},
  M12:{title:'Chọn 3 use case đáng thử nhất',min:5,kind:'uc'}
 };
+/* Hình thức nộp bài: do Admin quy định cho từng bài tập (đề bài ghi rõ). Mọi phần có trong hình thức nộp đều BẮT BUỘC.
+   submit = mảng các phần: 'text' (nhập văn bản) · 'file' (đính kèm tệp) · 'link' (dán link), vd. ['text','file'] = phải nộp cả văn bản và tệp.
+   Chưa đặt thì mặc định ['text','file']. linkTask = câu yêu cầu nộp link (thêm vào đề bài), linkHint / fileHint = gợi ý dưới ô link / tệp
+   AI chấm tự động mọi bài nộp theo 3 tiêu chí EX_CRIT, thang 10 điểm, từ 6 điểm là Đạt; kèm nhận xét từng câu */
+const SUBMIT_DEFAULT=['text','file'];
+const EX_PART={text:'nhập văn bản',file:'đính kèm tệp',link:'dán link'};
+const exMode=t=>{let p=t.submit||SUBMIT_DEFAULT;if(typeof p==='string')p=p==='both'||p==='any'?SUBMIT_DEFAULT:[p];else if(!Array.isArray(p))p=[...new Set([...(p.need||[]),...(p.allow||[])])];p=['text','file','link'].filter(k=>p.includes(k));return {allow:p,need:p,one:false};};
+const joinVi=(a,w)=>a.length<2?a.join(''):a.slice(0,-1).join(', ')+' '+w+' '+a[a.length-1];
+const capVi=x=>x.charAt(0).toUpperCase()+x.slice(1);
+// nhãn hình thức nộp, vd. "Nhập văn bản và đính kèm tệp" (tất cả đều bắt buộc)
+function submitLabel(t){const m=exMode(t);return {main:capVi(joinVi(m.need.map(k=>EX_PART[k]),'và')),opt:''};}
+const EX_LINKS=3;
+const EX_CRIT=[['full','Trả lời đủ yêu cầu'],['spec','Cụ thể cho công ty'],['act','Áp dụng được']];
+const EX_PASS=6;
 // Thời lượng module = 4 video + bài tập
 LIB.forEach(x=>{if(x.type==='module')x.min=x.parts.reduce((a,b)=>a+b,0)+TASKS[x.id].min;});
 const L=Object.fromEntries(LIB.map(x=>[x.id,x]));
@@ -236,6 +253,12 @@ const FEEDBACK_ASPECTS=[
  {k:"exp",label:"Trải nghiệm tổng thể",hint:"Từ lúc đăng ký, onboarding đến khi hoàn thành",tags:["Đăng ký thuận tiện","Onboarding nhanh gọn","Có động lực học mỗi ngày","Muốn học tiếp khóa khác"]}];
 const STAR_LABEL=["","Rất không hài lòng","Chưa hài lòng","Bình thường","Hài lòng","Rất hài lòng"];
 const LIVE={title:'AI đến đâu rồi? · Tháng 10/2026',when:'20:00, thứ Năm 15/10/2026',len:'75 phút · Zoom'};
+/* Sự kiện của khóa (trang Khóa học, ô "Sự kiện sắp tới"): chỉ hiện sự kiện chưa diễn ra (end > hiện tại);
+   không còn sự kiện nào thì ẩn cả ô. Hệ thống thật: Admin tạo/sửa sự kiện. act = nhãn nút, ok = nhãn sau khi bấm */
+const EVENTS=[
+ {id:'live-2610',type:'Live Zoom',icon:'video',title:LIVE.title,when:LIVE.when,end:'2026-10-15T21:15',act:'Nhắc tôi',actIcon:'bell',ok:'Đã đặt nhắc'},
+ {id:'off-2611',type:'Offline',icon:'users',title:'Offline Executive Briefing',when:'Sáng thứ Bảy 14/11/2026 · TP.HCM · số lượng giới hạn',end:'2026-11-14T12:00',act:'Quan tâm',actIcon:'star',ok:'Đã ghi nhận'}
+];
 
 /* ---------- cấu hình lộ trình & demo ---------- */
 const PACES=[20,30,60];   // số phút mỗi ngày học được chọn

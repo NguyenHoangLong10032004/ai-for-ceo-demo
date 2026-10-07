@@ -32,7 +32,9 @@ function dashStats(){
  const ahead=st.lessonsDone-elapsed; // >0: nhanh hơn kế hoạch
  const allDone=st.lessonsDone===N;const lastAt=allDone?Math.max(...ls.map((_,i)=>lessonDoneAt(i)||0)):0;
  const took=allDone&&lastAt?Math.round((dayStart(lastAt)-start)/DAY)+1:null;
- return {...st,N,minDone,minAll,caps,subs:subsCount(),start,end,ahead,allDone,took};
+ // số ngày thực học: số ngày khác nhau có học ít nhất 1 phần, tính từ lúc bắt đầu đến khi hoàn thành
+ const studyDays=new Set(Object.values(S.doneAt||{}).map(dayStart)).size;
+ return {...st,N,minDone,minAll,caps,subs:subsCount(),start,end,ahead,allDone,took,studyDays};
 }
 const hm=m=>m>=60?`${Math.floor(m/60)} giờ${m%60?` ${m%60} phút`:''}`:`${m} phút`;
 // lời động viên theo tiến độ
@@ -48,6 +50,9 @@ function cheer(p){
 const capLevel=pc=>pc>=100?'Thành thạo':pc>=50?'Đã hình thành':pc>0?'Đang phát triển':'Chưa bắt đầu';
 // số bài học có chứa nội dung của 1 module
 const capLessons=id=>lessons().filter(ks=>ks.some(k=>U(k).id===id)).length;
+// thời gian thực học (phút) của một nhóm phần; hiển thị phút/giờ
+const spentOf=keys=>keys.reduce((t,k)=>t+((S.spent||{})[k]||0),0);
+const fmtMin=m=>{m=Math.round(m);return m>=60?hmShort(m):m+'′';};
 const hmShort=m=>m>=60?`${Math.floor(m/60)}h ${String(m%60).padStart(2,'0')}m`:`${m}m`;
 // chuỗi ngày học dài nhất từ trước đến nay
 function bestStreak(){const days=[...new Set(Object.values(S.doneAt||{}).map(dayStart))].sort((a,b)=>a-b);let best=0,run=0,prev=null;days.forEach(d=>{run=prev!==null&&Math.round((d-prev)/DAY)===1?run+1:1;best=Math.max(best,run);prev=d;});return best;}
@@ -73,11 +78,11 @@ function dashboard(){
  const hero=`<section class="dh-hero">
   <div class="dh-ring"><svg width="116" height="116" viewBox="0 0 116 116" aria-hidden="true"><defs><linearGradient id="dh-rg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3874FF"/><stop offset="1" stop-color="#7C5CFC"/></linearGradient></defs><circle cx="58" cy="58" r="46" fill="none" stroke="var(--blue-soft)" stroke-width="12"/><circle cx="58" cy="58" r="46" fill="none" stroke="url(#dh-rg)" stroke-width="12" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C*(1-p/100)}" transform="rotate(-90 58 58)"/></svg><div><b>${p}%</b><span>hành trình</span></div></div>
   <div class="dh-intro"><h1>Chào anh/chị ${esc(firstName())} 👋</h1><p>Anh/chị đã hoàn thành <b>${p}% hành trình</b>.</p>
-   <div class="dh-tags"><span class="dh-tag">${pace}</span>${s.streak?`<span class="dh-tag y">${ic('flame',14)} ${s.streak} ngày liên tiếp</span>`:''}<span class="dh-tag">${ic('flag',14)} ${d.allDone?'Đã về đích':'Về đích '+fmtShort(d.end)}</span></div></div>
+   <div class="dh-tags"><span class="dh-tag">${ic('flag',14)} ${d.allDone?'Đã về đích':'Về đích '+fmtShort(d.end)}</span></div></div>
   <div class="dh-cta">${ni>=0?`<button class="btn btn-primary btn-lg" data-a="openLesson" data-v="${ni}">Học tiếp ${ic('arrow',16)}</button>`:`<button class="btn btn-primary btn-lg" data-a="go" data-to="complete">Nhận chứng nhận ${ic('arrow',16)}</button>`}<button class="btn btn-accent" data-a="shareOpen" data-v="dash">${ic('share',15)} Chia sẻ Dashboard</button></div>
  </section>`;
  // 2. 4 thẻ số liệu
- const cards=[['chart','Tiến độ',`${p}%`,p/100,'var(--blue)'],['check','Bài hoàn thành',`${d.lessonsDone}/${d.N}`,d.lessonsDone/d.N,'var(--green)'],['spark','Năng lực mở khóa',`${d.caps}/${CAP_MAP.length}`,d.caps/CAP_MAP.length,'var(--teal)'],['clock','Thời gian học',hmShort(d.minDone),d.minAll?d.minDone/d.minAll:0,'var(--orange)']];
+ const cards=[['chart','Tiến độ',`${p}%`,p/100,'var(--blue)'],['check','Bài hoàn thành',`${d.lessonsDone}/${d.N}`,d.lessonsDone/d.N,'var(--green)'],['spark','Năng lực AI',`${d.caps}/${CAP_MAP.length}`,d.caps/CAP_MAP.length,'var(--teal)'],['clock','Thời gian học',`${d.studyDays} ngày`,d.N?Math.min(1,d.studyDays/d.N):0,'var(--orange)']];
  const cardHTML=`<div class="dh-kpis">${cards.map(([i,l,v,f,c])=>`<div class="dh-kpi" style="--c:${c}"><span class="ico">${ic(i,18)}</span><b>${v}</b><span>${l}</span><i class="meter"><i style="width:${Math.round(f*100)}%"></i></i></div>`).join('')}</div>`;
  // 4. Capacity Map: 10 thẻ năng lực
  const capHTML=`<section class="card pad dh-sec"><div class="dh-sec-h"><div><span class="eyebrow">Bản đồ năng lực</span><h2 class="h3">${CAP_MAP.length} năng lực AI anh/chị đang chinh phục</h2></div><span class="dh-big">${d.caps}<small>/${CAP_MAP.length}</small></span></div>
@@ -86,13 +91,13 @@ function dashboard(){
    return `<div class="cap ${pc>=100?"done":pc>0?"doing":locked?"locked":"ready"}" style="--c:${c.color}" title="${esc(capLevel(pc)+" · "+capLessons(c.id)+" bài liên quan")}"><div class="cap-top"><span class="cap-ico">${ic(locked?"lock":c.icon,16)}</span><b>${esc(x.cap)}</b><span class="cap-no">${capNo(ci)}</span></div>
     <span class="cap-st">${st}</span>${pc>0?`<i class="meter"><i style="width:${pc}%"></i></i>`:""}</div>`;}).join("")}</div></div></section>`;
  // 5. Journey roadmap theo chương
- const jHTML=`<section class="card pad dh-sec"><div class="dh-sec-h"><div><h2 class="h3">Bản đồ hành trình</h2><p class="hint">Đi từ dưới lên, mỗi điểm là một bài học.</p></div><div class="j-head-r"><div class="seg" role="group" aria-label="Kiểu bản đồ">${J_VERS.map(([k,l])=>`<button class="${(T.jmVer||1)===k?"on":""}" data-a="jmVer" data-v="${k}" aria-pressed="${(T.jmVer||1)===k}">Kiểu ${k} · ${l}</button>`).join("")}</div><button class="btn btn-accent" data-a="shareOpen" data-v="journey">${ic("share",15)} Chia sẻ Hành trình</button></div></div>${journeyHTML()}</section>`;
+ const jHTML=`<section class="card pad dh-sec"><div class="dh-sec-h"><div><span class="eyebrow">Bản đồ hành trình</span><h2 class="h3">Chặng đường anh/chị đã đi qua</h2></div><div class="j-head-r"><div class="seg" role="group" aria-label="Kiểu bản đồ">${J_VERS.map(([k,l])=>`<button class="${(T.jmVer||1)===k?"on":""}" data-a="jmVer" data-v="${k}" aria-pressed="${(T.jmVer||1)===k}">Kiểu ${k} · ${l}</button>`).join("")}</div><button class="btn btn-accent" data-a="shareOpen" data-v="journey">${ic("share",15)} Chia sẻ Hành trình</button></div></div>${journeyHTML()}</section>`;
  // 6. danh sách bài học + bài tập
  const workHTML=`<section class="card pad dh-sec"><div class="dh-sec-h"><h2 class="h3">Bài học & bài tập</h2>
   <div class="seg dh-seg" role="group" aria-label="Lọc">${[['all','Tất cả'],['done','Đã hoàn thành'],['todo','Chưa hoàn thành']].map(([k,l])=>`<button class="${(T.dashFilter||'all')===k?'on':''}" data-a="dashFilter" data-v="${k}">${l}</button>`).join('')}</div></div>${workList()}</section>`;
  const ask=d.allDone&&!S.feedback?`<div class="callout info fb-ask"><span class="fb-ask-ico">${ic('star',20)}</span><div><b>Góp ý về khóa học</b><span>2 phút để Học viện làm tốt hơn.</span></div><button class="btn btn-primary btn-sm" data-a="goFeedback">Góp ý ${ic('arrow',15)}</button></div>`:'';
  const demo=`<div class="demo-box"><span class="t">Công cụ demo</span><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-line btn-sm" data-a="simulateHalf">Mô phỏng: học một nửa</button><button class="btn btn-line btn-sm" data-a="simulateAll" data-v="dash">Mô phỏng: học xong</button></div></div>`;
- return `<section class="wrap page dash">${head}${hero}${ask}${cardHTML}${capHTML}${jHTML}${chartsHTML(d)}${workHTML}${demo}</section>`;
+ return `<section class="wrap page dash">${head}${hero}${ask}${cardHTML}${capHTML}${chartsHTML(d)}${jHTML}${demo}</section>`;
 }
 // biểu đồ radar 10 năng lực (1 chuỗi: mức hoàn thành của học viên)
 function radar(){
@@ -131,7 +136,7 @@ function workList(){
 
 /* ---------- biểu đồ (SVG tự vẽ, có tooltip khi rê chuột / focus bàn phím) ---------- */
 // màu: bài học = xanh, bài tập = hồng, thời gian = cam (khớp 4 chỉ số)
-const CH={lesson:'#22A06B',doing:'#A3DCC2',ex:'#22A06B',time:'#EF8426'};
+const CH={lesson:'#22A06B',doing:'#A3DCC2',ex:'#DB2777',time:'#EF8426'};
 const tip=(...lines)=>esc(lines.filter(Boolean).join('|'));
 // Biểu đồ vòng: phần trăm đã xong (ở giữa) + các phần, cách nhau 2px
 function donut(parts,total,center,sub){
@@ -150,31 +155,32 @@ function chartDonuts(d){
    ${donut([{v:d.subs,c:CH.ex,l:'Đã nộp'},{v:nt-d.subs,c:'transparent',l:'Chưa nộp'}],nt,Math.round(d.subs/nt*100)+'%','đã nộp')}
    ${legend([[CH.ex,`Đã nộp · ${d.subs}`],['var(--bg-2)',`Chưa nộp · ${nt-d.subs}`]])}</div>`;
 }
-// 3. Cột: thời gian học của từng bài; xanh = đã hoàn thành, xanh nhạt = đang học, xám = chưa học
+// 3. Cột: thời gian thực học (phút) của từng bài; bài chưa học hiện thời lượng dự kiến (xám)
 function chartLessonTime(){
- const ls=lessons(),N=ls.length,ni=nextLesson(),W=1000,H=200,m={l:40,r:6,t:14,b:28},iw=W-m.l-m.r,ih=H-m.t-m.b;
- const mins=ls.map(ks=>lessonMin(ks)),max=Math.ceil(Math.max(...mins)/10)*10,band=iw/N,bw=Math.min(24,band-2);
+ const ls=lessons(),N=ls.length,ni=nextLesson(),W=1000,H=200,m={l:44,r:6,t:14,b:28},iw=W-m.l-m.r,ih=H-m.t-m.b;
+ const act=ls.map(ks=>spentOf(ks)),val=act;
+ const max=Math.max(10,Math.ceil(Math.max(...val)/10)*10),band=iw/N,bw=Math.max(8,Math.min(100,band*.72));
  const Y=v=>m.t+ih-(v/max)*ih,every=N<=15?1:N<=30?3:5;
- const bars=ls.map((ks,i)=>{const done=lessonDone(i),cur=i===ni,at=lessonDoneAt(i),diff=at?Math.round((dayStart(at)-planDay(i))/DAY):null;
-  const x=m.l+i*band+(band-bw)/2,y=Y(mins[i]),h=m.t+ih-y,c=done?CH.lesson:cur?CH.doing:'var(--line-2)';
-  const t=tip(`Bài ${i+1} · ${lessonTitle(ks,i,ls)}`,`${mins[i]} phút`,done?`Hoàn thành ${at?fmtShort(at)+(diff===0?' · đúng hạn':diff<0?` · sớm ${-diff} ngày`:` · trễ ${diff} ngày`):''}`:cur?'Đang học':'Chưa học');
-  return `<path d="M${x},${m.t+ih}V${y+4}a4,4 0 0 1 4,-4h${bw-8}a4,4 0 0 1 4,4V${m.t+ih}Z" fill="${c}"/><rect class="ch-hit" x="${m.l+i*band}" y="${m.t}" width="${band}" height="${ih}" fill="transparent" tabindex="0" data-tip="${t}"/>${i%every===0||i===N-1?`<text x="${x+bw/2}" y="${H-8}" text-anchor="middle" class="ch-ax">${i+1}</text>`:''}`;}).join('');
- return `<div class="ch-card wide"><h3 class="ch-t">Thời gian học từng bài</h3><p class="ch-s">Số phút mỗi bài.</p>
-  <div class="ch-wrap"><svg viewBox="0 0 ${W} ${H}" class="ch-svg" role="img" aria-label="Thời gian học từng bài">
+ const bars=ls.map((ks,i)=>{const done=lessonDone(i),cur=i===ni,at=lessonDoneAt(i);
+  const x=m.l+i*band+(band-bw)/2,y=Math.min(Y(val[i]),m.t+ih-(val[i]>0?6:0)),c=done?CH.lesson:cur?CH.doing:'var(--line-2)';
+  const t=tip(`Bài ${i+1} · ${lessonTitle(ks,i,ls)}`,done||act[i]>0?`Thực học ${fmtMin(act[i])}`:'Chưa học',done?`Hoàn thành ${at?fmtShort(at):''}`:cur?'Đang học':'');
+  return `${val[i]>0?`<path d="M${x},${m.t+ih}V${y+4}a4,4 0 0 1 4,-4h${bw-8}a4,4 0 0 1 4,4V${m.t+ih}Z" fill="${c}"/>`:''}<rect class="ch-hit" x="${m.l+i*band}" y="${m.t}" width="${band}" height="${ih}" fill="transparent" tabindex="0" data-tip="${t}"/>${i%every===0||i===N-1?`<text x="${x+bw/2}" y="${H-8}" text-anchor="middle" class="ch-ax">${i+1}</text>`:''}`;}).join('');
+ return `<div class="ch-card wide"><h3 class="ch-t">Thời gian học từng bài</h3><p class="ch-s">Số phút thực học mỗi bài.</p>
+  <div class="ch-wrap"><svg viewBox="0 0 ${W} ${H}" class="ch-svg" role="img" aria-label="Thời gian thực học từng bài">
    ${[0,max/2,max].map(v=>`<line x1="${m.l}" x2="${m.l+iw}" y1="${Y(v)}" y2="${Y(v)}" class="ch-grid"/><text x="${m.l-8}" y="${Y(v)+4}" text-anchor="end" class="ch-ax">${v}′</text>`).join('')}${bars}
-  </svg></div>${legend([[CH.lesson,'Đã hoàn thành'],[CH.doing,'Đang học'],['var(--line-2)','Chưa học']])}</div>`;
+  </svg></div>${legend([[CH.lesson,'Đã hoàn thành'],[CH.doing,'Đang học']])}</div>`;
 }
-// 4. Thanh ngang: thời gian đã học trên tổng thời gian của từng chương
+// 4. Thanh ngang: số ngày thực học của từng chương = số ngày khác nhau có học ít nhất 1 phần trong chương
 function chartChapterTime(){
- const ls=lessons(),rows=PHASES.map(ph=>{const ks=ls.flat().filter(k=>L[U(k).id].phase===ph.id);return {ph,all:lessonMin(ks),done:ks.filter(k=>S.done[k]).reduce((s,k)=>s+U(k).m,0)};}).filter(r=>r.all>0);
- const max=Math.max(...rows.map(r=>r.all));
- return `<div class="ch-card"><h3 class="ch-t">Thời gian học theo chương</h3><p class="ch-s">Đã học / tổng thời gian.</p>
-  <div class="ch-bars">${rows.map((r,i)=>`<div class="ch-bar ch-hit" tabindex="0" data-tip="${tip(`Chương ${PHASES.indexOf(r.ph)+1} · ${r.ph.name}`,`Đã học ${hm(r.done)}`,`Tổng ${hm(r.all)}`)}"><span class="l">Chương ${PHASES.indexOf(r.ph)+1}<small>${esc(r.ph.name)}</small></span>
-   <span class="t" style="width:${r.all/max*100}%"><i style="width:${r.all?r.done/r.all*100:0}%;background:${CH.time}"></i></span><b class="v">${r.done}<small>/${r.all}′</small></b></div>`).join('')}</div>
-  ${legend([[CH.time,'Đã học'],['var(--bg-2)','Chưa học']])}</div>`;
+ const ls=lessons(),rows=chapters().map(c=>{const ks=c.idx.flatMap(i=>ls[i]);return {ph:c.ph,done:new Set(ks.map(k=>(S.doneAt||{})[k]).filter(Boolean).map(dayStart)).size};});
+ const max=Math.max(1,...rows.map(r=>r.done));
+ return `<div class="ch-card"><h3 class="ch-t">Thời gian học theo chương</h3><p class="ch-s">Số ngày thực học của từng chương.</p>
+  <div class="ch-bars">${rows.map(r=>{return `<div class="ch-bar ch-hit" tabindex="0" data-tip="${tip(`Chương ${PHASES.indexOf(r.ph)+1} · ${r.ph.name}`,r.done?`Thực học ${r.done} ngày`:'Chưa học')}"><span class="l">Chương ${PHASES.indexOf(r.ph)+1}<small>${esc(r.ph.name)}</small></span>
+   <span class="t" style="width:100%"><i style="width:${r.done/max*100}%;background:${CH.time}"></i></span><b class="v">${r.done} ngày</b></div>`;}).join('')}</div>
+</div>`;
 }
 function chartsHTML(d){
- return `<section class="card pad dh-sec"><div class="dh-sec-h"><div><h2 class="h3">Thống kê học tập</h2><p class="hint">Rê chuột để xem chi tiết.</p></div></div>
+ return `<section class="card pad dh-sec"><div class="dh-sec-h"><div><span class="eyebrow">Biểu đồ tiến độ</span><h2 class="h3">Đã hoàn thành bao nhiêu, mất bao lâu</h2></div></div>
   <div class="ch-grid2">${chartDonuts(d)}${chartChapterTime()}</div>
   ${chartLessonTime()}</section>`;
 }
@@ -218,9 +224,9 @@ async function drawShare(){
  try{await document.fonts.load('800 40px Roboto');await document.fonts.load('600 20px Roboto');}catch(e){}
  // ảnh Dashboard: khung chuẩn 1200×630; ảnh hành trình: cao theo số bài
  if(T.share==='cert'){cv.width=2000;cv.height=1414;await drawCert(cv);return;}
- if(T.share==='journey'){cv.width=JC.W;cv.height=JC.H;}else{cv.width=1200;cv.height=630;}
- const g=cv.getContext('2d');g.clearRect(0,0,cv.width,cv.height);
- (T.share==='journey'?drawJourneyCard:drawDashCard)(g);
+ const JL=T.share==='journey'?jShareLayout():null;if(JL){cv.width=JL.W*2;cv.height=JL.H*2;}else{cv.width=DC.W*2;cv.height=DC.H*2;}
+ const g=cv.getContext('2d');g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,cv.width,cv.height);g.scale(2,2);
+ await (JL?drawJourneyCard(g,JL):drawDashCard(g));
 }
 const F=(w,s)=>`${w} ${s}px Roboto, Arial, sans-serif`;
 function rr(g,x,y,w,h,r){g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath();}
@@ -228,132 +234,101 @@ function rr(g,x,y,w,h,r){g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);
 function wrapText(g,t,max,n){const w=String(t).split(' '),out=[];let line='';for(const x of w){const tryL=line?line+' '+x:x;if(g.measureText(tryL).width<=max||!line)line=tryL;else{out.push(line);line=x;}}if(line)out.push(line);if(out.length>n){out.length=n;out[n-1]=fitText(g,out[n-1]+' …',max);}return out;}
 function fitText(g,t,max){if(g.measureText(t).width<=max)return t;while(t.length>1&&g.measureText(t+'…').width>max)t=t.slice(0,-1);return t+'…';}
 function brand(g,dark){g.font=F(800,22);g.fillStyle=dark?'#1747C9':'#fff';g.textBaseline='alphabetic';g.fillText('Siêu Tăng Trưởng',60,64);g.font=F(600,16);g.fillStyle=dark?'#5B6472':'rgba(255,255,255,.75)';g.fillText('AI for CEO · sieutangtruong.vn',60,90);}
-// thẻ chia sẻ Dashboard: tên, % hoàn thành, thời gian học, 3 năng lực nổi bật, thành tích nổi bật, logo
-function drawDashCard(g){
- const d=dashStats(),W=1200,H=630,name=S.profile.name||'Học viên';
+// thẻ chia sẻ Dashboard (khổ ngang 1600×1000 = 8:5, xuất gấp đôi cho nét): logo Siêu Tăng Trưởng, tên học viên,
+// ô tổng quan (vòng % + 3 số liệu) và **Biểu đồ tiến độ** giống trên trang: vòng Bài học, vòng Bài tập,
+// thời gian học theo chương (số ngày thực học), thời gian học từng bài (số phút thực học)
+const DC={W:1600,H:1000};
+async function drawDashCard(g){
+ const d=dashStats(),{W,H}=DC,name=S.profile.name||'Học viên',ls=lessons(),nt=Object.keys(TASKS).length,logo=await certLogo();
  const bg=g.createLinearGradient(0,0,W,H);bg.addColorStop(0,'#F4F7FF');bg.addColorStop(1,'#F6F1FF');g.fillStyle=bg;g.fillRect(0,0,W,H);
- g.fillStyle='rgba(56,116,255,.08)';g.beginPath();g.arc(1110,40,190,0,7);g.fill();g.fillStyle='rgba(124,92,252,.07)';g.beginPath();g.arc(80,640,170,0,7);g.fill();
- brand(g,true);
- // tên + avatar
- g.fillStyle='#3874FF';g.beginPath();g.arc(92,170,32,0,7);g.fill();g.fillStyle='#fff';g.font=F(700,28);g.textAlign='center';g.fillText(name.trim().split(/\s+/).pop()[0]||'L',92,180);g.textAlign='left';
- g.fillStyle='#172033';g.font=F(700,34);g.fillText(fitText(g,name,560),140,166);g.fillStyle='#667085';g.font=F(500,18);g.fillText('Học viên AI for CEO',140,194);
- // vòng %
- const cx=190,cy=380,R=104;g.lineCap='round';g.lineWidth=22;g.strokeStyle='#E6EDFF';g.beginPath();g.arc(cx,cy,R,0,Math.PI*2);g.stroke();
- const rg=g.createLinearGradient(cx-R,cy-R,cx+R,cy+R);rg.addColorStop(0,'#3874FF');rg.addColorStop(1,'#7C5CFC');g.strokeStyle=rg;g.beginPath();g.arc(cx,cy,R,-Math.PI/2,-Math.PI/2+Math.PI*2*d.pct/100);if(d.pct>0)g.stroke();
- g.textAlign='center';g.fillStyle='#172033';g.font=F(800,56);g.fillText(d.pct+'%',cx,cy+14);g.fillStyle='#667085';g.font=F(500,18);g.fillText('hoàn thành',cx,cy+44);g.textAlign='left';
- // 3 số liệu
- [[hmShort(d.minDone),'Thời gian học','#EF8426'],[`${d.lessonsDone}/${d.N}`,'Bài hoàn thành','#22A06B'],[`${d.caps}/${CAP_MAP.length}`,'Năng lực mở khóa','#18A999']].forEach(([v,l,c],i)=>{const y=300+i*72;g.fillStyle=c;rr(g,340,y-30,8,48,4);g.fill();g.fillStyle='#172033';g.font=F(800,32);g.fillText(v,362,y);g.fillStyle='#667085';g.font=F(500,16);g.fillText(l,362,y+22);});
- // khung phải: 3 năng lực nổi bật + thành tích
- g.fillStyle='#fff';rr(g,640,110,500,430,22);g.fill();g.strokeStyle='#E6EAF0';g.lineWidth=1.5;g.stroke();
- g.fillStyle='#172033';g.font=F(700,22);g.fillText('3 năng lực nổi bật',672,156);
- const top=CAP_MAP.map((c,i)=>({c,i,p:modPct(c.id)})).sort((a,b)=>b.p-a.p).slice(0,3);
- top.forEach(({c,i,p},k)=>{const y=190+k*74;g.fillStyle=c.color;rr(g,672,y,44,44,12);g.fill();g.fillStyle='#fff';g.font=F(700,16);g.textAlign='center';g.fillText(capNo(i),694,y+28);g.textAlign='left';
-  g.fillStyle='#172033';g.font=F(700,18);g.fillText(fitText(g,L[c.id].cap,330),730,y+18);g.fillStyle='#EEF1F6';rr(g,730,y+30,340,8,4);g.fill();if(p){g.fillStyle=c.color;rr(g,730,y+30,340*p/100,8,4);g.fill();}g.fillStyle='#667085';g.font=F(500,14);g.textAlign='right';g.fillText(p+'%',1110,y+18);g.textAlign='left';});
- const ach=achievements().filter(a=>a.on).slice(-1)[0];
- g.fillStyle='#FFF6E0';rr(g,672,420,436,90,16);g.fill();g.fillStyle='#F5B942';g.beginPath();g.arc(712,465,24,0,7);g.fill();g.fillStyle='#fff';g.font=F(800,22);g.textAlign='center';g.fillText('★',712,473);g.textAlign='left';
- g.fillStyle='#8A5A00';g.font=F(700,14);g.fillText('THÀNH TÍCH NỔI BẬT',752,452);g.fillStyle='#172033';g.font=F(700,20);g.fillText(fitText(g,ach?`${ach.t} · ${ach.d}`:'Bắt đầu hành trình AI',340),752,482);
- g.fillStyle='#667085';g.font=F(500,16);g.fillText('sieutangtruong.vn · #AIforCEO',60,598);
+ g.fillStyle='rgba(56,116,255,.07)';g.beginPath();g.arc(W-40,20,220,0,7);g.fill();
+ const card=(x,y,w,h)=>{g.fillStyle='#fff';rr(g,x,y,w,h,20);g.fill();g.strokeStyle='#E6EAF0';g.lineWidth=1.5;g.stroke();};
+ // logo + học viên (1 hàng)
+ if(logo){const lh=48,lw=logo.width*lh/logo.height;g.drawImage(logo,48,40,lw,lh);}else{g.fillStyle='#1747C9';g.font=F(800,28);g.fillText('Siêu Tăng Trưởng',48,76);}
+ g.textAlign='right';g.fillStyle='#667085';g.font=F(600,19);g.fillText('AI for CEO · Dashboard học tập',W-48,72);g.textAlign='left';
+ g.fillStyle='#3874FF';g.beginPath();g.arc(80,150,30,0,7);g.fill();g.fillStyle='#fff';g.font=F(700,26);g.textAlign='center';g.fillText(name.trim().split(/\s+/).pop()[0]||'L',80,159);g.textAlign='left';
+ g.fillStyle='#172033';g.font=F(800,34);g.fillText(fitText(g,name,900),126,148);g.fillStyle='#667085';g.font=F(500,18);g.fillText('Học viên AI for CEO',126,176);
+ // cột trái: tổng quan
+ card(48,210,560,330);
+ const cx=170,cy=375,R=92;g.lineCap='round';g.lineWidth=20;g.strokeStyle='#E6EDFF';g.beginPath();g.arc(cx,cy,R,0,Math.PI*2);g.stroke();
+ const rg=g.createLinearGradient(cx-R,cy-R,cx+R,cy+R);rg.addColorStop(0,'#3874FF');rg.addColorStop(1,'#7C5CFC');g.strokeStyle=rg;if(d.pct>0){g.beginPath();g.arc(cx,cy,R,-Math.PI/2,-Math.PI/2+Math.PI*2*d.pct/100);g.stroke();}
+ g.textAlign='center';g.fillStyle='#172033';g.font=F(800,46);g.fillText(d.pct+'%',cx,cy+12);g.fillStyle='#667085';g.font=F(500,16);g.fillText('hoàn thành',cx,cy+40);g.textAlign='left';
+ [[`${d.studyDays} ngày`,'Thời gian học','#EF8426'],[`${d.lessonsDone}/${d.N}`,'Bài hoàn thành','#22A06B'],[`${d.caps}/${CAP_MAP.length}`,'Năng lực AI','#18A999']].forEach(([v,l,c],i)=>{const y=290+i*88;g.fillStyle=c;rr(g,310,y-32,8,54,4);g.fill();g.fillStyle='#172033';g.font=F(800,34);g.fillText(v,334,y);g.fillStyle='#667085';g.font=F(500,16);g.fillText(l,334,y+24);});
+ // cột trái dưới: 2 vòng
+ const ni=nextLesson(),doing=ni>=0&&ls[ni]&&ls[ni].some(k=>S.done[k])?1:0,todo=d.N-d.lessonsDone-doing;
+ const donut=(x,y,w,title,sub,parts,total,big,legend)=>{card(x,y,w,380);g.fillStyle='#172033';g.font=F(700,19);g.fillText(title,x+24,y+40);g.fillStyle='#667085';g.font=F(500,15);g.fillText(sub,x+24,y+64);
+  const ox=x+w/2,oy=y+170,r=66;g.lineCap='butt';g.lineWidth=22;g.strokeStyle='#EEF1F6';g.beginPath();g.arc(ox,oy,r,0,7);g.stroke();let a0=-Math.PI/2;
+  parts.forEach(([v,c])=>{if(!v)return;const a1=a0+Math.PI*2*v/total;g.strokeStyle=c;g.beginPath();g.arc(ox,oy,r,a0,a1);g.stroke();a0=a1;});
+  g.textAlign='center';g.fillStyle='#172033';g.font=F(800,26);g.fillText(big,ox,oy+9);g.textAlign='left';
+  legend.forEach(([c,l],k)=>{const ly=y+282+k*28;g.fillStyle=c;rr(g,x+28,ly-12,14,14,4);g.fill();g.fillStyle='#344054';g.font=F(500,15);g.fillText(l,x+50,ly);});};
+ donut(48,560,270,'Bài học',`${d.lessonsDone}/${d.N} bài đã hoàn thành`,[[d.lessonsDone,CH.lesson],[doing,CH.doing]],d.N,Math.round(d.lessonsDone/d.N*100)+'%',[[CH.lesson,`Hoàn thành · ${d.lessonsDone}`],[CH.doing,`Đang học · ${doing}`],['#E6EAF0',`Chưa học · ${todo}`]]);
+ donut(338,560,270,'Bài tập',`${d.subs}/${nt} bài tập đã nộp`,[[d.subs,CH.ex]],nt,Math.round(d.subs/nt*100)+'%',[[CH.ex,`Đã nộp · ${d.subs}`],['#E6EAF0',`Chưa nộp · ${nt-d.subs}`]]);
+ // cột phải: tiêu đề biểu đồ + thời gian học theo chương + từng bài
+ const X=640,RW=W-48-X;
+ g.fillStyle='#3874FF';g.font=F(800,14);g.fillText('BIỂU ĐỒ TIẾN ĐỘ',X,226);g.fillStyle='#172033';g.font=F(800,24);g.fillText('Đã hoàn thành bao nhiêu, mất bao lâu',X,258);
+ const rows=chapters().map(c=>{const ks=c.idx.flatMap(i=>ls[i]);return {pi:PHASES.indexOf(c.ph),name:c.ph.name,v:new Set(ks.map(k=>(S.doneAt||{})[k]).filter(Boolean).map(dayStart)).size};}),mx=Math.max(1,...rows.map(r=>r.v));
+ card(X,280,RW,280);g.fillStyle='#172033';g.font=F(700,19);g.fillText('Thời gian học theo chương',X+24,318);g.fillStyle='#667085';g.font=F(500,15);g.fillText('Số ngày thực học của từng chương',X+24,342);
+ rows.forEach((r,k)=>{const y=384+k*36;g.fillStyle='#344054';g.font=F(600,16);g.fillText(fitText(g,`Chương ${r.pi+1} · ${r.name}`,320),X+24,y+5);if(r.v){g.fillStyle=CH.time;rr(g,X+360,y-9,(RW-480)*r.v/mx,16,4);g.fill();}g.fillStyle='#172033';g.font=F(700,16);g.textAlign='right';g.fillText(r.v+' ngày',X+RW-24,y+5);g.textAlign='left';});
+ card(X,580,RW,360);g.fillStyle='#172033';g.font=F(700,19);g.fillText('Thời gian học từng bài',X+24,618);g.fillStyle='#667085';g.font=F(500,15);g.fillText('Số phút thực học mỗi bài',X+24,642);
+ const mins=ls.map(ks=>spentOf(ks)),mm=Math.max(10,Math.ceil(Math.max(...mins)/10)*10),N=ls.length,x0=X+64,x1=X+RW-24,y0=900,hh=220,band=(x1-x0)/N,bw=Math.max(4,Math.min(56,band*.72));
+ g.strokeStyle='#EEF1F6';g.lineWidth=1;[0,.5,1].forEach(f=>{const y=y0-hh*f;g.beginPath();g.moveTo(x0,y);g.lineTo(x1,y);g.stroke();g.fillStyle='#98A2B3';g.font=F(500,13);g.textAlign='right';g.fillText(Math.round(mm*f)+'′',x0-8,y+4);});
+ const every=N<=15?1:N<=30?3:5;
+ mins.forEach((m,i)=>{const x=x0+i*band+(band-bw)/2;if(m>0){g.fillStyle=lessonDone(i)?CH.lesson:CH.doing;const h=Math.max(3,hh*m/mm);rr(g,x,y0-h,bw,h,Math.min(4,bw/2));g.fill();}
+  if(i%every===0||i===N-1){g.fillStyle='#667085';g.font=F(500,13);g.textAlign='center';g.fillText(i+1,x+bw/2,y0+20);}});
+ g.textAlign='center';g.fillStyle='#667085';g.font=F(500,16);g.fillText('sieutangtruong.vn · #AIforCEO',W/2,978);g.textAlign='left';
 }
 // thẻ chia sẻ Hành trình: các chặng đã đi qua, chặng hiện tại, năng lực mở khóa, tổng bài học / bài tập
 // thẻ chia sẻ Hành trình: khổ dọc 1080×1350 (4:5), vẽ đúng kiểu bản đồ đang chọn (T.jmVer), đi từ dưới lên
-const JC={W:1080,H:1350,x:60,y:250,w:960,h:900};
+const JC={W:1600,H:1000}; // khổ ngang 8:5 (giống ảnh Dashboard), xuất gấp đôi cho nét
 function journeyLayout(){return {W:JC.W,H:JC.H};}
-// điểm trên đường gấp khúc theo tỉ lệ độ dài t (0..1)
-function jcAlong(P){
- const seg=P.slice(1).map((p,k)=>Math.hypot(p[0]-P[k][0],p[1]-P[k][1])),tot=seg.reduce((a,b)=>a+b,0);
- const at=t=>{let d=t*tot;for(let k=0;k<seg.length;k++){if(d<=seg[k]){const f=seg[k]?d/seg[k]:0;return [P[k][0]+(P[k+1][0]-P[k][0])*f,P[k][1]+(P[k+1][1]-P[k][1])*f];}d-=seg[k];}return P[P.length-1];};
- const upTo=t=>{const out=[P[0]];let d=t*tot;for(let k=0;k<seg.length;k++){if(d<=seg[k]){out.push(at(t));break;}out.push(P[k+1]);d-=seg[k];}return out;};
- return {at,upTo};
+// Kiểu 1 & 2: dùng đúng hình SVG của bản đồ trên trang (gắn sẵn style đã tính) để ảnh chia sẻ khớp 100% với trang
+const SVG_PROPS=['fill','fill-opacity','stroke','stroke-width','stroke-dasharray','stroke-linecap','stroke-linejoin','stroke-opacity','opacity','font-size','font-weight','letter-spacing','paint-order','text-anchor','display','stop-color','stop-opacity'];
+function svgInline(html,P=70){
+ const box=document.createElement('div');box.className='dash';box.style.cssText='position:fixed;left:-99999px;top:0;width:1100px;visibility:hidden';box.innerHTML=html;document.body.appendChild(box);
+ const sv=box.querySelector('svg');if(!sv){box.remove();return null;}
+ const src=[sv,...sv.querySelectorAll('*')],cl=sv.cloneNode(true),dst=[cl,...cl.querySelectorAll('*')];
+ src.forEach((el,k)=>{const cs=getComputedStyle(el),o=dst[k];if(o.tagName==='title'){o.remove();return;}let st='';SVG_PROPS.forEach(p=>{const v=cs.getPropertyValue(p);if(v)st+=p+':'+v+';';});st+="font-family:Roboto,Arial,sans-serif;";o.setAttribute('style',st);o.removeAttribute('class');});
+ box.remove();
+ const vb=(cl.getAttribute('viewBox')||'0 0 1000 1000').split(/\s+/).map(Number);
+ vb[0]-=P;vb[2]+=2*P;cl.setAttribute('viewBox',vb.join(' '));
+ cl.setAttribute('xmlns','http://www.w3.org/2000/svg');cl.setAttribute('width',vb[2]);cl.setAttribute('height',vb[3]);
+ return {svg:new XMLSerializer().serializeToString(cl),w:vb[2],h:vb[3]};
 }
-const jcLine=(g,P)=>{g.beginPath();P.forEach((p,k)=>k?g.lineTo(p[0],p[1]):g.moveTo(p[0],p[1]));};
-// chấm bài học: đã học = màu chương + ✓, đang học = viền + số, chưa mở = trắng viền xám
-function jcDot(g,x,y,r,j){
- if(j.st==='cur'){g.fillStyle=j.color+'33';g.beginPath();g.arc(x,y,r+10,0,7);g.fill();}
- g.fillStyle=j.st==='done'?j.color:'#fff';g.beginPath();g.arc(x,y,r,0,7);g.fill();
- g.lineWidth=j.st==='cur'?5:3;g.strokeStyle=j.st==='done'?'#fff':j.st==='cur'?j.color:'#C9D1DD';g.stroke();
- if(r>=13){g.textAlign='center';g.font=F(800,Math.round(r*.95));g.fillStyle=j.st==='done'?'#fff':j.st==='cur'?j.color:'#98A2B3';g.fillText(j.st==='done'?'✓':String(j.i+1),x,y+r*.34);g.textAlign='left';}
+function jcSvg(g,html,R={x:40,y:220,w:1000,h:960},P=70){
+ const r=svgInline(html,P);if(!r)return Promise.resolve();
+ return new Promise(ok=>{const im=new Image();im.onload=()=>{const k=Math.min(R.w/r.w,R.h/r.h),w=r.w*k,h=r.h*k;g.drawImage(im,R.x+(R.w-w)/2,R.y+(R.h-h)/2,w,h);ok();};im.onerror=()=>ok();im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(r.svg);});
 }
-function jcPill(g,x,y,t,bg){g.font=F(700,18);const w=g.measureText(t).width+28;g.fillStyle=bg;rr(g,x-w/2,y-17,w,34,17);g.fill();g.fillStyle='#fff';g.textAlign='center';g.fillText(t,x,y+6);g.textAlign='left';}
-// nhãn chương ở mép trái/phải vùng bản đồ, có đường gióng tới chấm
-function jcChapter(g,j,c,x,y,left){
- const tx=left?JC.x+4:JC.x+JC.w-4,lx=left?JC.x+230:JC.x+JC.w-230;
- g.globalAlpha=c.state==='todo'?.55:1;
- g.setLineDash([4,6]);g.strokeStyle=j.color;g.lineWidth=2;g.beginPath();g.moveTo(x,y);g.lineTo(lx,y);g.stroke();g.setLineDash([]);
- g.textAlign=left?'left':'right';g.fillStyle=j.color;g.font=F(800,18);g.fillText(`Chương ${j.pi+1} · ${c.dn}/${c.idx.length}`,tx,y-6);
- g.fillStyle='#172033';g.font=F(600,19);g.fillText(fitText(g,PHASES[j.pi].name,220),tx,y+18);g.textAlign='left';g.globalAlpha=1;
+// ảnh chia sẻ Hành trình: kích thước ảnh tính theo tỉ lệ bản đồ để ít khoảng trắng
+//  - bản đồ dọc (Kiểu 1 Con đường): chữ ở cột trái hẹp, bản đồ cao hết ảnh, bề ngang ảnh co theo bản đồ
+//  - bản đồ ngang (Kiểu 2 Leo núi, Kiểu 3 Đường gấp khúc): chữ thành 1 hàng trên cùng, bản đồ rộng hết ảnh bên dưới
+function jShareLayout(){
+ const v=T.jmVer||1,J=jData(),r=v===1?svgInline(jRoad(J,{wide:true}),12):svgInline(v===2?jMountain(J):jSnake(J),40);
+ const asp=r?r.w/r.h:1;
+ if(asp<1.05){const H=Math.round(Math.min(1400,Math.max(1000,r.h*.72+80))),mh=H-80,mw=Math.round(mh*asp),W=Math.max(1100,480+mw+40);return {mode:'side',W,H,r,map:{x:W-40-mw,y:40,w:mw,h:mh}};}
+ const W=1600,mw=W-112,mh=Math.min(1100,Math.round(mw/asp)),H=Math.max(760,190+mh+64);return {mode:'top',W,H,r,map:{x:56,y:190,w:mw,h:mh}};
 }
-function jcGoal(g,x,y,done){
- const gr=g.createLinearGradient(x-30,y-30,x+30,y+30);gr.addColorStop(0,'#F5B942');gr.addColorStop(1,'#EF8426');
- g.fillStyle=gr;g.beginPath();g.arc(x,y,30,0,7);g.fill();g.fillStyle='#fff';g.font=F(800,28);g.textAlign='center';g.fillText('★',x,y+10);
- g.fillStyle='#172033';g.font=F(800,20);g.fillText('Về đích',x,y+56);g.fillStyle='#667085';g.font=F(500,16);g.fillText(done?'Đã hoàn thành khóa học':'Nhận chứng nhận',x,y+78);g.textAlign='left';
-}
-function drawJourneyCard(g){
- const d=dashStats(),{W,H}=JC,J=jData(),name=S.profile.name||'Học viên',v=T.jmVer||1;
+async function drawJourneyCard(g,Lay){
+ Lay=Lay||jShareLayout();
+ const d=dashStats(),{W,H}=Lay,name=S.profile.name||'Học viên',logo=await certLogo();
  const bg=g.createLinearGradient(0,0,W,H);bg.addColorStop(0,'#F4F7FF');bg.addColorStop(1,'#FFF6EE');g.fillStyle=bg;g.fillRect(0,0,W,H);
- g.fillStyle='rgba(124,92,252,.06)';g.beginPath();g.arc(W-60,40,220,0,7);g.fill();
- brand(g,true);
- g.fillStyle='#172033';g.font=F(800,40);g.fillText('Hành trình AI for CEO',60,160);
- g.fillStyle='#667085';g.font=F(500,22);g.fillText(fitText(g,`${name} · ${d.lessonsDone}/${d.N} bài đã đi qua`,940),60,198);
+ g.fillStyle='#fff';rr(g,24,24,W-48,H-48,22);g.fill();g.strokeStyle='#E6EAF0';g.lineWidth=1.5;g.stroke();
+ const logoAt=(x,y,h)=>{if(logo){const lw=logo.width*h/logo.height;g.drawImage(logo,x,y,lw,h);}else{g.fillStyle='#1747C9';g.font=F(800,26);g.fillText('Siêu Tăng Trưởng',x,y+h-10);}};
+ if(Lay.mode==='side'){
+  logoAt(64,64,42);
+  g.fillStyle='#3874FF';g.font=F(800,16);g.fillText('BẢN ĐỒ HÀNH TRÌNH',64,190);
+  g.fillStyle='#172033';g.font=F(800,48);g.fillText('Hành trình',64,246);g.fillText('AI for CEO',64,302);
+  g.fillStyle='#172033';g.font=F(700,24);g.fillText(fitText(g,name,380),64,358);g.fillStyle='#667085';g.font=F(500,20);g.fillText(`${d.lessonsDone}/${d.N} bài đã đi qua`,64,390);
+  g.fillStyle='#667085';g.font=F(500,15);g.fillText('sieutangtruong.vn · #AIforCEO',64,H-60);
+ }else{
+  logoAt(64,62,42);
+  g.textAlign='right';g.fillStyle='#3874FF';g.font=F(800,15);g.fillText('BẢN ĐỒ HÀNH TRÌNH',W-64,74);
+  g.fillStyle='#172033';g.font=F(800,34);g.fillText('Hành trình AI for CEO',W-64,114);
+  g.fillStyle='#667085';g.font=F(500,19);g.fillText(fitText(g,`${name} · ${d.lessonsDone}/${d.N} bài đã đi qua`,700),W-64,146);
+  g.font=F(500,15);g.fillText('sieutangtruong.vn · #AIforCEO',W-64,H-50);g.textAlign='left';
+ }
  g.lineCap='round';g.lineJoin='round';
- (v===2?jcMountain:v===3?jcStairs:jcRoad)(g,J,d);
- // số liệu cuối thẻ
- const nt=Object.keys(TASKS).length;[[`${d.lessonsDone}/${d.N}`,'bài học'],[`${d.subs}/${nt}`,'bài tập'],[`${d.caps}/${CAP_MAP.length}`,'năng lực']].forEach(([val,l],i)=>{const x=60+i*318;g.fillStyle='#fff';rr(g,x,1196,300,76,16);g.fill();g.strokeStyle='#E6EAF0';g.lineWidth=1.5;g.stroke();g.fillStyle='#172033';g.font=F(800,30);g.fillText(val,x+22,1244);const vw=g.measureText(val).width;g.fillStyle='#667085';g.font=F(500,18);g.fillText(l,x+22+vw+10,1244);});
- g.fillStyle='#667085';g.font=F(500,16);g.textAlign='center';g.fillText('sieutangtruong.vn · Học viện Siêu Tăng Trưởng',W/2,1316);g.textAlign='left';
-}
-// Kiểu 1: con đường uốn lượn (hình sin 3 vòng), đoạn đã đi tô đậm
-function jcRoad(g,J,d){
- const N=J.length,cx=JC.x+JC.w/2,top=JC.y+110,bot=JC.y+JC.h-40,A=170,P=[];
- for(let k=0;k<=240;k++){const u=k/240;P.push([cx+A*Math.sin(u*Math.PI*6),bot-u*(bot-top)]);}
- const Pa=jcAlong(P),ci=J.findIndex(j=>j.st==='cur'),pos=J.map(j=>Pa.at((j.i+1)/(N+1)));
- g.strokeStyle='#DCE2EC';g.lineWidth=46;jcLine(g,P);g.stroke();
- g.strokeStyle='#2B3445';jcLine(g,Pa.upTo(ci<0?1:(ci+1)/(N+1)));g.stroke();
- g.strokeStyle='rgba(255,255,255,.9)';g.lineWidth=2.5;g.setLineDash([12,12]);jcLine(g,P);g.stroke();g.setLineDash([]);
- g.strokeStyle='#DCE2EC';g.lineWidth=46;g.beginPath();g.moveTo(cx,top);g.lineTo(cx,top-40);g.stroke();
- const gap=(bot-top)/(N+1),r=Math.max(8,Math.min(20,gap*.42)),ch=chapters();
- PHASES.forEach((_,p)=>{const k=J.findIndex(j=>j.pi===p);if(k<0)return;const [x,y]=pos[k];jcChapter(g,J[k],ch.find(c=>c.pi===p),x,y,x>=cx);});
- J.forEach((j,k)=>jcDot(g,pos[k][0],pos[k][1],r,j));
- if(ci>=0){const [x,y]=pos[ci];jcPill(g,x,y-r-30,'Đang ở đây · Bài '+(ci+1),'#EF8426');}
- jcGoal(g,cx,JC.y+20,d.allDone);
- g.fillStyle='#fff';rr(g,cx-70,bot+14,140,36,10);g.fill();g.strokeStyle='#E6EAF0';g.lineWidth=1.5;g.stroke();g.fillStyle='#172033';g.font=F(700,17);g.textAlign='center';g.fillText('Xuất phát',cx,bot+38);g.textAlign='left';
-}
-// Kiểu 2: leo núi: đường mòn zigzag lên đỉnh (cùng hình với trang Dashboard)
-function jcMountain(g,J,d){
- const N=J.length,sx=JC.w/800,sy=(JC.h-30)/520,T2=([x,y])=>[JC.x+x*sx,JC.y+20+y*sy];
- const P=[[250,492],[560,432],[270,362],[522,292],[322,222],[470,162],[382,104],[400,62]].map(T2);
- const poly=pts=>{g.beginPath();pts.map(T2).forEach((p,k)=>k?g.lineTo(p[0],p[1]):g.moveTo(p[0],p[1]));g.closePath();};
- g.fillStyle='#EFEBFF';poly([[0,500],[170,250],[300,380],[560,150],[800,470],[800,500]]);g.fill();
- const mg=g.createLinearGradient(0,JC.y,0,JC.y+JC.h);mg.addColorStop(0,'#D6E2FF');mg.addColorStop(1,'#DDF3EF');g.fillStyle=mg;poly([[30,500],[400,40],[770,500]]);g.fill();
- g.fillStyle='rgba(255,255,255,.92)';poly([[400,40],[452,105],[428,96],[408,116],[384,98],[352,106]]);g.fill();
- const Pa=jcAlong(P),ci=J.findIndex(j=>j.st==='cur'),pos=J.map(j=>Pa.at((j.i+1)/(N+1)));
- g.strokeStyle='rgba(23,32,51,.28)';g.lineWidth=4;g.setLineDash([9,10]);jcLine(g,P);g.stroke();g.setLineDash([]);
- g.strokeStyle='#EF8426';g.lineWidth=7;jcLine(g,Pa.upTo(ci<0?1:(ci+1)/(N+1)));g.stroke();
- const [fx,fy]=T2([400,62]);g.strokeStyle='#172033';g.lineWidth=3.5;g.beginPath();g.moveTo(fx,fy);g.lineTo(fx,fy-62);g.stroke();g.fillStyle='#EF8426';g.beginPath();g.moveTo(fx,fy-62);g.lineTo(fx+40,fy-48);g.lineTo(fx,fy-34);g.fill();
- g.fillStyle='#EF8426';g.font=F(800,20);g.fillText('Về đích',fx+52,fy-48);g.fillStyle='#172033';g.font=F(600,17);g.fillText(d.allDone?'Đã hoàn thành khóa học':'Nhận chứng nhận',fx+52,fy-26);
- const ch=chapters(),r=N>30?9:13;
- PHASES.forEach((_,p)=>{const k=J.findIndex(j=>j.pi===p);if(k<0)return;const [x,y]=pos[k];jcChapter(g,J[k],ch.find(c=>c.pi===p),x,y,x<JC.x+JC.w/2);});
- J.forEach((j,k)=>jcDot(g,pos[k][0],pos[k][1],j.st==='cur'?Math.max(r,16):r,j));
- if(ci>=0){const [x,y]=pos[ci];jcPill(g,x,y+44,'Bạn đang ở đây','#EF8426');}
- const [sx0,sy0]=P[0];g.fillStyle='#172033';g.font=F(700,18);g.textAlign='center';g.fillText('Xuất phát',sx0,sy0+36);g.textAlign='left';
-}
-// Kiểu 3: bậc thang: mỗi chương một bậc, chương sau cao hơn và lệch phải; bài học là ô số
-function jcStairs(g,J,d){
- const ch=chapters(),n=ch.length,step=50,bw=JC.w-(n-1)*step,S0=34,GAP=7,perRow=Math.floor((bw-36+GAP)/(S0+GAP));
- const hs=ch.map(c=>78+Math.ceil(c.idx.length/perRow)*(S0+GAP)+14),totH=hs.reduce((a,b)=>a+b,0)+(n-1)*14;
- jcGoal(g,JC.x+JC.w-60,JC.y+30,d.allDone);
- let y=JC.y+JC.h-30;
- g.fillStyle='#fff';rr(g,JC.x,y-4,170,38,10);g.fill();g.strokeStyle='#E6EAF0';g.lineWidth=1.5;g.stroke();g.fillStyle='#667085';g.font=F(700,17);g.fillText('Xuất phát · Ngày 1',JC.x+16,y+21);
- y-=14;const avail=JC.h-170,sc=Math.min(1,avail/totH);
- ch.forEach((c,k)=>{const h=hs[k]*sc,x=JC.x+k*step,col=PHASE_COLOR[c.ph.id],todo=c.state==='todo';y-=h;
-  g.fillStyle=todo?'#fff':col+'14';rr(g,x,y,bw,h,16);g.fill();g.lineWidth=c.state==='cur'?3:1.5;g.strokeStyle=todo?'#E6EAF0':col+(c.state==='cur'?'':'55');g.stroke();
-  g.fillStyle=todo?'#D5DBE5':col;rr(g,x,y+h-7,bw,7,3);g.fill();
-  g.fillStyle=todo?'#EEF1F6':col;rr(g,x+18,y+16,40,40,11);g.fill();g.fillStyle=todo?'#98A2B3':'#fff';g.font=F(800,20);g.textAlign='center';g.fillText(c.state==='done'?'✓':String(c.pi+1),x+38,y+43);g.textAlign='left';
-  g.fillStyle=todo?'#98A2B3':col;g.font=F(800,16);g.fillText(`Chương ${c.pi+1}${c.state==='cur'?' · Đang ở đây':''}`,x+72,y+32);
-  g.fillStyle='#172033';g.font=F(700,20);g.fillText(fitText(g,c.ph.name,bw-200),x+72,y+56);
-  g.fillStyle='#667085';g.font=F(600,16);g.textAlign='right';g.fillText(`${c.dn}/${c.idx.length} bài`,x+bw-18,y+34);g.textAlign='left';
-  const s=S0*Math.min(1,sc+.15);c.idx.forEach((i,m)=>{const j=J[i],cx=x+18+(m%perRow)*(s+GAP),cy=y+70+Math.floor(m/perRow)*(s+GAP);
-   g.fillStyle=j.st==='done'?col:'#fff';rr(g,cx,cy,s,s,8);g.fill();g.lineWidth=j.st==='cur'?3:1.5;g.strokeStyle=j.st==='locked'?'#D5DBE5':col;g.stroke();
-   g.fillStyle=j.st==='done'?'#fff':j.st==='cur'?col:'#98A2B3';g.font=F(800,Math.round(s*.42));g.textAlign='center';g.fillText(j.st==='done'?'✓':String(i+1),cx+s/2,cy+s*.64);g.textAlign='left';});
-  y-=14;});
+ const r=Lay.r,R=Lay.map;if(!r)return;
+ await new Promise(ok=>{const im=new Image();im.onload=()=>{const k=Math.min(R.w/r.w,R.h/r.h),w=r.w*k,h=r.h*k;g.drawImage(im,R.x+(R.w-w)/2,R.y+(R.h-h)/2,w,h);ok();};im.onerror=()=>ok();im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(r.svg);});
 }
 function shareBlob(){return new Promise(ok=>{const cv=document.getElementById('share-cv');if(!cv)return ok(null);try{cv.toBlob(b=>ok(b),'image/png');}catch(e){ok(null);}});}
 function shareFileName(){return T.share==='cert'?`chung-nhan-ai-for-ceo-${certCode()}.png`:T.share==='journey'?'hanh-trinh-ai-for-ceo.png':'dashboard-ai-for-ceo.png';}
@@ -422,8 +397,8 @@ function certPrint(){
 
 /* ---------- Bản đồ hành trình (đi từ dưới lên, Về đích ở trên): 3 kiểu để chọn ----------
    jData(): mỗi bài học = {i, title, st: done|cur|locked, pi (chương), color}
-   1 Con đường uốn lượn (jRoad) · 2 Leo núi (jMountain) · 3 Bậc thang theo chương (jStairs) */
-const J_VERS=[[1,'Con đường'],[2,'Leo núi'],[3,'Bậc thang']];
+   1 Con đường uốn lượn (jRoad) · 2 Leo núi (jMountain) · 3 Đường gấp khúc theo chương (jSnake) */
+const J_VERS=[[1,'Con đường'],[2,'Leo núi'],[3,'Đường gấp khúc']];
 const J_ST={done:'Hoàn thành',cur:'Đang học',locked:'Chưa mở'};
 function jData(){
  const ls=lessons(),ni=nextLesson();
@@ -432,34 +407,60 @@ function jData(){
 }
 function journeyHTML(){
  const v=T.jmVer||1,J=jData();
- return v===2?jMountain(J):v===3?jStairs(J):jRoad(J);
+ return v===2?jMountain(J):v===3?jSnake(J):jRoad(J);
 }
 const jTip=j=>`Bài ${j.i+1} · ${j.title} · ${J_ST[j.st]}`;
 // đường cong mượt qua các điểm (tiếp tuyến đứng ở mỗi điểm)
 const jCurve=pts=>pts.map((p,k)=>k?`C${pts[k-1][0]},${(pts[k-1][1]+p[1])/2} ${p[0]},${(pts[k-1][1]+p[1])/2} ${p[0]},${p[1]}`:`M${p[0]},${p[1]}`).join(' ');
 
-/* Kiểu 1: con đường uốn lượn giữa trang, thẻ bài học xen kẽ trái/phải, nhãn chương ở phía đối diện */
-function jRoad(J){
- const N=J.length,RH=84,TOP=96,BOT=76,H=TOP+N*RH+BOT,ci=J.findIndex(j=>j.st==='cur'),ch=chapters();
- const y=i=>TOP+(N-1-i)*RH+RH/2,x=i=>i%2?72:28;
- const pts=[[50,H-14],...J.map(j=>[x(j.i),y(j.i)]),[50,30]];
- const road=jCurve(pts),walked=jCurve(pts.slice(0,ci<0?pts.length:ci+2));
- const firstOf=new Set(PHASES.map((_,p)=>J.findIndex(j=>j.pi===p)).filter(k=>k>=0));
- const cards=J.map(j=>{const side=j.i%2?'r':'l',row=2+(N-1-j.i);
-  const card=`<button class="jr-card ${side} ${j.st}" style="grid-row:${row};--c:${j.color}" data-a="openLesson" data-v="${j.i}" title="${esc(jTip(j))}"><small>Bài ${j.i+1} · Chương ${j.pi+1}</small><b>${esc(j.title)}</b><span class="jr-st">${j.st==='done'?ic('check',12):j.st==='locked'?ic('lock',11):''} ${J_ST[j.st]}</span></button>`;
-  const c=ch.find(c=>c.pi===j.pi);
-  const tag=firstOf.has(j.i)?`<div class="jr-ch ${side==='l'?'r':'l'} ${c.state}" style="grid-row:${row};--c:${j.color}"><span>${ic(c.state==='done'?'check':PHASE_ICON[PHASES[j.pi].id],15)}</span><div><small>Chương ${j.pi+1}</small><b>${esc(PHASES[j.pi].name)}</b><em>${c.dn}/${c.idx.length} bài</em></div></div>`:'';
-  return card+tag;}).join('');
- const nodes=J.map(j=>`<span class="jr-node ${j.st}" style="left:${x(j.i)}%;top:${y(j.i)}px;--c:${j.color}" aria-hidden="true">${j.st==='done'?ic('check',14):j.i+1}${j.st==='cur'?'<em>Đang ở đây</em>':''}</span>`).join('');
- const done=ci<0;
- return `<div class="jr" style="grid-template-rows:${TOP}px repeat(${N},${RH}px) ${BOT}px">
-  <div class="jr-goal ${done?'done':''}"><span>${ic('award',24)}</span><b>Về đích</b><small>${done?'Đã hoàn thành khóa học':'Nhận chứng nhận'}</small></div>
-  <div class="jr-roadcol" style="grid-row:1/-1"><svg viewBox="0 0 100 ${H}" preserveAspectRatio="none" style="height:${H}px" aria-hidden="true"><path class="jr-road" d="${road}"/><path class="jr-road walked" d="${walked}"/><path class="jr-lane" d="${road}"/></svg>${nodes}</div>
-  ${cards}
-  <div class="jr-start" style="grid-row:${N+2}"><b>Xuất phát</b><small>Ngày 1</small></div></div>`;
+/* Kiểu 1: con đường (thiết kế lại cho đẹp và dễ đọc): con đường uốn lượn mềm đi từ dưới lên, bề rộng đều;
+   mỗi chương là một vùng nền nhạt màu chương, nhãn "CHƯƠNG k · TÊN · x/y" ở đầu vùng (đặt phía không có đường);
+   mỗi bài là một mốc tròn trên đường (đã học: màu chương + ✓ · đang học: viền cam + vầng sáng · chưa mở: trắng viền xám);
+   nhãn bài là thẻ nhỏ đặt phía ngoài khúc cua ("BÀI k" + tên năng lực tối đa 2 dòng), thẻ bài đang học viền cam + "Bạn đang ở đây".
+   Đoạn đường đã đi tô màu chương; biển Xuất phát ở chân đường, cúp Về đích ở đỉnh. Màn hình hẹp dùng khung 600 để chữ đủ to. */
+function jRoad(J,opt={}){
+ const share=!!opt.share,N=J.length,narrow=!share&&!opt.wide&&typeof innerWidth!=='undefined'&&innerWidth<700,W=share?1000:narrow?600:1000,CX=W/2,A=share?115:narrow?110:190,RH=share?62:narrow?96:88,GAP=share?40:46,TOP=share?200:196,BOT=share?92:104;
+ const big=share||narrow;
+ const ci=J.findIndex(j=>j.st==='cur'),done=ci<0,ls=lessons(),chs=chapters();
+ // vị trí mốc: từ dưới lên, giữa 2 chương chừa khoảng cho nhãn chương
+ const xs=J.map((_,i)=>CX+A*Math.sin(i*2*Math.PI/6.5+.35));let y=0;const ys=J.map((j,i)=>{if(i)y+=RH+(j.pi!==J[i-1].pi?GAP:0);return y;});
+ const span=y,H=TOP+span+BOT,Y=i=>H-BOT-ys[i];
+ const P=J.map((_,i)=>[xs[i],Y(i)]),start=[xs[0],H-40],goal=[CX,TOP-(share?104:118)];
+ const short=i=>{const ids=[...new Set(ls[i].map(k=>U(k).id))].map(id=>L[id]);const m=ids.filter(x=>x.type==='module');return (m.length?m:ids).map(x=>x.cap||x.title).join(' + ');};
+ const wrap=(t,n)=>{const w=t.split(' '),o=[];let l='';for(const x of w){if((l+' '+x).trim().length>n&&l){o.push(l);l=x;}else l=(l+' '+x).trim();}if(l)o.push(l);if(o.length>2){o.length=2;o[1]=o[1].slice(0,n-1)+'…';}return o;};
+ const curve=pts=>jCurve(pts);
+ // vùng chương
+ const bands=chs.map(c=>{const f=c.idx[0],l=c.idx[c.idx.length-1],y0=Y(f)+68,y1=Y(l)-42,col=PHASE_COLOR[PHASES[c.pi].id]||'#3874FF',lock=c.state==='todo';
+  const dn=c.idx.filter(i=>J[i].st==='done').length,txt=`CHƯƠNG ${c.pi+1} · ${PHASES[c.pi].name.toUpperCase()}`,cnt=`${dn}/${c.idx.length}`;
+  const right=xs[f]<CX,tw=Math.min(W-48,txt.length*(share?13.5:narrow?10:9)+cnt.length*(share?13.5:narrow?10:9)+(share?70:50)),cx0=right?W-24-tw:24,cy=y0-38;
+  return [`<rect x="0" y="${y1}" width="${W}" height="${y0-y1}" rx="22" fill="${lock?'#98A2B3':col}" fill-opacity="${lock?.04:.06}"/>`,`<g class="jr3-band"><rect x="${cx0}" y="${cy-(share?4:0)}" width="${tw}" height="${share?40:32}" rx="${share?20:16}" fill="#fff"/><rect x="${cx0}" y="${cy-(share?4:0)}" width="${tw}" height="${share?40:32}" rx="${share?20:16}" fill="${lock?'#EEF1F6':col}" fill-opacity="${lock?1:.14}"/>
+   <text x="${cx0+(share?20:16)}" y="${cy+(share?23:21)}" class="jr3-chip" fill="${lock?'#8A94A6':col}">${esc(txt)}</text><text x="${cx0+tw-(share?20:16)}" y="${cy+(share?23:21)}" text-anchor="end" class="jr3-cnt" fill="${lock?'#8A94A6':col}">${cnt}</text></g>`];});
+ // đường: nền + đoạn đã đi (theo màu chương)
+ const all=[start,...P,goal];
+ const road=`<path d="${curve(all)}" class="jr3-edge"/><path d="${curve(all)}" class="jr3-road"/>`;
+ const segs=P.map((p,i)=>{const prev=i?P[i-1]:start,on=done||i<=ci;return on?`<path d="${curve([prev,p])}" class="jr3-on" stroke="${J[i].color}"/>`:'';}).join('')+(done?`<path d="${curve([P[N-1],goal])}" class="jr3-on" stroke="#F5B942"/>`:'');
+ const lane=`<path d="${curve(all)}" class="jr3-lane"/>`;
+ // mốc + thẻ nhãn
+ const nodes=J.map((j,i)=>{const [x,yy]=P[i],cur=j.st==='cur',lock=j.st==='locked',col=j.color;
+  const right=narrow?W-x>=x:x>=CX,room=(right?W-x:x)-48,k=`BÀI ${i+1}`,kw=k.length*(share?13.5:narrow?9.4:8.2),chw=share?14.8:narrow?10:8.4,pad=share?50:narrow?38:32,n=Math.max(4,Math.min(narrow?16:24,Math.floor((room-kw-pad)/chw))),nm0=short(i),nm=nm0.length>n?nm0.slice(0,n-1).trim()+'…':nm0,cw=kw+nm.length*chw+pad,hh=share?58:narrow?40:34,chh=hh;
+  const R=share?26:21;let cx0=right?x+R+17:x-R-17-cw;cx0=Math.max(10,Math.min(W-10-cw,cx0));const cy0=yy-chh/2,ty=cy0+hh/2+(share?9:narrow?6:5),lx=right?cx0:cx0+cw;
+  return `<g class="jr3-n ${j.st}" data-a="openLesson" data-v="${i}" tabindex="0" role="button" aria-label="${esc(jTip(j))}"><title>${esc(jTip(j))}</title>
+   <line x1="${right?x+R+3:x-R-3}" y1="${yy}" x2="${lx}" y2="${yy}" class="jr3-lead" stroke="${lock?'#D5DCE6':cur?'#EF8426':col}"/>
+   <rect x="${cx0}" y="${cy0}" width="${cw}" height="${chh}" rx="12" class="jr3-card ${j.st}" stroke="${cur?'#EF8426':lock?'#E3E8F0':col}" stroke-opacity="${cur||lock?1:.35}"/>
+   ${cur?(()=>{const pw=share?200:narrow?176:150,ph=share?36:30,px0=Math.max(6,Math.min(W-6-pw,right?x-R-14-pw:x+R+14)),tip=right?`M${px0+pw},${yy-7} L${px0+pw+8},${yy} L${px0+pw},${yy+7}Z`:`M${px0},${yy-7} L${px0-8},${yy} L${px0},${yy+7}Z`;return `<g class="jr3-here"><rect x="${px0}" y="${yy-ph/2}" width="${pw}" height="${ph}" rx="${ph/2}"/><path d="${tip}"/><text x="${px0+pw/2}" y="${yy+(share?6.5:5)}" text-anchor="middle" class="jr3-here-t">BẠN ĐANG Ở ĐÂY</text></g>`;})():''}<text x="${cx0+14}" y="${ty}" class="jr3-line"><tspan class="jr3-k" fill="${lock?'#98A2B3':cur?'#EF8426':col}">${k}</tspan><tspan class="jr3-t ${j.st}" dx="8">${esc(nm)}</tspan></text>
+   ${cur?`<circle cx="${x}" cy="${yy}" r="${R+13}" fill="#EF8426" opacity=".16"/>`:''}
+   <circle cx="${x}" cy="${yy}" r="${R}" fill="${j.st==='done'?col:'#fff'}" stroke="${j.st==='done'?'#fff':cur?'#EF8426':'#A9B4C6'}" stroke-width="${j.st==='done'?4:4.5}"/>
+   ${j.st==='done'?`<circle cx="${x}" cy="${yy}" r="${R+3}" fill="none" stroke="${col}" stroke-width="2"/>`:''}
+   <text x="${x}" y="${yy+(share?8:6.5)}" text-anchor="middle" class="jr3-num" fill="${j.st==='done'?'#fff':cur?'#EF8426':'#667085'}">${j.st==='done'?'✓':i+1}</text></g>`;}).join('');
+ // xuất phát + về đích
+ const [sx,sy]=start,[gx,gy]=goal;
+ const startEl=`<g><rect x="${sx-66}" y="${sy-4}" width="132" height="32" rx="16" class="jr3-startb"/><text x="${sx}" y="${sy+17}" text-anchor="middle" class="jr3-start">XUẤT PHÁT</text></g>`;
+ const goalEl=`<g class="jr3-goal"><circle cx="${gx}" cy="${gy}" r="44" fill="${done?'#F5B942':'#FFF6E0'}" stroke="#F5B942" stroke-width="4"/><text x="${gx}" y="${gy+13}" text-anchor="middle" class="jr3-star" fill="${done?'#fff':'#E0A21B'}">🏆</text>
+  <text x="${gx}" y="${gy-62}" text-anchor="middle" class="jr3-gt">${done?'ĐÃ VỀ ĐÍCH':'VỀ ĐÍCH'}</text><text x="${gx}" y="${gy+72}" text-anchor="middle" class="jr3-gs">Chọn 3 use case cho doanh nghiệp</text></g>`;
+ return `<div class="jr3"><svg viewBox="0 0 ${W} ${H}" class="${share?'shr':narrow?'nar':''}" role="img" aria-label="Bản đồ hành trình: ${J.filter(j=>j.st==='done').length}/${N} bài đã hoàn thành">${bands.map(b=>b[0]).join('')}${road}${segs}${lane}${bands.map(b=>b[1]).join('')}${startEl}${goalEl}${nodes}</svg></div>`;
 }
 
-/* Kiểu 2: leo núi: đường mòn zigzag từ chân núi lên đỉnh, mỗi chấm là một bài, cờ chương ở mỗi chặng */
+/* Kiểu 2: leo núi: đường mòn zigzag từ chân núi lên đỉnh, mỗi chấm là một bài, nhãn chương ở mép trái/phải */
 function jMountain(J){
  const N=J.length,P=[[250,492],[560,432],[270,362],[522,292],[322,222],[470,162],[382,104],[400,62]];
  const seg=P.slice(1).map((p,k)=>Math.hypot(p[0]-P[k][0],p[1]-P[k][1])),tot=seg.reduce((a,b)=>a+b,0);
@@ -474,8 +475,6 @@ function jMountain(J){
   return `<g class="jm-dot ${j.st}" data-a="openLesson" data-v="${j.i}" tabindex="0" role="button" aria-label="${esc(jTip(j))}"><title>${esc(jTip(j))}</title><circle cx="${px}" cy="${py}" r="${r}" fill="${j.st==='done'?j.color:'var(--surface)'}" stroke="${j.st==='locked'?'var(--line-2)':j.color}" stroke-width="${j.st==='cur'?4:2}"/>${j.st==='cur'?`<text x="${px}" y="${py+4}" text-anchor="middle" class="jm-n" fill="${j.color}">${j.i+1}</text>`:''}</g>`;}).join('');
  const cur=ci>=0?(()=>{const [px,py]=pos[ci];return `<g class="jm-here"><rect x="${px-70}" y="${py+20}" width="140" height="30" rx="15"/><text x="${px}" y="${py+40}" text-anchor="middle">Bạn đang ở đây</text></g>`;})():'';
  const done=ci<0;
- const side=`<ol class="jm-list">${[...ch].reverse().map(c=>`<li class="${c.state}" style="--c:${PHASE_COLOR[c.ph.id]}"><span class="jm-ico">${ic(c.state==='done'?'check':PHASE_ICON[c.ph.id],15)}</span><div><small>Chương ${c.pi+1}</small><b>${esc(c.ph.name)}</b><i class="meter"><i style="width:${Math.round(c.dn/c.idx.length*100)}%"></i></i></div><em>${c.dn}/${c.idx.length}</em></li>`).join('')}</ol>`;
- const now=ci>=0?`<div class="jm-now"><small>Đang học</small><b>Bài ${ci+1} · ${esc(J[ci].title)}</b><button class="btn btn-primary btn-sm" data-a="openLesson" data-v="${ci}">Học tiếp ${ic('arrow',14)}</button></div>`:`<div class="jm-now done"><small>Hoàn thành</small><b>Anh/chị đã lên đỉnh</b></div>`;
  return `<div class="jm"><figure class="jm-fig"><svg viewBox="0 0 800 520" role="img" aria-label="Bản đồ leo núi: ${J.filter(j=>j.st==='done').length}/${N} bài đã hoàn thành">
   <defs><linearGradient id="jmG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="jm-s1"/><stop offset="1" class="jm-s2"/></linearGradient></defs>
   <path class="jm-back" d="M0,500 L170,250 L300,380 L560,150 L800,470 L800,500Z"/>
@@ -483,17 +482,41 @@ function jMountain(J){
   <path class="jm-trail" d="${ln(P)}"/><path class="jm-trail walked" d="${ln(walked)}"/>
   <g class="jm-top ${done?'done':''}"><line x1="400" y1="58" x2="400" y2="14" stroke="var(--ink)" stroke-width="2.5"/><path d="M400,14 l26,9 l-26,9z" fill="var(--orange)"/><text x="436" y="30" class="jm-t"><tspan class="jm-ch" fill="var(--orange)">Về đích</tspan><tspan x="436" dy="18">Nhận chứng nhận</tspan></text></g>
   ${flags}${dots}${cur}
-  <text x="250" y="514" text-anchor="middle" class="jm-t">Xuất phát</text></svg></figure>
-  <div class="jm-side">${now}${side}</div></div>`;
+  <text x="250" y="514" text-anchor="middle" class="jm-t">Xuất phát</text></svg></figure></div>`;
 }
 
-/* Kiểu 3: bậc thang: mỗi chương là một bậc, chương sau cao hơn và lệch phải; bài học là các ô số trong bậc */
-function jStairs(J){
- const ch=chapters(),n=ch.length,done=nextLesson()<0;
- const steps=[...ch].reverse().map(c=>{const k=ch.indexOf(c),col=PHASE_COLOR[c.ph.id],cur=J.find(j=>j.pi===c.pi&&j.st==='cur');
-  return `<div class="js-step ${c.state}" style="--c:${col};--k:${k};--n:${n}">
-   <div class="js-h"><span class="js-ico">${ic(c.state==='done'?'check':PHASE_ICON[c.ph.id],18)}</span><div><small>Chương ${c.pi+1}${c.state==='cur'?' · <em>Đang ở đây</em>':''}</small><b>${esc(c.ph.name)}</b></div><span class="js-n">${c.dn}/${c.idx.length} bài</span></div>
-   <div class="js-ls">${c.idx.map(i=>{const j=J[i];return `<button class="js-l ${j.st}" data-a="openLesson" data-v="${i}" title="${esc(jTip(j))}" aria-label="${esc(jTip(j))}">${j.st==='done'?ic('check',13):i+1}</button>`;}).join('')}</div>
-   ${cur?`<div class="js-cur"><span>Bài ${cur.i+1} · ${esc(cur.title)}</span><button class="btn btn-primary btn-sm" data-a="openLesson" data-v="${cur.i}">Học tiếp ${ic('arrow',14)}</button></div>`:''}</div>`;}).join('');
- return `<div class="js"><div class="js-goal ${done?'done':''}"><span>${ic('award',22)}</span><div><b>Về đích</b><small>${done?'Đã hoàn thành khóa học':'Nhận chứng nhận'}</small></div></div>${steps}<div class="js-start">${ic('flag',14)} Xuất phát · Ngày 1</div></div>`;
+/* Kiểu 3: đường gấp khúc dạng lưới (theo ảnh user gửi), **đi từ dưới lên**: hàng dưới cùng chạy trái → phải,
+   quay đầu chữ U lên hàng trên chạy phải → trái…, kết thúc ở cúp Về đích trên cùng. Mỗi bài là một nút tròn:
+   đã học = màu chương + ✓, đang học = viền màu chương + vầng sáng + nhãn "Bạn đang ở đây", chưa mở = trắng viền xám.
+   Đoạn đã đi: nét liền màu chương; đoạn chưa đi: chấm xám. Chip "CHƯƠNG k" trên nút đầu chương. Nhãn dưới nút: "Bài k" + năng lực. */
+function jSnake(J){
+ const N=J.length,COLS=(typeof innerWidth!=='undefined'&&innerWidth<700)?3:5,R=Math.ceil(N/COLS),W=1000,RH=205,TOP=150,H=TOP+R*RH+10;
+ const ci=J.findIndex(j=>j.st==='cur'),done=ci<0,ls=lessons();
+ const cx=c=>110+c*(780/(COLS-1)),pos=i=>{const r=Math.floor(i/COLS),p=i%COLS,c=r%2?COLS-1-p:p;return [cx(c),TOP+(R-1-r)*RH+50];};
+ const short=i=>{const ids=[...new Set(ls[i].map(k=>U(k).id))].map(id=>L[id]);const m=ids.filter(x=>x.type==='module');return (m.length?m:ids).map(x=>x.cap||x.title).join(' + ');};
+ const wrap=(t,n=22)=>{const w=t.split(' '),o=[];let l='';for(const x of w){if((l+' '+x).trim().length>n&&l){o.push(l);l=x;}else l=(l+' '+x).trim();}if(l)o.push(l);if(o.length>2){o.length=2;o[1]=o[1].slice(0,n-1)+'…';}return o;};
+ // đoạn nối i → i+1 (cùng hàng: thẳng; sang hàng trên: vòng chữ U ở mép)
+ const seg=(p,q)=>{if(p[1]===q[1])return `M${p[0]},${p[1]} L${q[0]},${q[1]}`;const out=p[0]>W/2?1:-1,k=95*out;return `M${p[0]},${p[1]} C${p[0]+k},${p[1]} ${q[0]+k},${q[1]} ${q[0]},${q[1]}`;};
+ const P=J.map(j=>pos(j.i));
+ // điểm Về đích: phía trên nút cuối, nối bằng vòng chữ U nếu nút cuối ở mép, nếu không thì đi thẳng lên
+ const last=P[N-1],gp=[last[0],last[1]-RH],goalAt=[gp[0],TOP-40];
+ const lines=J.slice(0,-1).map((j,k)=>{const on=ci<0||k+1<=ci,col=J[k+1].color;return `<path d="${seg(P[k],P[k+1])}" class="jg-ln ${on?'on':''}" ${on?`style="stroke:${col}"`:''}/>`;}).join('')
+  +`<path d="M${last[0]},${last[1]} L${goalAt[0]},${goalAt[1]+34}" class="jg-ln ${done?'on':''}" ${done?'style="stroke:#F5B942"':''}/>`;
+ const firstOf=new Set(PHASES.map((_,p)=>J.findIndex(j=>j.pi===p)).filter(k=>k>=0));
+ const nodes=J.map((j,k)=>{const [x,y]=P[k],col=j.color,cur=j.st==='cur',lines2=wrap(short(j.i));
+  const chip=firstOf.has(j.i)?(()=>{const t='CHƯƠNG '+(j.pi+1),w=t.length*9+26,yy=y-(cur?92:58);return `<rect x="${x-w/2}" y="${yy}" width="${w}" height="26" rx="13" fill="${j.st==='locked'?'#EEF1F6':col}" fill-opacity="${j.st==='locked'?1:.14}"/><text x="${x}" y="${yy+18}" text-anchor="middle" class="jg-chip" fill="${j.st==='locked'?'#98A2B3':col}">${t}</text>`;})():'';
+  const here=cur?`<g class="jg-here"><rect x="${x-74}" y="${y-62}" width="148" height="28" rx="8"/><path d="M${x-6},${y-34} L${x},${y-28} L${x+6},${y-34}Z"/><text x="${x}" y="${y-43}" text-anchor="middle">Bạn đang ở đây</text></g>`:'';
+  return `<g class="jg-n ${j.st}" data-a="openLesson" data-v="${j.i}" tabindex="0" role="button" aria-label="${esc(jTip(j))}"><title>${esc(jTip(j))}</title>
+   ${cur?`<circle cx="${x}" cy="${y}" r="34" fill="${col}" opacity=".16"/>`:''}
+   <circle cx="${x}" cy="${y}" r="24" fill="${j.st==='done'?col:'#fff'}" stroke="${j.st==='locked'?'#D5DCE6':j.st==='done'?'#fff':col}" stroke-width="${j.st==='done'?4:3.5}"/>
+   ${j.st==='done'?`<circle cx="${x}" cy="${y}" r="27" fill="none" stroke="${col}" stroke-width="2"/>`:''}
+   <text x="${x}" y="${y+7}" text-anchor="middle" class="jg-num" fill="${j.st==='done'?'#fff':j.st==='locked'?'#98A2B3':col}">${j.st==='done'?'✓':j.i+1}</text>
+   <text x="${x}" y="${y+50}" text-anchor="middle" class="jg-b ${j.st}">Bài ${j.i+1}</text>
+   ${lines2.map((l,m)=>`<text x="${x}" y="${y+72+m*19}" text-anchor="middle" class="jg-s ${j.st}">${esc(l)}</text>`).join('')}
+   ${chip}${here}</g>`;}).join('');
+ const [gx,gy]=goalAt;
+ const goal=`<g class="jg-goal ${done?'done':''}"><circle cx="${gx}" cy="${gy}" r="30" fill="${done?'#F5B942':'#FFF6E0'}" stroke="#F5B942" stroke-width="3"/><text x="${gx}" y="${gy+10}" text-anchor="middle" class="jg-star" fill="${done?'#fff':'#E0A21B'}">★</text>
+  <text x="${gx+(gx>W/2?-44:44)}" y="${gy-2}" text-anchor="${gx>W/2?'end':'start'}" class="jg-b">Về đích</text><text x="${gx+(gx>W/2?-44:44)}" y="${gy+18}" text-anchor="${gx>W/2?'end':'start'}" class="jg-s">Chọn 3 use case cho doanh nghiệp</text></g>`;
+ const p0=P[0],start=`<g><rect x="${p0[0]-62}" y="${p0[1]+112}" width="124" height="30" rx="8" class="jg-startb"/><text x="${p0[0]}" y="${p0[1]+132}" text-anchor="middle" class="jg-start">XUẤT PHÁT</text></g>`;
+ return `<div class="jg"><svg viewBox="0 0 ${W} ${H+40}" role="img" aria-label="Bản đồ hành trình: ${J.filter(j=>j.st==='done').length}/${N} bài đã hoàn thành">${lines}${goal}${nodes}${start}</svg></div>`;
 }
