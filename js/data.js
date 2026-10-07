@@ -253,12 +253,17 @@ const FEEDBACK_ASPECTS=[
  {k:"exp",label:"Trải nghiệm tổng thể",hint:"Từ lúc đăng ký, onboarding đến khi hoàn thành",tags:["Đăng ký thuận tiện","Onboarding nhanh gọn","Có động lực học mỗi ngày","Muốn học tiếp khóa khác"]}];
 const STAR_LABEL=["","Rất không hài lòng","Chưa hài lòng","Bình thường","Hài lòng","Rất hài lòng"];
 const LIVE={title:'AI đến đâu rồi? · Tháng 10/2026',when:'20:00, thứ Năm 15/10/2026',len:'75 phút · Zoom'};
-/* Sự kiện của khóa (trang Khóa học, ô "Sự kiện sắp tới"): chỉ hiện sự kiện chưa diễn ra (end > hiện tại);
-   không còn sự kiện nào thì ẩn cả ô. Hệ thống thật: Admin tạo/sửa sự kiện. act = nhãn nút, ok = nhãn sau khi bấm */
+/* Sự kiện (danh sách GỘP, theo yêu cầu user): dùng chung cho tab Sự kiện của cộng đồng (COMM_EVENTS = EVENTS), ô "Sự kiện sắp tới" trang Khóa học
+   và trang Hoàn thành. Bấm "Tham gia" ở đâu cũng vậy → S.comm.events[chỉ số] + gửi email xác nhận đăng ký sự kiện (eventEmail trong email.js).
+   type/icon: nhãn + biểu tượng trên trang Khóa học; end: giờ kết thúc, sự kiện đã qua thì ẩn khỏi ô "Sự kiện sắp tới".
+   join: thông tin tham gia gửi trong email (link Zoom, Meeting ID, mã truy cập, địa điểm… đều là minh họa); prep: việc nên chuẩn bị */
 const EVENTS=[
- {id:'live-2610',type:'Live Zoom',icon:'video',title:LIVE.title,when:LIVE.when,end:'2026-10-15T21:15',act:'Nhắc tôi',actIcon:'bell',ok:'Đã đặt nhắc'},
- {id:'off-2611',type:'Offline',icon:'users',title:'Offline Executive Briefing',when:'Sáng thứ Bảy 14/11/2026 · TP.HCM · số lượng giới hạn',end:'2026-11-14T12:00',act:'Quan tâm',actIcon:'star',ok:'Đã ghi nhận'}
-];
+ {d:'15/10',t:'20:00 · Thứ Năm',title:'Live Zoom: AI đến đâu rồi? · Tháng 10',desc:'Năng lực mới, 3 demo trực tiếp về AI Agent, hỏi đáp CEO.',len:'75 phút · Zoom',k:'live',type:'Live Zoom',icon:'video',end:'2026-10-15T21:15',
+  join:{zoom:'https://zoom.us/j/84512036781',id:'845 1203 6781',pass:'AICEO10'},prep:['Ghi sẵn 1–2 câu hỏi về AI anh/chị đang băn khoăn để hỏi trực tiếp','Dùng máy tính để xem demo rõ hơn']},
+ {d:'22/10',t:'12:00 · Thứ Năm',title:'Hỏi đáp nhanh cùng chuyên gia: Chọn use case đầu tiên',desc:'30 phút giờ trưa, mang 3 use case của anh/chị đến để được góp ý.',len:'30 phút · Zoom',k:'ama',type:'Hỏi đáp',icon:'chat',end:'2026-10-22T12:30',
+  join:{zoom:'https://zoom.us/j/86230419552',id:'862 3041 9552',pass:'USECASE'},prep:['Chuẩn bị 3 use case đang cân nhắc (bài tập Module 12 nếu đã làm)','Mỗi use case ghi ngắn: việc gì, phòng ban nào, kết quả mong muốn']},
+ {d:'08/11',t:'08:30 · Thứ Bảy',title:'Offline Executive Briefing tại TP.HCM',desc:'Nửa ngày xem demo live và thảo luận theo nhóm ngành. Số lượng giới hạn.',len:'4 giờ · Trực tiếp',k:'offline',type:'Offline',icon:'users',end:'2026-11-08T12:30',
+  join:{place:'Hội trường Học viện Siêu Tăng Trưởng',addr:'100 Nguyễn Văn Lượng, Phường Gò Vấp, Hồ Chí Minh',checkin:'Đón khách từ 08:00'},prep:['Xuất trình email này hoặc mã đăng ký khi check-in','Mang theo danh thiếp để kết nối với các CEO cùng nhóm ngành','Báo trước cho Học viện nếu không tham gia được để nhường chỗ']}];
 
 /* ---------- cấu hình lộ trình & demo ---------- */
 const PACES=[20,30,60];   // số phút mỗi ngày học được chọn

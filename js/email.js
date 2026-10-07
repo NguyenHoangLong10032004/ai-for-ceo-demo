@@ -162,9 +162,72 @@ function ensureSampleInvoice(){
  o.inv={series:'1C26TST',no:'00000001',date:b.paidAt||today(),lookup:'STT'+o.code.replace(/\D/g,'')};
  S.mails.push({id:'m'+Date.now()+'s',kind:'invoice',sample:true,code:o.code,to:o.invEmail,at:nowStr(),read:false,order:o});
 }
-const mailSubject=x=>x.kind==='remind'?x.msg.title:x.kind==='invoice'?`Hóa đơn điện tử số ${(x.order.inv||{}).no||''}`:x.kind==='access'?ACCESS_SUBJECT:CONFIRM_SUBJECT;
+/* ---------- Email xác nhận đăng ký sự kiện (đề xuất mới, CEO AI Community · FR-46) ----------
+   Gửi ngay khi học viên bấm "Tham gia" ở tab Sự kiện: thông tin sự kiện, thông tin tham gia (link Zoom hoặc địa điểm),
+   chuẩn bị trước, lời nhắc trước 1 ngày / 1 giờ, cách hủy, hỗ trợ. ev = phần tử COMM_EVENTS, r = {code, name, email} */
+const EV_YEAR=2026;
+const eventSubject=ev=>`Xác nhận đăng ký sự kiện: ${ev.title}`;
+function eventInfo(ev){
+ const [dd,mm]=ev.d.split('/'),[time,wd]=ev.t.split(' · '),off=ev.k==='offline',j=ev.join||{};
+ return {date:`${wd}, ${dd}/${mm}/${EV_YEAR}`,time,dur:ev.len.split(' · ')[0],mode:off?'Trực tiếp tại TP.HCM':'Online qua Zoom',off,j};
+}
+function eventEmail(ev,r,opt={}){
+ const logo=opt.logo||'img/logo.png',x=eventInfo(ev),j=x.j,name=r.name||'anh/chị',subject=eventSubject(ev);
+ const row=(k,v)=>`<tr><td style="padding:9px 0;color:#5B6472;font-size:14px;border-top:1px solid #E6E8EC;width:38%">${k}</td><td style="padding:9px 0;font-size:14px;border-top:1px solid #E6E8EC;text-align:right;color:#141A26;font-weight:600">${v}</td></tr>`;
+ const h=t=>`<h2 style="margin:28px 0 10px;font-size:16px;line-height:1.4;color:#141A26">${t}</h2>`;
+ const p=t=>`<p style="margin:0 0 12px;font-size:15px;line-height:1.65;color:#2B3240">${t}</p>`;
+ const join=x.off
+  ?[['Địa điểm',esc(j.place)],['Địa chỉ',esc(j.addr)],['Check-in',esc(j.checkin)],['Mã đăng ký',`<b>${esc(r.code)}</b>`]]
+  :[['Link Zoom',`<a href="${j.zoom}" style="color:#1747C9">${esc(j.zoom.replace('https://',''))}</a>`],['Meeting ID',esc(j.id)],['Mật khẩu',esc(j.pass)]];
+ const cta='THAM GIA ZOOM →',ctaUrl=j.zoom; // sự kiện Offline không có nút (đã bỏ nút "Xem đường đi" theo yêu cầu user)
+ const html=`<div style="background:#F3F4F6;padding:24px 12px;font-family:Roboto,Arial,Helvetica,sans-serif;color:#141A26">
+<span style="display:none;max-height:0;overflow:hidden;opacity:0">Anh/chị đã đăng ký ${esc(ev.title)}, ${x.time} ${x.date}.</span>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;margin:0 auto;background:#FFFFFF;border:1px solid #E6E8EC;border-radius:12px;border-collapse:separate">
+<tr><td style="padding:24px 32px;border-bottom:1px solid #E6E8EC"><img src="${logo}" alt="${ACADEMY.name}" width="180" style="display:block;height:auto;max-width:180px"></td></tr>
+<tr><td style="padding:32px 32px 8px">
+ <h1 style="margin:0 0 18px;font-size:24px;line-height:1.3;color:#141A26">Chào ${esc(name)},</h1>
+ ${p(`Học viện Siêu Tăng Trưởng xác nhận anh/chị đã <b>đăng ký tham gia</b> sự kiện <b>${esc(ev.title)}</b>. ${x.off?'Học viện đã giữ chỗ cho anh/chị.':'Thông tin vào phòng Zoom ở bên dưới.'}`)}
+ ${h('Thông tin sự kiện')}
+ <table role="presentation" width="100%" cellpadding="0" cellspacing="0">${row('Sự kiện',esc(ev.title))}${row('Ngày',x.date)}${row('Giờ bắt đầu',x.time)}${row('Thời lượng',x.dur)}${row('Hình thức',x.mode)}</table>
+ ${p(`<span style="font-size:14px;color:#5B6472">${esc(ev.desc)}</span>`)}
+ ${h(x.off?'Địa điểm & check-in':'Thông tin tham gia')}
+ <table role="presentation" width="100%" cellpadding="0" cellspacing="0">${join.map(([k,v])=>row(k,v)).join('')}</table>
+ ${x.off?'':`<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:22px 0 4px"><tr><td align="center">
+  <a href="${ctaUrl}" ${opt.ctaAttr||''} style="display:inline-block;background:#1747C9;color:#FFFFFF;text-decoration:none;font-weight:800;font-size:15px;letter-spacing:.04em;padding:15px 34px;border-radius:10px">${cta}</a>
+ </td></tr></table>`}
+ ${x.off?'':p(`<span style="font-size:13px;color:#5B6472">Anh/chị vào phòng trước 5 phút. Link chỉ dành cho người đã đăng ký, vui lòng không chia sẻ.</span>`)}
+ ${h('Chuẩn bị trước')}
+ <ul style="margin:0 0 12px;padding-left:20px;font-size:15px;line-height:1.7;color:#2B3240">${ev.prep.map(t=>`<li>${esc(t)}</li>`).join('')}</ul>
+ ${h('Nhắc lịch')}
+ ${p(`Học viện sẽ gửi lời nhắc qua email <b>trước 1 ngày</b> và <b>trước 1 giờ</b>.${x.off?'':' Bản ghi buổi Live sẽ được đăng trong tab Lớp học của cộng đồng sau sự kiện.'}`)}
+ ${p(`Nếu không tham gia được, anh/chị trả lời email <a href="mailto:${ACADEMY.support}" style="color:#1747C9">${ACADEMY.support}</a> kèm mã đăng ký <b>${esc(r.code)}</b>${x.off?' để Học viện nhường chỗ cho người khác':''}.`)}
+ ${h('Cần hỗ trợ?')}
+ <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F6F7F9;border-radius:10px"><tr><td style="padding:14px 18px;font-size:14px;line-height:1.8;color:#2B3240">
+  Email: <a href="mailto:${ACADEMY.support}" style="color:#1747C9">${ACADEMY.support}</a><br>Hotline: <b>${ACADEMY.hotline}</b><br>Zalo: ${ACADEMY.zalo}<br><span style="color:#5B6472">Giờ hỗ trợ: ${ACADEMY.hours}.</span>
+ </td></tr></table>
+ ${p('')}
+</td></tr>
+${emailFooter({logo,reason:`Anh/chị nhận email này vì đã đăng ký sự kiện trong CEO AI Community (mã đăng ký ${esc(r.code)}).`})}
+</table></div>`;
+ const text=[`Chào ${name},`,'',`Học viện Siêu Tăng Trưởng xác nhận anh/chị đã đăng ký tham gia sự kiện ${ev.title}.`,'',
+  'THÔNG TIN SỰ KIỆN',`Ngày: ${x.date}`,`Giờ bắt đầu: ${x.time}`,`Thời lượng: ${x.dur}`,`Hình thức: ${x.mode}`,'',
+  x.off?'ĐỊA ĐIỂM & CHECK-IN':'THÔNG TIN THAM GIA',...(x.off?[`${j.place}, ${j.addr}`,j.checkin,`Mã đăng ký: ${r.code}`]:[`Link Zoom: ${j.zoom}`,`Meeting ID: ${j.id}`,`Mật khẩu: ${j.pass}`]),'',
+  'CHUẨN BỊ TRƯỚC',...ev.prep.map(t=>'- '+t),'','Học viện sẽ nhắc trước 1 ngày và trước 1 giờ.',`Không tham gia được: trả lời ${ACADEMY.support} kèm mã ${r.code}.`,'',`Hỗ trợ: ${ACADEMY.support} · ${ACADEMY.hotline}`,ACADEMY.name].join('\n');
+ return {from:`${ACADEMY.name} <${ACADEMY.sender}>`,to:r.email,subject,html,text};
+}
+// gọi khi bấm "Tham gia": mỗi sự kiện 1 email xác nhận
+function sendEventEmail(i){
+ const ev=COMM_EVENTS[i];if(!ev||S.mails.some(m=>m.kind==='event'&&m.ev===i))return;
+ const ac=S.account||{},o=S.order||{};
+ const r={code:'EV-'+ev.d.replace('/','')+'-'+String(Math.floor(1000+Math.random()*9000)),name:ac.name||o.name||'',email:ac.email||o.email||''};
+ const m={id:mailId('e'),kind:'event',ev:i,reg:r,to:r.email,at:nowStr(),read:false};
+ S.mails.unshift(m);if(realMailOn())sendRealEmail(m);
+}
+// mã thư không trùng (nhiều thư tạo trong cùng 1 mili giây, vd. lúc khởi động)
+let mailSeq=0;const mailId=s=>'m'+Date.now()+'-'+(++mailSeq)+(s||'');
+const mailSubject=x=>x.kind==='event'?eventSubject(COMM_EVENTS[x.ev]):x.kind==='remind'?x.msg.title:x.kind==='invoice'?`Hóa đơn điện tử số ${(x.order.inv||{}).no||''}`:x.kind==='access'?ACCESS_SUBJECT:CONFIRM_SUBJECT;
 // nội dung 1 email trong hộp thư: xác nhận đăng ký, hóa đơn hoặc nhắc lịch học
-function mailContent(m,opt){return m.kind==='remind'?{...remindEmail(m.msg,opt),to:m.to}:m.kind==='invoice'?invoiceEmail(m.order,opt):confirmEmail(m.order,{...opt,part:m.kind==='access'?'access':'confirm'});}
+function mailContent(m,opt){return m.kind==='event'?eventEmail(COMM_EVENTS[m.ev],m.reg,opt):m.kind==='remind'?{...remindEmail(m.msg,opt),to:m.to}:m.kind==='invoice'?invoiceEmail(m.order,opt):confirmEmail(m.order,{...opt,part:m.kind==='access'?'access':'confirm'});}
 /* ---------- Gửi email thật qua EmailJS ---------- */
 const realMailOn=()=>!!(EMAILJS.serviceId&&EMAILJS.templateId&&EMAILJS.publicKey);
 // Nạp thư viện EmailJS khi cần (chỉ khi đã cấu hình), không làm chậm lúc mở trang
@@ -181,7 +244,7 @@ async function sendRealEmail(m){
  try{
   const ej=await loadEmailJS();
   await ej.send(EMAILJS.serviceId,EMAILJS.templateId,{to_email:e.to,to_name:(S.order&&S.order.name)||'',subject:e.subject,html:e.html,text:e.text,reply_to:ACADEMY.support,from_name:ACADEMY.name});
-  m.real='sent';if(m.kind!=='remind')toast(`Đã gửi ${m.kind==='invoice'?'email hóa đơn':m.kind==='access'?'email kích hoạt khóa học':'email xác nhận'} tới ${e.to}. Anh/chị kiểm tra hộp thư (cả mục Spam/Quảng cáo)`);
+  m.real='sent';if(m.kind!=='remind')toast(`Đã gửi ${m.kind==='invoice'?'email hóa đơn':m.kind==='event'?'email xác nhận sự kiện':m.kind==='access'?'email kích hoạt khóa học':'email xác nhận'} tới ${e.to}. Anh/chị kiểm tra hộp thư (cả mục Spam/Quảng cáo)`);
  }catch(err){
   m.real='failed';m.err=(err&&(err.text||err.message))||'lỗi không xác định';
   toast(`Chưa gửi được email tới ${e.to}. Email vẫn có trong Hộp thư mô phỏng`,'bad');
@@ -226,7 +289,7 @@ function mailView(){
    <div class="gm-tabs"><span class="on">${gmIc('inbox',18)} Chính</span><span>Quảng cáo</span><span>Mạng xã hội</span></div>
    <div class="gm-rows" role="list">${rows||'<p class="gm-empty">Không có thư nào trong Hộp thư đến.</p>'}</div>`;
  }else{
-  const e=mailContent(m,{url:'#',ctaAttr:m.kind==='remind'?`data-a="zaloCta" data-v="${m.msg.ctaTo}"`:m.kind==='invoice'?'data-a="invLookup"':'data-a="mailCta"'}),k=S.mails.indexOf(m);
+  const e=mailContent(m,{url:'#',ctaAttr:m.kind==='remind'?`data-a="zaloCta" data-v="${m.msg.ctaTo}"`:m.kind==='invoice'?'data-a="invLookup"':m.kind==='event'?'target="_blank" rel="noopener"':'data-a="mailCta"'}),k=S.mails.indexOf(m);
   main=`<div class="gm-tools"><button class="gm-ib sm" data-a="mailOpen" data-v="list" aria-label="Quay lại Hộp thư đến" title="Quay lại Hộp thư đến">${gmIc('back',18)}</button><span class="gm-ib sm">${gmIc('archive',18)}</span><span class="gm-ib sm">${gmIc('trash',18)}</span><span class="gm-ib sm">${gmIc('more',18)}</span>
     <span class="gm-count">${k+1} trong số ${n}</span>${k>0?`<button class="gm-ib sm" data-a="mailOpen" data-v="${S.mails[k-1].id}" aria-label="Thư mới hơn">${gmIc('left',18)}</button>`:`<span class="gm-ib sm off">${gmIc('left',18)}</span>`}${k<n-1?`<button class="gm-ib sm" data-a="mailOpen" data-v="${S.mails[k+1].id}" aria-label="Thư cũ hơn">${gmIc('right',18)}</button>`:`<span class="gm-ib sm off">${gmIc('right',18)}</span>`}</div>
    <div class="gm-read"><div class="gm-subj"><h2>${esc(e.subject)}</h2><span class="gm-lbl">Hộp thư đến <i>×</i></span></div>

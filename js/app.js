@@ -283,7 +283,7 @@ const ACT={
  commBack:()=>{T.commPost=null;render();hist();},
  commLike:d=>{const L=S.comm.likes;if(L[d.v])delete L[d.v];else L[d.v]=true;render();},
  commWrite:d=>{T.commWrite=d.v==='1';T.err={};if(!T.commWrite){T.commDraft=null;T.commFiles=[];}render();if(T.commWrite){const el=document.getElementById('cm-title');if(el)el.focus();}},
- commEvent:d=>{S.comm.events[d.v]=true;render();toast(`Đã đăng ký: ${COMM_EVENTS[d.v].title}. Link tham gia sẽ gửi qua email`);},
+ commEvent:d=>{S.comm.events[d.v]=true;sendEventEmail(+d.v);render();toast(`Đã đăng ký: ${COMM_EVENTS[d.v].title}. Email xác nhận đã gửi, xem trong Hộp thư`);},
  // nhắc lịch học (Email + Zalo OA)
  remindOpen:()=>{T.remindOpen=true;T.remindDraft={...S.remind,on:true,days:[1,2,3,4,5,6,0]};T.remindPreview=null;T.asstOpen=false;render();},
  remindClose:()=>{T.remindOpen=false;T.remindDraft=null;render();},
@@ -322,9 +322,9 @@ const ACT={
  shareNative:async()=>{const b=await shareBlob();if(!b)return;const file=new File([b],shareFileName(),{type:'image/png'});const cap=(document.getElementById('share-cap')||{}).value||'';
   if(navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file],text:cap});toast('Đã mở chia sẻ');}catch(e){}}else{await shareDownload();toast('Thiết bị không hỗ trợ chia sẻ ảnh trực tiếp, ảnh đã được tải về');}},
  // sự kiện
- evReg:d=>{const e=EVENTS.find(x=>x.id===d.v);if(!e)return;S.evReg={...(S.evReg||{}),[e.id]:true};if(e.type==='Live Zoom')S.liveRemind=true;else S.offline=true;render();toast(e.type==='Live Zoom'?'Đã đặt nhắc lịch buổi Live Zoom':'Đã ghi nhận quan tâm Offline Executive Briefing');},
- liveRemind:()=>{S.liveRemind=true;render();toast('Đã đặt nhắc lịch buổi Live Zoom');},
- offline:()=>{S.offline=true;render();toast('Đã ghi nhận quan tâm Offline Executive Briefing');},
+ evReg:d=>{const i=EVENTS.findIndex(x=>x.id===d.v||String(EVENTS.indexOf(x))===String(d.v));if(i>=0)ACT.commEvent({v:String(i)});},
+ liveRemind:()=>ACT.commEvent({v:String(EVENTS.findIndex(x=>x.k==='live'))}),
+ offline:()=>ACT.commEvent({v:String(EVENTS.findIndex(x=>x.k==='offline'))}),
  // AI Assistant & hỗ trợ
  asstToggle:()=>{T.asstOpen=!T.asstOpen;if(T.asstOpen)ACT.chatTab({v:T.tab});else render();},
  // mở khung chat đúng tab; bấm lại nút đang mở thì đóng
@@ -465,7 +465,12 @@ let spentTick=0;setInterval(()=>{if(S.screen!=='lesson'||!S.unit||document.visib
 // cộng đồng: chủ đề "Thắng lợi AI" đã bỏ, bài cũ chuyển sang "Chia sẻ use case"
 if(S.comm&&Array.isArray(S.comm.posts))S.comm.posts.forEach(p=>{if(p.cat==='win')p.cat='usecase';});
 // sự kiện: chuyển trạng thái cũ (liveRemind/offline) sang S.evReg
-if(!S.evReg){S.evReg={};if(S.liveRemind)S.evReg['live-2610']=true;if(S.offline)S.evReg['off-2611']=true;}
+// sự kiện: danh sách đã gộp (EVENTS), trạng thái đăng ký chỉ còn S.comm.events; chuyển trạng thái cũ của trang Khóa học sang (mỗi đơn 1 lần)
+if(!S.evMerged){S.comm=S.comm||{};S.comm.events=S.comm.events||{};const r=S.evReg||{},li=EVENTS.findIndex(x=>x.k==='live'),oi=EVENTS.findIndex(x=>x.k==='offline');if(r['live-2610']||S.liveRemind)S.comm.events[li]=true;if(r['off-2611']||S.offline)S.comm.events[oi]=true;S.evMerged=true;}
+// thư trùng mã (bản trước tạo nhiều thư trong cùng 1 mili giây) → đổi mã cho khác nhau, để bấm vào thư nào mở đúng thư đó
+if(Array.isArray(S.mails)){const seen=new Set();S.mails.forEach(m=>{if(seen.has(m.id))m.id=mailId('d');seen.add(m.id);});}
+// sự kiện cộng đồng đã đăng ký trước khi có email xác nhận: bổ sung email (mỗi sự kiện 1 lần)
+if(S.comm&&S.comm.events&&Array.isArray(S.mails))Object.keys(S.comm.events).forEach(i=>{if(S.comm.events[i])sendEventEmail(+i);});
 if(!PAY_METHODS[S.pay.method])S.pay.method='qr';
 // tài khoản Học viện: dữ liệu cũ đã đăng ký khóa thì tạo tài khoản từ đơn hàng
 if(S.enrolled&&!S.account&&S.order){S.account={name:S.order.name,phone:S.order.phone,email:S.order.email,createdAt:S.order.paidAt||today()};S.loggedIn=true;}

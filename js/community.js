@@ -47,10 +47,8 @@ const COMM_SEED=[
 // cấp độ theo điểm (giống Skool): điểm = lượt thích nhận được trên bài viết và bình luận
 const COMM_LEVELS=[0,5,20,65,155,515,2015,8015,33015];
 const COMM_LEVEL_NAME=['','Người mới','Thành viên','Tích cực','Người chia sẻ','Chuyên gia','Người truyền cảm hứng','Đại sứ','Huyền thoại','Biểu tượng'];
-const COMM_EVENTS=[
- {d:'15/10',t:'20:00 · Thứ Năm',title:'Live Zoom: AI đến đâu rồi? · Tháng 10',desc:'Năng lực mới, 3 demo trực tiếp về AI Agent, hỏi đáp CEO.',len:'75 phút · Zoom',k:'live'},
- {d:'22/10',t:'12:00 · Thứ Năm',title:'Hỏi đáp nhanh cùng chuyên gia: Chọn use case đầu tiên',desc:'30 phút giờ trưa, mang 3 use case của anh/chị đến để được góp ý.',len:'30 phút · Zoom',k:'ama'},
- {d:'08/11',t:'08:30 · Thứ Bảy',title:'Offline Executive Briefing tại TP.HCM',desc:'Nửa ngày xem demo live và thảo luận theo nhóm ngành. Số lượng giới hạn.',len:'4 giờ · Trực tiếp',k:'offline'}];
+// sự kiện: dùng chung danh sách EVENTS (data.js) với ô "Sự kiện sắp tới" trang Khóa học
+const COMM_EVENTS=EVENTS;
 
 /* ---------- số liệu ---------- */
 const commLevel=pts=>{let l=1;COMM_LEVELS.forEach((v,i)=>{if(pts>=v)l=i+1;});return l;};

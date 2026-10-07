@@ -206,13 +206,17 @@ function account(){
   ${tab==='login'?login:reg}</div></section>`;
 }
 
-// Ô "Sự kiện sắp tới" (gộp Live Zoom + Offline): chỉ hiện sự kiện chưa diễn ra, không có thì ẩn cả ô
+// Ô "Sự kiện sắp tới" (danh sách gộp EVENTS, chung với tab Sự kiện của cộng đồng): chỉ hiện sự kiện chưa diễn ra, không có thì ẩn cả ô
 const upcomingEvents=()=>EVENTS.filter(e=>new Date(e.end).getTime()>Date.now());
+const evOn=e=>!!((S.comm&&S.comm.events)||{})[EVENTS.indexOf(e)];
+const evWhen=e=>{const [t,wd]=e.t.split(' · ');return `${t}, ${wd.toLowerCase()} ${e.d}/${EV_YEAR} · ${e.len}`;};
+// nút đăng ký sự kiện dùng chung: chưa đăng ký → "Tham gia" (gửi email xác nhận), đã đăng ký → nhãn xanh
+const evBtn=(e,cls='btn-sm')=>evOn(e)?`<span class="pill ok">${ic('check',12)} Đã đăng ký</span>`:`<button class="btn btn-line ${cls}" data-a="commEvent" data-v="${EVENTS.indexOf(e)}">${ic('cal',14)} Tham gia</button>`;
 function eventsCard(){
  const ev=upcomingEvents();if(!ev.length)return '';
- return `<div class="card pad ev-card"><b class="ev-h">${ic('cal',16)} Sự kiện sắp tới</b><ul class="ev-list">${ev.map(e=>{const on=!!(S.evReg||{})[e.id];
-  return `<li><span class="ev-ico">${ic(e.icon,16)}</span><div><span class="tag">${e.type}</span><b>${esc(e.title)}</b><span class="hint">${esc(e.when)}</span>
-   <div>${on?`<span class="pill ok">${ic('check',12)} ${e.ok}</span>`:`<button class="btn btn-line btn-sm" data-a="evReg" data-v="${e.id}">${ic(e.actIcon,14)} ${e.act}</button>`}</div></div></li>`;}).join('')}</ul></div>`;
+ return `<div class="card pad ev-card"><b class="ev-h">${ic('cal',16)} Sự kiện sắp tới</b><ul class="ev-list">${ev.map(e=>{
+  return `<li><span class="ev-ico">${ic(e.icon,16)}</span><div><span class="tag">${e.type}</span><b>${esc(e.title)}</b><span class="hint">${esc(evWhen(e))}</span>
+   <div>${evBtn(e)}</div></div></li>`;}).join('')}</ul></div>`;
 }
 
 /* ---------- 3. Khóa học của tôi ---------- */
@@ -542,13 +546,13 @@ function complete(){
    <div class="kv" style="margin-top:16px"><div><span>Bài học</span><b class="tnum">${st.lessonsDone}/${st.n}</b></div><div><span>Bài tập đã nộp</span><b class="tnum">${subsCount()}/${Object.keys(TASKS).length}</b></div><div><span>Thời gian học</span><b class="tnum">${dashStats().studyDays} ngày</b></div></div>
    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px"><button class="btn btn-line btn-sm" data-a="go" data-to="outputs">${ic('file',15)} Xem bộ bài tập</button><button class="btn btn-line btn-sm" data-a="go" data-to="dashboard">${ic('map',15)} Xem bản đồ hành trình</button></div></article>
   <div style="display:grid;gap:16px">${checkCard}
-   <article class="card pad event"><span class="tag">Live Zoom tiếp theo</span><h3>${LIVE.title}</h3><p>${LIVE.when}. Học viên đã hoàn thành vẫn tham gia các buổi cập nhật hằng tháng.</p><div>${S.liveRemind?`<span class="pill ok">${ic('check',12)} Đã đặt nhắc lịch</span>`:`<button class="btn btn-line btn-sm" data-a="liveRemind">${ic('bell',15)} Nhắc tôi</button>`}</div></article></div>
+   ${(()=>{const e=upcomingEvents().find(x=>x.k==='live');return e?`<article class="card pad event"><span class="tag">Live Zoom tiếp theo</span><h3>${esc(e.title)}</h3><p>${esc(evWhen(e))}. Học viên đã hoàn thành vẫn tham gia các buổi cập nhật hằng tháng.</p><div>${evBtn(e)}</div></article>`:'';})()}</div>
  </div>
  <div class="bigq" style="margin-top:24px"><span>Câu hỏi mở cho chặng tiếp theo</span><p>"Nếu AI đã có những năng lực này, doanh nghiệp của tôi nên được thiết kế lại như thế nào?"</p></div>
  <div style="margin-top:24px">${secHead('Khi anh/chị sẵn sàng','Hành trình tiếp theo trong hệ sinh thái','Không bắt buộc. Mỗi bước giúp đi từ "hiểu" sang "áp dụng".')}
   <div class="eco">${[['Academy','Hiểu AI đang làm được gì',true],['CEO Self-reflection','Doanh nghiệp mình có cơ hội ở đâu?'],['DX Check-up / Blueprint','Map doanh nghiệp, xác định bài toán và ưu tiên'],['BlueBolt Software','Thiết kế, triển khai hệ thống AI và automation']].map(([t,d,h])=>`<div class="${h?'here':''}"><b>${t}${h?' · Anh/chị đang ở đây':''}</b><p>${d}</p></div>`).join('')}</div></div>
  <div class="grid g2" style="margin-top:16px"><article class="card pad" style="display:grid;gap:10px;align-content:start"><h3 class="h3">CEO AI Community</h3><p class="muted">Trao đổi use case, case study và kinh nghiệm với các CEO khác.</p><div><button class="btn btn-line" data-a="openCommunity" data-v="aiceo">${ic('users',16)} Vào cộng đồng</button></div></article>
- <article class="card pad" style="display:grid;gap:10px;align-content:start"><h3 class="h3">Offline Executive Briefing</h3><p class="muted">Xem demo live và thảo luận 3 use case của anh/chị cùng chuyên gia.</p><div>${S.offline?`<span class="pill ok">${ic('check',12)} Đã ghi nhận quan tâm</span>`:`<button class="btn btn-line" data-a="offline">Đăng ký quan tâm</button>`}</div></article></div>
+ <article class="card pad" style="display:grid;gap:10px;align-content:start"><h3 class="h3">Offline Executive Briefing</h3><p class="muted">Xem demo live và thảo luận 3 use case của anh/chị cùng chuyên gia.</p>${(()=>{const e=upcomingEvents().find(x=>x.k==='offline');return e?`<p class="hint">${esc(evWhen(e))}</p><div>${evBtn(e,'')}</div>`:'<p class="hint">Chưa có lịch buổi tiếp theo.</p>';})()}</article></div>
  </section>`;
 }
 
