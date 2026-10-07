@@ -1321,8 +1321,7 @@ button.rm-node:hover .rm-ico{transform:translateY(-3px)}
 .jm-t{font-size:17px;font-weight:600;fill:var(--ink)}
 .jm-ch{font-size:16px;font-weight:800}
 .jm-flag.todo{opacity:.55}
-.jm-dot{cursor:pointer}
-.jm-dot:focus-visible{outline:none}.jm-dot:focus-visible circle{stroke:var(--ink);stroke-width:3}
+.jm-dot{cursor:default} /* bản đồ hành trình chỉ để xem, không bấm vào bài (theo yêu cầu user) */
 .jm-n{font-size:15px;font-weight:800}
 .jm-here rect{fill:var(--orange)}
 .jm-here text{fill:#fff;font-size:16px;font-weight:700}
@@ -1591,9 +1590,7 @@ button.rm-node:hover .rm-ico{transform:translateY(-3px)}
 .jg svg{width:min(1000px,100%);height:auto;display:block;overflow:visible}
 .jg-ln{fill:none;stroke:#C9D3E3;stroke-width:3;stroke-dasharray:2 8;stroke-linecap:round}
 .jg-ln.on{stroke-width:6;stroke-dasharray:none}
-.jg-n{cursor:pointer}
-.jg-n:focus-visible{outline:none}
-.jg-n:hover circle,.jg-n:focus-visible circle{filter:drop-shadow(0 3px 6px rgba(23,32,51,.22))}
+.jg-n{cursor:default}
 .jg-num{font-size:20px;font-weight:800}
 .jg-b{font-size:16.5px;font-weight:800;fill:var(--ink)}
 .jg-b.locked{fill:#98A2B3}
@@ -1773,10 +1770,7 @@ button.rm-node:hover .rm-ico{transform:translateY(-3px)}
 .jr3-lane{fill:none;stroke:#fff;stroke-width:3;stroke-dasharray:14 14;stroke-linecap:round;opacity:.9}
 .jr3-chip{font-size:14px;font-weight:800;letter-spacing:.05em}
 .jr3-cnt{font-size:14px;font-weight:800}
-.jr3-n{cursor:pointer}
-.jr3-n:focus-visible{outline:none}
-.jr3-n:hover .jr3-card,.jr3-n:focus-visible .jr3-card{filter:drop-shadow(0 4px 10px rgba(23,32,51,.14))}
-.jr3-n:focus-visible .jr3-card{stroke:#3874FF;stroke-opacity:1;stroke-width:2.5}
+.jr3-n{cursor:default}
 .jr3-lead{stroke-width:2;stroke-dasharray:3 4}
 .jr3-card{fill:#fff;stroke-width:1.5}
 .jr3-card.cur{stroke-width:2.5}

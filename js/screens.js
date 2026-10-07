@@ -151,7 +151,7 @@ function checkout(){
   <div class="sum-row"><span class="k">Học phí</span><span class="v tnum">${money(COURSE.list)}</span></div>
   <div class="sum-row disc"><span class="k">${COURSE.promo}</span><span class="v tnum">−${money(SAVE)}</span></div>
   <div class="sum-row" style="align-items:center"><span class="k">Tổng thanh toán</span><span class="v total tnum">${money(COURSE.price)}</span></div>
-  <ul class="promise" style="margin-top:16px;font-size:14.5px;gap:10px">${COURSE.perks.slice(0,4).map(x=>`<li>${ic('check',15)}<span>${x}</span></li>`).join('')}</ul></aside>`;
+  <ul class="promise" style="margin-top:16px;font-size:14.5px;gap:10px">${COURSE.perks.slice(0,4).filter(x=>!x.startsWith('Live Zoom')).map(x=>`<li>${ic('check',15)}<span>${x}</span></li>`).join('')}</ul></aside>`;
  let main;
  if(st==='processing')main=`<div class="card status"><div class="spin" role="status" aria-label="Đang xử lý"></div><h3 class="h3">Đang xử lý giao dịch…</h3><p class="muted">Vui lòng không đóng trang.</p></div>`;
  else if(st==='failed')main=`<div class="card status"><span class="big bad">${ic('x',28)}</span><h3 class="h3">Giao dịch chưa thành công</h3><p class="muted" style="max-width:46ch">Ngân hàng từ chối giao dịch (mô phỏng). Tiền chưa bị trừ. Anh/chị có thể thử lại, sửa thông tin, hoặc nhờ hỗ trợ.</p>
@@ -224,7 +224,7 @@ function mycourses(){
  const started=S.ob.done&&S.plan&&(S.plan.accepted||S.plan.wasActive);const st=started?planStats():null;
  const fresh=!S.ob.flow.length&&!S.ob.done;
  const status=fresh?['Chưa bắt đầu','wait']:!S.ob.done?['Đang onboarding','blue']:!started?['Chờ xác nhận lộ trình','blue']:st.lessonsDone===st.n&&subsCount()===Object.keys(TASKS).length?['Đã hoàn thành','ok']:['Đang học','blue'];
- const cta=fresh?'Bắt đầu khóa học':!S.ob.done?'Tiếp tục onboarding':!started?'Xem & xác nhận lộ trình':'Học tiếp';
+ const cta=fresh?'Bắt đầu khóa học':!S.ob.done?'Tiếp tục onboarding':!started?'Xem & xác nhận lộ trình':st.lessonsDone===0&&subsCount()===0?'Bắt đầu học':'Học tiếp'; // 0 bài học + 0 bài tập = Bắt đầu học, từ 1 bài trở đi = Học tiếp (theo yêu cầu user)
  const ni=started?nextLesson():-1;
  return `<section class="wrap page">
  <div class="page-head"><span class="eyebrow">Tài khoản học viên</span><h2 class="h2">Khóa học của tôi</h2><p class="sub">Khóa học đã đăng ký.</p></div>
@@ -337,7 +337,7 @@ function syllabus(){
  if(!S.plan)return `<section class="wrap narrow page"><div class="card gen"><h2 class="h3">Hồ sơ đã sẵn sàng</h2>${T.err.gen?`<p class="err">${esc(T.err.gen)}</p>`:''}<button class="btn btn-primary btn-lg" data-a="genPlan">${ic('spark')} Tạo lộ trình</button></div></section>`;
  const P=S.plan,st=planStats(),ni=nextLesson(),avg=Math.round(st.min/st.n);
  const cta=!P.accepted?`<button class="btn btn-primary btn-lg" data-a="acceptPlan" ${P.warning?'disabled':''}>${P.wasActive?'Lưu lộ trình':'Bắt đầu học'} ${ic('arrow',16)}</button>`
-  :ni>=0?`<button class="btn btn-primary btn-lg" data-a="openLesson" data-v="${ni}">Học tiếp ${ic('arrow',16)}</button>`:`<button class="btn btn-primary btn-lg" data-a="go" data-to="complete">Nhận chứng nhận ${ic('arrow',16)}</button>`;
+  :ni>=0?`<button class="btn btn-primary btn-lg" data-a="openLesson" data-v="${ni}">${st.lessonsDone===0&&subsCount()===0?'Bắt đầu học':'Học tiếp'} ${ic('arrow',16)}</button>`:`<button class="btn btn-primary btn-lg" data-a="go" data-to="complete">Nhận chứng nhận ${ic('arrow',16)}</button>`;
  const head=`<section class="card cl-hero"><div class="cl-hero-l">
    <h1>Lộ trình của bạn</h1>
    <p class="cl-sum">${st.n} bài · ${P.profile.days} ngày · ~${avg} phút/ngày</p>
@@ -461,7 +461,7 @@ function lesson(){
  const player=u.kind==='exercise'?'':`<div class="player" data-title="${esc(vt)}" data-label="${esc(unitLabel(u))}"><div class="center"><button class="play" data-a="playUnit" aria-label="Phát video">${ic('play',26)}</button><span class="t">${esc(unitLabel(u))}</span><h3>${esc(vt)}</h3></div><div class="bottom"><span>${S.done[S.unit]?'Đã xem':'0:00'}</span><span class="track"><i style="width:${S.done[S.unit]?100:0}%"></i></span><span class="tnum">${u.m}:00</span><span class="vp-speed" ${T.vp.speed===1?'hidden':''}>${String(T.vp.speed).replace('.',',')}×</span>${vpControls()}</div>${vpMenu()}${T.vp.cc?`<p class="vp-cc">${esc(vt)}</p>`:''}</div>`;
  const list=`<div class="ulist">${ks.map((k,i)=>{const v=U(k);return `<button class="${k===S.unit?'on':''} ${S.done[k]?'done':''}" data-a="selUnit" data-v="${k}"><span class="st">${ic('check',12)}</span><span><small>${esc(v.kind==='video'?`Module ${modNo(L[v.id])} · Video ${'ABCD'[v.part]}`:v.kind==='exercise'?`Module ${modNo(L[v.id])} · Bài tập`:v.kind==='review'?'Ôn tập':TYPE_LABEL[L[v.id].type])}</small><b>${esc(v.kind==='video'?PARTS[v.part]:v.kind==='exercise'?TASKS[v.id].title:v.kind==='review'?'Liên hệ công ty: Module '+modNo(L[v.id]):L[v.id].title)}</b></span><span class="mn tnum">${v.m}′</span></button>`;}).join('')}</div>`;
  const nextBtn=needArt?`<p class="hint">Nộp bài tập ở trên để hoàn thành phần này.</p>`:
-  `<button class="btn btn-primary btn-lg" data-a="markNext">${S.done[S.unit]&&isLast?`${lessonDone(li)?'Sang bài tiếp theo':'Hoàn thành bài '+(li+1)}`:isLast?`${u.kind==='exercise'?'Tiếp tục':'Đã xem xong'} · Hoàn thành bài ${li+1}`:`${u.kind==='exercise'?'Tiếp tục':'Đã xem xong · Video tiếp theo'}`} ${ic('arrow')}</button>`;
+  `<button class="btn btn-primary btn-lg" data-a="markNext">${S.done[S.unit]&&isLast?`${lessonDone(li)?'Bài tiếp theo':'Hoàn thành bài '+(li+1)}`:isLast?`${u.kind==='exercise'?'Tiếp tục · ':''}Hoàn thành bài ${li+1}`:`${u.kind==='exercise'?'Tiếp tục':'Hoàn thành · Video tiếp theo'}`} ${ic('arrow')}</button>`;
  return `<section class="wrap page lesson">
  <div class="lsn-top"><button class="btn btn-line btn-sm" data-a="${back.a}">${ic('back',15)} ${back.t}</button>
   <div class="crumbs"><button data-a="go" data-to="mycourses">Khóa học của tôi</button><span>/</span><button data-a="backToList">AI for CEO</button><span>/</span>${S.from==='outputs'?`<button data-a="backToOutputs">Bài tập của tôi</button><span>/</span>`:''}<span>Bài ${li+1}</span></div></div>

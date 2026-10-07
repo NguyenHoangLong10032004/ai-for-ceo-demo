@@ -79,7 +79,7 @@ function dashboard(){
   <div class="dh-ring"><svg width="116" height="116" viewBox="0 0 116 116" aria-hidden="true"><defs><linearGradient id="dh-rg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3874FF"/><stop offset="1" stop-color="#7C5CFC"/></linearGradient></defs><circle cx="58" cy="58" r="46" fill="none" stroke="var(--blue-soft)" stroke-width="12"/><circle cx="58" cy="58" r="46" fill="none" stroke="url(#dh-rg)" stroke-width="12" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C*(1-p/100)}" transform="rotate(-90 58 58)"/></svg><div><b>${p}%</b><span>hành trình</span></div></div>
   <div class="dh-intro"><h1>Chào anh/chị ${esc(firstName())} 👋</h1><p>Anh/chị đã hoàn thành <b>${p}% hành trình</b>.</p>
    <div class="dh-tags"><span class="dh-tag">${ic('flag',14)} ${d.allDone?'Đã về đích':'Về đích '+fmtShort(d.end)}</span></div></div>
-  <div class="dh-cta">${ni>=0?`<button class="btn btn-primary btn-lg" data-a="openLesson" data-v="${ni}">Học tiếp ${ic('arrow',16)}</button>`:`<button class="btn btn-primary btn-lg" data-a="go" data-to="complete">Nhận chứng nhận ${ic('arrow',16)}</button>`}<button class="btn btn-accent" data-a="shareOpen" data-v="dash">${ic('share',15)} Chia sẻ Dashboard</button></div>
+  <div class="dh-cta">${ni>=0?`<button class="btn btn-primary btn-lg" data-a="openLesson" data-v="${ni}">${d.lessonsDone===0&&subsCount()===0?'Bắt đầu học':'Học tiếp'} ${ic('arrow',16)}</button>`:`<button class="btn btn-primary btn-lg" data-a="go" data-to="complete">Nhận chứng nhận ${ic('arrow',16)}</button>`}<button class="btn btn-accent" data-a="shareOpen" data-v="dash">${ic('share',15)} Chia sẻ Dashboard</button></div>
  </section>`;
  // 2. 4 thẻ số liệu
  const cards=[['chart','Tiến độ',`${p}%`,p/100,'var(--blue)'],['check','Bài hoàn thành',`${d.lessonsDone}/${d.N}`,d.lessonsDone/d.N,'var(--green)'],['spark','Năng lực AI',`${d.caps}/${CAP_MAP.length}`,d.caps/CAP_MAP.length,'var(--teal)'],['clock','Thời gian học',`${d.studyDays} ngày`,d.N?Math.min(1,d.studyDays/d.N):0,'var(--orange)']];
@@ -444,7 +444,7 @@ function jRoad(J,opt={}){
  const nodes=J.map((j,i)=>{const [x,yy]=P[i],cur=j.st==='cur',lock=j.st==='locked',col=j.color;
   const right=narrow?W-x>=x:x>=CX,room=(right?W-x:x)-48,k=`BÀI ${i+1}`,kw=k.length*(share?13.5:narrow?9.4:8.2),chw=share?14.8:narrow?10:8.4,pad=share?50:narrow?38:32,n=Math.max(4,Math.min(narrow?16:24,Math.floor((room-kw-pad)/chw))),nm0=short(i),nm=nm0.length>n?nm0.slice(0,n-1).trim()+'…':nm0,cw=kw+nm.length*chw+pad,hh=share?58:narrow?40:34,chh=hh;
   const R=share?26:21;let cx0=right?x+R+17:x-R-17-cw;cx0=Math.max(10,Math.min(W-10-cw,cx0));const cy0=yy-chh/2,ty=cy0+hh/2+(share?9:narrow?6:5),lx=right?cx0:cx0+cw;
-  return `<g class="jr3-n ${j.st}" data-a="openLesson" data-v="${i}" tabindex="0" role="button" aria-label="${esc(jTip(j))}"><title>${esc(jTip(j))}</title>
+  return `<g class="jr3-n ${j.st}" role="img" aria-label="${esc(jTip(j))}"><title>${esc(jTip(j))}</title>
    <line x1="${right?x+R+3:x-R-3}" y1="${yy}" x2="${lx}" y2="${yy}" class="jr3-lead" stroke="${lock?'#D5DCE6':cur?'#EF8426':col}"/>
    <rect x="${cx0}" y="${cy0}" width="${cw}" height="${chh}" rx="12" class="jr3-card ${j.st}" stroke="${cur?'#EF8426':lock?'#E3E8F0':col}" stroke-opacity="${cur||lock?1:.35}"/>
    ${cur?(()=>{const pw=share?200:narrow?176:150,ph=share?36:30,px0=Math.max(6,Math.min(W-6-pw,right?x-R-14-pw:x+R+14)),tip=right?`M${px0+pw},${yy-7} L${px0+pw+8},${yy} L${px0+pw},${yy+7}Z`:`M${px0},${yy-7} L${px0-8},${yy} L${px0},${yy+7}Z`;return `<g class="jr3-here"><rect x="${px0}" y="${yy-ph/2}" width="${pw}" height="${ph}" rx="${ph/2}"/><path d="${tip}"/><text x="${px0+pw/2}" y="${yy+(share?6.5:5)}" text-anchor="middle" class="jr3-here-t">BẠN ĐANG Ở ĐÂY</text></g>`;})():''}<text x="${cx0+14}" y="${ty}" class="jr3-line"><tspan class="jr3-k" fill="${lock?'#98A2B3':cur?'#EF8426':col}">${k}</tspan><tspan class="jr3-t ${j.st}" dx="8">${esc(nm)}</tspan></text>
@@ -472,17 +472,17 @@ function jMountain(J){
  const flags=firstOf.map(k=>{const [px,py]=pos[k],j=J[k],left=px<400,c=ch.find(c=>c.pi===j.pi),tx=left?14:786,lx=left?178:622;
   return `<g class="jm-flag ${c.state}"><line x1="${px}" y1="${py}" x2="${lx}" y2="${py}" stroke="${j.color}" stroke-width="1.5" stroke-dasharray="3 4"/><text x="${tx}" y="${py-4}" text-anchor="${left?"start":"end"}" class="jm-t"><tspan class="jm-ch" fill="${j.color}">Chương ${j.pi+1}</tspan><tspan x="${tx}" dy="18">${esc(PHASES[j.pi].name)}</tspan></text></g>`;}).join("");
  const dots=J.map((j,k)=>{const [px,py]=pos[k],r=j.st==='cur'?13:N>30?6:8;
-  return `<g class="jm-dot ${j.st}" data-a="openLesson" data-v="${j.i}" tabindex="0" role="button" aria-label="${esc(jTip(j))}"><title>${esc(jTip(j))}</title><circle cx="${px}" cy="${py}" r="${r}" fill="${j.st==='done'?j.color:'var(--surface)'}" stroke="${j.st==='locked'?'var(--line-2)':j.color}" stroke-width="${j.st==='cur'?4:2}"/>${j.st==='cur'?`<text x="${px}" y="${py+4}" text-anchor="middle" class="jm-n" fill="${j.color}">${j.i+1}</text>`:''}</g>`;}).join('');
+  return `<g class="jm-dot ${j.st}" role="img" aria-label="${esc(jTip(j))}"><title>${esc(jTip(j))}</title><circle cx="${px}" cy="${py}" r="${r}" fill="${j.st==='done'?j.color:'var(--surface)'}" stroke="${j.st==='locked'?'var(--line-2)':j.color}" stroke-width="${j.st==='cur'?4:2}"/>${j.st==='cur'?`<text x="${px}" y="${py+4}" text-anchor="middle" class="jm-n" fill="${j.color}">${j.i+1}</text>`:''}</g>`;}).join('');
  const cur=ci>=0?(()=>{const [px,py]=pos[ci];return `<g class="jm-here"><rect x="${px-70}" y="${py+20}" width="140" height="30" rx="15"/><text x="${px}" y="${py+40}" text-anchor="middle">Bạn đang ở đây</text></g>`;})():'';
  const done=ci<0;
- return `<div class="jm"><figure class="jm-fig"><svg viewBox="0 0 800 520" role="img" aria-label="Bản đồ leo núi: ${J.filter(j=>j.st==='done').length}/${N} bài đã hoàn thành">
+ return `<div class="jm"><figure class="jm-fig"><svg viewBox="0 0 800 548" role="img" aria-label="Bản đồ leo núi: ${J.filter(j=>j.st==='done').length}/${N} bài đã hoàn thành">
   <defs><linearGradient id="jmG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="jm-s1"/><stop offset="1" class="jm-s2"/></linearGradient></defs>
   <path class="jm-back" d="M0,500 L170,250 L300,380 L560,150 L800,470 L800,500Z"/>
   <path d="M30,500 L400,40 L770,500Z" fill="url(#jmG)"/><path class="jm-snow" d="M400,40 L452,105 L428,96 L408,116 L384,98 L352,106Z"/>
   <path class="jm-trail" d="${ln(P)}"/><path class="jm-trail walked" d="${ln(walked)}"/>
   <g class="jm-top ${done?'done':''}"><line x1="400" y1="58" x2="400" y2="14" stroke="var(--ink)" stroke-width="2.5"/><path d="M400,14 l26,9 l-26,9z" fill="var(--orange)"/><text x="436" y="30" class="jm-t"><tspan class="jm-ch" fill="var(--orange)">Về đích</tspan><tspan x="436" dy="18">Nhận chứng nhận</tspan></text></g>
   ${flags}${dots}${cur}
-  <text x="250" y="514" text-anchor="middle" class="jm-t">Xuất phát</text></svg></figure></div>`;
+  <text x="252" y="524" text-anchor="end" class="jm-t">Xuất phát</text></svg></figure></div>`;
 }
 
 /* Kiểu 3: đường gấp khúc dạng lưới (theo ảnh user gửi), **đi từ dưới lên**: hàng dưới cùng chạy trái → phải,
@@ -506,7 +506,7 @@ function jSnake(J){
  const nodes=J.map((j,k)=>{const [x,y]=P[k],col=j.color,cur=j.st==='cur',lines2=wrap(short(j.i));
   const chip=firstOf.has(j.i)?(()=>{const t='CHƯƠNG '+(j.pi+1),w=t.length*9+26,yy=y-(cur?92:58);return `<rect x="${x-w/2}" y="${yy}" width="${w}" height="26" rx="13" fill="${j.st==='locked'?'#EEF1F6':col}" fill-opacity="${j.st==='locked'?1:.14}"/><text x="${x}" y="${yy+18}" text-anchor="middle" class="jg-chip" fill="${j.st==='locked'?'#98A2B3':col}">${t}</text>`;})():'';
   const here=cur?`<g class="jg-here"><rect x="${x-74}" y="${y-62}" width="148" height="28" rx="8"/><path d="M${x-6},${y-34} L${x},${y-28} L${x+6},${y-34}Z"/><text x="${x}" y="${y-43}" text-anchor="middle">Bạn đang ở đây</text></g>`:'';
-  return `<g class="jg-n ${j.st}" data-a="openLesson" data-v="${j.i}" tabindex="0" role="button" aria-label="${esc(jTip(j))}"><title>${esc(jTip(j))}</title>
+  return `<g class="jg-n ${j.st}" role="img" aria-label="${esc(jTip(j))}"><title>${esc(jTip(j))}</title>
    ${cur?`<circle cx="${x}" cy="${y}" r="34" fill="${col}" opacity=".16"/>`:''}
    <circle cx="${x}" cy="${y}" r="24" fill="${j.st==='done'?col:'#fff'}" stroke="${j.st==='locked'?'#D5DCE6':j.st==='done'?'#fff':col}" stroke-width="${j.st==='done'?4:3.5}"/>
    ${j.st==='done'?`<circle cx="${x}" cy="${y}" r="27" fill="none" stroke="${col}" stroke-width="2"/>`:''}
