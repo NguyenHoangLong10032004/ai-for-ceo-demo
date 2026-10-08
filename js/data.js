@@ -42,7 +42,7 @@ chart:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
 flag:'<path d="M5 21V4M5 4h11l-2 4 2 4H5"/>',
 download:'<path d="M12 4v11M7 10l5 5 5-5M5 20h14"/>',
 upload:'<path d="M12 15V4M7 9l5-5 5 5M5 20h14"/>',
-clip:'<path d="m21 11-8.6 8.6a5 5 0 0 1-7-7L14 4a3.4 3.4 0 0 1 4.9 4.9l-8.6 8.6a1.8 1.8 0 0 1-2.6-2.6L15.4 7"/>',
+copy:'<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h8"/>',info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>',alert:'<path d="M12 3 2 20h20z"/><path d="M12 10v4M12 17h.01"/>',clip:'<path d="m21 11-8.6 8.6a5 5 0 0 1-7-7L14 4a3.4 3.4 0 0 1 4.9 4.9l-8.6 8.6a1.8 1.8 0 0 1-2.6-2.6L15.4 7"/>',
 share:'<circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="m8.2 10.8 7.6-4.4M8.2 13.2l7.6 4.4"/>',
 fb:'<path d="M14 8h3V4h-3a4 4 0 0 0-4 4v3H7v4h3v7h4v-7h3l1-4h-4V8Z" fill="currentColor" stroke="none"/>',
 star:'<path d="M12 2.8l2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.2l-5.6 3 1.1-6.3-4.6-4.4 6.3-.9L12 2.8Z" fill="currentColor" stroke="none"/>',
@@ -234,7 +234,16 @@ const COURSE={list:12000000,price:8800000,promo:'Ưu đãi ra mắt tháng đầ
 const SAVE=COURSE.list-COURSE.price, OFF=Math.round(SAVE/COURSE.list*100);
 const TOTAL_MIN=LIB.filter(x=>x.req).reduce((a,x)=>a+x.min,0);
 // Phương thức thanh toán (dùng ở form đăng ký và email xác nhận)
-const PAY_METHODS={qr:"Chuyển khoản QR (VietQR)"}; // chỉ còn chuyển khoản QR theo yêu cầu user
+const PAY_METHODS={bank:"Chuyển khoản ngân hàng"}; // chỉ còn chuyển khoản ngân hàng (theo yêu cầu user): quét QR hoặc sao chép thông tin chuyển khoản
+/* Tài khoản nhận tiền (MINH HỌA, chưa phải tài khoản thật của Học viện). Hệ thống thật: sinh mã VietQR (chuẩn NAPAS) điền sẵn
+   số tài khoản + số tiền + nội dung, và tự xác nhận đơn khi ngân hàng báo có tiền đúng nội dung (webhook / đối soát). */
+// QR người dùng quét = mã VietQR của TÀI KHOẢN NGÂN HÀNG HỌC VIỆN (theo user), điền sẵn số tiền + nội dung chuyển khoản.
+// real:false = chưa có tài khoản thật → hiện QR minh họa (không quét được). Điền bin (mã ngân hàng VietQR, vd. TPBank = 970423), acc, holder thật rồi đặt real:true
+// → trang tự tạo mã VietQR thật qua img.vietqr.io (cần mạng). Hệ thống thật nên tự sinh QR ở máy chủ.
+const BANK={real:true,bin:"970423",name:"TPBank",holder:"CTY TNHH HOC VIEN TIA CHOP XANH",acc:"79333668688"}; // tài khoản thật của Học viện (user cung cấp 10/2026)
+const bankQR=(amt,note)=>`https://img.vietqr.io/image/${BANK.bin}-${BANK.acc.replace(/\s/g,"")}-qr_only.png?amount=${amt}&addInfo=${encodeURIComponent(note)}&accountName=${encodeURIComponent(BANK.holder)}`;
+// nội dung chuyển khoản = mã đơn viết liền + số điện thoại khách (vd. AICEO949912 0912345678) để hệ thống tự đối soát
+const transferNote=o=>(o&&o.code||'').replace(/\W/g,''); // nội dung chuyển khoản = chỉ mã đơn viết liền (vd. AICEO573744), đã bỏ số điện thoại theo yêu cầu user
 // Thông tin Học viện dùng ở chân trang, email và mục hỗ trợ (hotline, email info, địa chỉ, giờ làm việc lấy theo chân trang website user gửi; email kế toán vẫn là minh họa)
 // Gửi email THẬT qua EmailJS (emailjs.com). Để trống = chỉ gửi vào Hộp thư mô phỏng.
 // Lấy 3 mã trong tài khoản EmailJS: Email Services → Service ID · Email Templates → Template ID · Account → Public Key

@@ -1990,3 +1990,78 @@ button.gm-ib{cursor:pointer}button.gm-ib:hover{background:rgba(68,71,70,.08)}
 
 /* biểu tượng Zalo trong hộp Nhắc lịch học: chữ Z nằm giữa (không bị .rm-f .opt span đè) */
 .rm-f .opt .zalo-ico{display:inline-grid;place-items:center;gap:0;width:20px;height:20px;line-height:1}
+
+/* ---------- Màn thanh toán: chuyển khoản ngân hàng (bố cục theo mẫu user: QR VietQR bên trái, thông tin + nút sao chép bên phải) ---------- */
+.pay{display:grid;gap:20px}
+.pay-h{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.pay-timer{display:inline-flex;align-items:center;gap:6px;color:var(--muted);font-size:16px}
+.pay-timer b{font-weight:500;color:var(--ink-2)}
+.pay-timer.end b{color:var(--bad,#D92D20)}
+.pay-grid{display:grid;grid-template-columns:minmax(0,320px) minmax(0,1fr);gap:28px;align-items:start}
+.pay-qr{margin:0;display:grid;gap:12px;justify-items:center}
+.pay-qr figcaption{font-size:14px;color:var(--muted)}
+.vqr{width:100%;border:1px solid var(--line);border-radius:12px;background:#fff;padding:14px 18px 16px;display:grid;justify-items:center;gap:12px}
+.vqr-brand{font-weight:900;font-size:30px;letter-spacing:-.02em;line-height:1;font-family:Arial,Helvetica,sans-serif}
+.vqr-brand .v1{color:#E2231A}.vqr-brand .v2{color:#1D4E9E}
+.vqr-code{position:relative;width:min(220px,100%);aspect-ratio:1;border:2px solid #1D4E9E;padding:6px;background:#fff}
+.qr-svg{display:block;width:100%;height:100%;shape-rendering:crispEdges}
+img.qr-svg{object-fit:contain}
+.vqr-mid{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:34px;height:34px;display:grid;place-items:center;background:#fff;border:1px solid #E6EAF0;border-radius:6px;color:#E2231A;font-weight:900;font-size:20px;font-family:Arial,Helvetica,sans-serif}
+.vqr-partners{display:flex;align-items:center;gap:14px;font-family:Arial,Helvetica,sans-serif;font-weight:800;font-size:17px}
+.vqr-partners .napas{color:#0B3B8C;font-style:italic}.vqr-partners .napas i{color:#2AA4DD}
+.vqr-partners .sep{width:1px;height:26px;background:#1D4E9E}
+.vqr-partners .tpb{color:#6C2C91}
+.vqr-info{display:grid;justify-items:center;gap:2px;font-size:12.5px;color:#111827;text-align:center}
+.vqr-info b{font-size:12.5px;font-weight:700;text-transform:uppercase}
+.pay-side{display:grid;gap:14px}
+.pay-rows{display:grid}
+.pay-row{display:grid;grid-template-columns:150px minmax(0,1fr) 34px;gap:10px;align-items:center;padding:13px 0;border-bottom:1px solid var(--line)}
+.pay-row .k{font-size:14.5px;color:var(--muted)}
+.pay-row .v{font-size:16px;font-weight:600;text-align:right;overflow-wrap:anywhere}
+.pay-row.must .v{color:#1747C9;font-size:18px;font-weight:700}
+.pay-row.holder .v{text-align:left;grid-column:2/4;font-weight:600}
+.pay-cp{width:34px;height:34px;display:grid;place-items:center;border:0;background:transparent;color:var(--muted);border-radius:8px;cursor:pointer}
+.pay-cp:hover{background:var(--line);color:var(--ink)}
+.pay-cp.ok{color:var(--green)}
+.pay-warn{display:flex;gap:6px;align-items:flex-start;font-size:14.5px;color:var(--muted);margin:0;line-height:1.55}
+.pay-warn b{color:var(--ink-2)}
+.pay .demo-box{grid-template-columns:auto auto 1fr;align-items:center}
+.pay .demo-box .seg{flex-wrap:nowrap}
+.pay .demo-box>.btn{justify-self:end}
+.pay-foot{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.pay-foot .btn-link{display:inline-flex;gap:6px;align-items:center}
+@media (max-width:760px){.pay-grid{grid-template-columns:1fr}.pay-qr{max-width:340px;justify-self:center;width:100%}.pay .demo-box{grid-template-columns:1fr}.pay .demo-box>.btn{justify-self:start}}
+@media (max-width:420px){.pay-row{grid-template-columns:1fr auto 34px}.pay-row.holder{grid-template-columns:1fr}.pay-row.holder .v{grid-column:auto;text-align:left}}
+/* phương thức "Thẻ thanh toán": hiện để biết sắp có, chưa chọn được (theo yêu cầu user) */
+.opt-off{cursor:not-allowed;background:var(--bg);opacity:.85;grid-column:1/-1}
+.opt-off:hover{border-color:var(--line-2)}
+.opt-txt{display:grid;gap:1px;flex:1;min-width:0}
+.opt-txt small{font-size:13px;color:var(--muted)}
+.card-brands{display:flex;gap:5px;align-items:center;flex:none}
+.card-brands i{font-style:normal;font-family:Arial,Helvetica,sans-serif;font-weight:800;font-size:10px;line-height:1;display:grid;place-items:center;height:18px;min-width:26px;padding:0 3px;border-radius:3px}
+.cb-visa{color:#1A1F71;font-style:italic!important;font-size:11px!important}
+.cb-mc{position:relative;width:28px}
+.cb-mc b{position:absolute;top:2px;width:14px;height:14px;border-radius:50%}
+.cb-mc b:first-child{left:3px;background:#EB001B}.cb-mc b:last-child{right:3px;background:#F79E1B;opacity:.9}
+.cb-jcb{color:#fff;background:linear-gradient(90deg,#0E4C96 33%,#E21836 33% 66%,#007B40 66%)}
+.cb-amex{color:#fff;background:#2E77BC;font-size:8.5px!important}
+.opt-grid:has(.opt-off){grid-template-columns:1fr}
+/* mã số thuế: ô nhập + nút Kiểm tra, dòng trạng thái tra cứu */
+.tax-in{position:relative}
+.tax-in .inp{width:100%;padding-right:118px}
+/* nút Kiểm tra nằm trong ô mã số thuế, sát mép phải (theo yêu cầu user) */
+.tax-btn{position:absolute;right:5px;top:50%;transform:translateY(-50%);display:inline-flex;align-items:center;gap:5px;height:calc(100% - 10px);min-height:32px;padding:0 12px;border:0;border-radius:8px;background:var(--blue-soft,#EEF3FF);color:var(--blue);font-weight:600;font-size:14.5px;cursor:pointer;white-space:nowrap}
+.tax-btn:hover{background:var(--blue);color:#fff}
+.tax-btn:disabled{opacity:.6;cursor:wait}
+.tax-st{margin:6px 0 0;display:flex;gap:6px;align-items:flex-start}
+.tax-st .ic{flex:none;margin-top:3px}
+.tax-st.ok{color:var(--green)}
+.tax-st.bad{color:var(--bad,#D92D20)}
+.tax-st.wait{color:var(--blue)}
+#inv-box{align-items:start}
+/* đồng ý điều khoản trước khi tạo mã thanh toán (bắt buộc) */
+.ck-terms{border-top:1px solid var(--line);padding-top:14px}
+.ck-agree{display:flex;gap:10px;align-items:flex-start;font-size:15.5px;cursor:pointer;line-height:1.5}
+.ck-agree input{accent-color:var(--blue);width:18px;height:18px;margin:3px 0 0;flex:none}
+.ck-agree input[aria-invalid="true"]{outline:2px solid var(--bad,#D92D20);outline-offset:2px}
+.ck-agree .btn-link{font-weight:600}

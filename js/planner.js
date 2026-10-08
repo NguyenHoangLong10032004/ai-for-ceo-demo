@@ -85,7 +85,7 @@ function rulePlan(p){
  return finalize(p,items,skipped,'','rule','');
 }
 function summaryRule(p,N,total){
- return `Em chia khóa thành ${N} bài học, mỗi ngày một bài, mỗi bài khoảng ${Math.round(total/N)} phút. Lộ trình đi đủ 12 năng lực AI theo thứ tự, ví dụ được ưu tiên cho ${goalsText(p.goals)}.${p.problem?` Bài toán anh/chị nêu ("${p.problem}") sẽ được nhắc lại ở các bài liên quan.`:''} Bài cuối cùng anh/chị chọn 3 use case đáng thử cho công ty.`;
+ return `Em chia khóa thành ${N} bài học, mỗi ngày một bài, mỗi bài khoảng ${Math.round(total/N)} phút. Lộ trình đi đủ 12 module (10 năng lực AI) theo thứ tự, ví dụ được ưu tiên cho ${goalsText(p.goals)}.${p.problem?` Bài toán anh/chị nêu ("${p.problem}") sẽ được nhắc lại ở các bài liên quan.`:''} Bài cuối cùng anh/chị chọn 3 use case đáng thử cho công ty.`;
 }
 // Áp guardrail, chia bài, cảnh báo nếu thời gian mỗi ngày không đủ
 function finalize(p,items,skipped,summary,source,reply){
@@ -133,7 +133,7 @@ const SAMPLE_P=(async()=>{try{if(!window.claude||!window.claude.use)return null;
 function aiDot(){return `<span class="ai-dot ${T.ai?'on':''}" data-ai><i></i><span>${T.ai===null?'Đang kiểm tra AI…':T.ai?'AI đang bật':'Chạy local · bộ luật'}</span></span>`;}
 function buildPrompt(p,request){
  const lib=LIB.map(x=>`${x.id} | ${TYPE_LABEL[x.type]} | ${x.title} | ${x.min} phút | ${x.req?'BẮT BUỘC':'tùy chọn'} | tags: ${(x.tags||[]).join(',')||'-'}${x.skipIfLevel?` | ôn nền tảng, bỏ được nếu mức AI >= ${x.skipIfLevel}`:''}${x.adv?' | nâng cao':''}`).join('\n');
- return `Bạn là "Trợ lý lộ trình" của khóa AI for CEO (Học viện Siêu Tăng Trưởng). Khóa demo-first, 12 module = 12 năng lực AI; không dạy tool, không dạy prompt. Hãy chọn nội dung cho CEO dưới đây; hệ thống sẽ tự chia thành ${lessonsOf(p)} bài học.
+ return `Bạn là "Trợ lý lộ trình" của khóa AI for CEO (Học viện Siêu Tăng Trưởng). Khóa demo-first, 12 module: Module 01 khởi động, Module 02–11 là 10 năng lực AI, Module 12 chọn use case; không dạy tool, không dạy prompt. Hãy chọn nội dung cho CEO dưới đây; hệ thống sẽ tự chia thành ${lessonsOf(p)} bài học.
 
 HỒ SƠ
 - Ngành: ${p.industry}; quy mô: ${p.size}

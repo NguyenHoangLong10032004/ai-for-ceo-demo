@@ -21,7 +21,7 @@ function startOb(){
  const e=S.eval;S.ob={flow:e?['confirm','problem','days','pace']:['industry','size','level','goals','problem','days','pace'],i:0,msgs:[],multi:[],done:false};
  S.profile={name:(S.order&&S.order.name)||S.profile.name||SAMPLE_PROFILE.name,company:(S.order&&S.order.company)||S.profile.company||SAMPLE_PROFILE.company};
  if(e)Object.assign(S.profile,{industry:e.industry,size:e.size,level:e.level,goals:e.goals.slice()});
- S.ob.msgs.push({role:'bot',text:`Chào anh/chị ${firstName()}! Em là Trợ lý lộ trình của AI for CEO. Khóa này không dạy tool hay prompt: anh/chị sẽ xem AI làm thật qua 12 năng lực. Em hỏi vài câu (khoảng 2 phút) để chia khóa thành các bài học vừa với lịch của anh/chị.`});
+ S.ob.msgs.push({role:'bot',text:`Chào anh/chị ${firstName()}! Em là Trợ lý lộ trình của AI for CEO. Khóa này không dạy tool hay prompt: anh/chị sẽ xem AI làm thật qua 10 năng lực. Em hỏi vài câu (khoảng 2 phút) để chia khóa thành các bài học vừa với lịch của anh/chị.`});
  askOb();
 }
 // Bỏ các bước không còn tồn tại (vd. câu hỏi nhịp học cũ còn lưu trong trình duyệt)

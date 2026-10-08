@@ -6,7 +6,7 @@
 /* ---------- trạng thái ---------- */
 // S: trạng thái lưu vào trình duyệt (localStorage). T: trạng thái tạm, mất khi tải lại trang.
 const LS='aiceo-demo-v6';
-const DEFAULT=()=>({screen:'landing',spent:{},account:null,loggedIn:false,eval:null,fit:null,nurture:false,order:null,pay:{status:null,method:'qr',sim:'success',support:false},enrolled:false,
+const DEFAULT=()=>({screen:'landing',spent:{},account:null,loggedIn:false,eval:null,fit:null,nurture:false,order:null,pay:{status:null,method:'bank',sim:'success',support:false},enrolled:false,
  profile:{},ob:{flow:[],i:0,msgs:[],multi:[],done:false},plan:null,adjustLog:[],done:{},doneAt:{},subs:{},lesson:0,unit:null,
  expert:{id:null,msgs:[],unread:0,pending:false},mails:[],zalo:[],comm:{joined:false,posts:[],comments:{},likes:{},gotLikes:{},events:{}},remind:{...REMIND_DEFAULT},feedback:null,asst:[],completedAt:null,liveRemind:false,offline:false});
 const T={vp:{vol:80,muted:false,speed:1,quality:"auto",cc:false},gen:null,ai:null,asstOpen:false,tab:"ai",expertDraft:"",expertTyping:false,mailOpen:null,share:null,shareCap:null,dashFilter:'all',fbDraft:null,fbEdit:false,remindOpen:false,commTab:'feed',commCat:'all',commPost:null,commWrite:false,commDraft:null,commQ:'',remindDraft:null,remindPreview:null,zaloOpen:false,asstBusy:false,obTyping:false,focus:null,err:{},ph:{},cx:{},lx:{},clAll:{},drawer:null};
@@ -23,6 +23,40 @@ const money=n=>n.toLocaleString('vi-VN')+'đ';
 const hours=m=>(Math.round(m/6)/10).toLocaleString('vi-VN');
 const firstName=()=>{const n=(S.profile.name||(S.order&&S.order.name)||SAMPLE_PROFILE.name).trim().split(/\s+/);return n[n.length-1];};
 const goalsText=g=>(g||[]).map(x=>GOALS[x]).join(', ')||'chưa chọn';
+/* tra cứu mã số thuế cho nhanh (theo yêu cầu user): tra trước ngay khi ô mã số thuế đủ 10 số (taxPrefetch, chờ 300 ms sau khi gõ xong)
+   → bấm Kiểm tra dùng luôn lượt tra đang chạy / vừa xong, gần như không phải chờ. Không lưu kết quả lâu dài, không giới hạn thời gian chờ. */
+let taxPending=null; // {tax, pr}: lượt tra trước gần nhất, dùng 1 lần
+function taxFetch(tax){
+ if(taxPending&&taxPending.tax===tax){const pr=taxPending.pr;taxPending=null;return pr;}
+ return fetch('https://api.vietqr.io/v2/business/'+encodeURIComponent(tax)).then(r=>r.json());
+}
+let taxTimer=0;
+function taxPrefetch(v){clearTimeout(taxTimer);const tax=String(v||'').replace(/\s/g,'');if(!/^\d{10}(-\d{3})?$/.test(tax))return;taxTimer=setTimeout(()=>{const pr=fetch('https://api.vietqr.io/v2/business/'+encodeURIComponent(tax)).then(r=>r.json());pr.catch(()=>{});taxPending={tax,pr};},300);}
+// sao chép khi trình duyệt chặn Clipboard API (vd. mở file trực tiếp)
+function fallbackCopy(v){const t=document.createElement('textarea');t.value=v;t.style.position='fixed';t.style.opacity='0';document.body.appendChild(t);t.select();try{document.execCommand('copy');}catch(e){}t.remove();}
+// Tải mã QR chuyển khoản về điện thoại (ảnh PNG gồm mã QR + tài khoản, số tiền, nội dung) để mở bằng ứng dụng ngân hàng → Quét QR → chọn ảnh.
+// Điện thoại hỗ trợ chia sẻ tệp thì mở bảng chia sẻ (chọn "Lưu hình ảnh" vào thư viện ảnh), không thì tải tệp về.
+async function qrDownload(){
+ const o=S.order,note=transferNote(o),amt=COURSE.price,src=document.querySelector('.qr-box .qr-svg');if(!src)return;
+ let url;
+ if(src.tagName.toLowerCase()==='svg'){const s=src.cloneNode(true);s.setAttribute('width','620');s.setAttribute('height','620');url='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(new XMLSerializer().serializeToString(s));}else url=bankQR(amt,note);
+ const img=new Image();img.crossOrigin='anonymous';
+ try{await new Promise((ok,bad)=>{img.onload=ok;img.onerror=bad;img.src=url;});}catch(e){window.open(url,'_blank');return;}
+ const W=900,H=1240,c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');
+ g.fillStyle='#fff';g.fillRect(0,0,W,H);g.textAlign='center';g.fillStyle='#101828';
+ g.font='700 40px Roboto, Arial, sans-serif';g.fillText('Quét mã để thanh toán',W/2,90);
+ g.font='400 26px Roboto, Arial, sans-serif';g.fillStyle='#667085';g.fillText('Khóa học AI for CEO · Mã đơn '+(o&&o.code||''),W/2,136);
+ const q=620,qx=(W-q)/2,qy=180;g.strokeStyle='#E6EAF0';g.lineWidth=2;g.strokeRect(qx-14,qy-14,q+28,q+28);
+ g.imageSmoothingEnabled=false;g.drawImage(img,qx,qy,q,q);
+ const lines=[['Chủ tài khoản',BANK.holder],['Ngân hàng',BANK.name+' · '+BANK.acc],['Số tiền',money(amt)],['Nội dung',note]];
+ let y=qy+q+80;lines.forEach(([k,v])=>{g.font='400 24px Roboto, Arial, sans-serif';g.fillStyle='#667085';g.fillText(k,W/2,y);g.font='700 30px Roboto, Arial, sans-serif';g.fillStyle=k==='Số tiền'?'#EF8426':'#101828';g.fillText(v,W/2,y+38);y+=82;});
+ const blob=await new Promise(r=>{try{c.toBlob(r,'image/png');}catch(e){r(null);}});
+ if(!blob){window.open(url,'_blank');return;}
+ const name=`ma-qr-thanh-toan-${(o&&o.code||'aiceo').replace(/\W/g,'')}.png`,file=window.File?new File([blob],name,{type:'image/png'}):null;
+ if(file&&navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file],title:'Mã QR thanh toán AI for CEO'});toast('Chọn "Lưu hình ảnh" rồi mở ứng dụng ngân hàng để quét');return;}catch(e){if(e&&e.name==='AbortError')return;}}
+ const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},800);
+ toast('Đã tải mã QR. Mở ứng dụng ngân hàng → Quét QR → chọn ảnh vừa tải');
+}
 const today=()=>new Date().toLocaleDateString('vi-VN');
 const nowStr=()=>new Date().toLocaleString('vi-VN',{hour:'2-digit',minute:'2-digit',day:'2-digit',month:'2-digit',year:'numeric'});
 const snapPace=m=>m>=45?60:m>=25?30:20;
@@ -174,7 +208,7 @@ function ensureFor(to){
  const need=['mycourses','onboarding','syllabus','learn','complete'].includes(to);
  if(need&&!S.account)S.account={name:SAMPLE_PROFILE.name,phone:'0912 345 678',email:'long.nguyen@minhan.vn',createdAt:today()};
  if(need)S.loggedIn=true;
- if(need&&!S.enrolled){S.order=S.order||{code:'AICEO-'+Math.floor(100000+Math.random()*900000),name:S.account.name,phone:S.account.phone,email:S.account.email,company:SAMPLE_PROFILE.company,invoice:false,method:'qr',paidAt:today()};S.pay.status='success';S.enrolled=true;}
+ if(need&&!S.enrolled){S.order=S.order||{code:'AICEO-'+Math.floor(100000+Math.random()*900000),name:S.account.name,phone:S.account.phone,email:S.account.email,company:SAMPLE_PROFILE.company,invoice:false,method:'bank',paidAt:today()};S.pay.status='success';S.enrolled=true;}
  if(to==='onboarding'&&!S.ob.flow.length&&!S.ob.done)startOb();
  if(['syllabus','learn','complete'].includes(to)&&!profileComplete(S.profile)){
   S.profile={...SAMPLE_PROFILE,...(S.eval?{industry:S.eval.industry,size:S.eval.size,level:S.eval.level,goals:S.eval.goals}:{}),name:S.order.name,company:S.order.company};
@@ -222,7 +256,28 @@ const ACT={
  // thanh toán
  invToggle:(d,el)=>{const b=document.getElementById('inv-box');if(b)b.hidden=!el.checked;},
  paySim:d=>{S.pay.sim=d.v;document.querySelectorAll('[data-a="paySim"]').forEach(b=>b.classList.toggle('on',b.dataset.v===d.v));save();},
- payRetry:()=>{S.pay.status='processing';S.pay.sim='success';render();setTimeout(()=>{S.pay.status='success';S.enrolled=true;S.order.paidAt=today();sendConfirmEmail();render();setTimeout(()=>{sendInvoiceEmail();render();},2600);},1300);},
+ payRetry:()=>{S.pay.status='await';S.pay.until=Date.now()+PAY_HOLD;S.pay.sim='success';render();window.scrollTo(0,0);},
+ // demo: giả lập ngân hàng báo có tiền (hệ thống thật tự xác nhận qua webhook/đối soát theo nội dung chuyển khoản)
+ payRenew:()=>{S.pay.until=Date.now()+PAY_HOLD;render();toast('Đã tạo lại mã thanh toán, giữ trong 30 phút');},
+ // tra cứu mã số thuế → tự điền tên công ty + địa chỉ (theo yêu cầu user). Nguồn: API công khai của VietQR (dữ liệu Cục Thuế).
+ // Sửa trực tiếp ô nhập, không gọi render(), để giữ các ô khác đang gõ. Không tra được thì cho nhập tay.
+ taxLookup:async()=>{const inp=document.getElementById('c-tax'),st=document.getElementById('c-tax-st'),btn=document.querySelector('[data-a="taxLookup"]');if(!inp||!st)return;
+  const tax=inp.value.replace(/\s/g,'');inp.value=tax;const say=(m,c)=>{st.innerHTML=m;st.className='hint tax-st'+(c?' '+c:'');};
+  if(!/^\d{10}(-\d{3})?$/.test(tax)){say('Mã số thuế gồm 10 chữ số (chi nhánh: 10 số + "-" + 3 số), ví dụ 0100109106.','bad');inp.classList.add('bad');inp.focus();return;}
+  inp.classList.remove('bad');say('Đang tra cứu mã số thuế…','wait');if(btn)btn.disabled=true;
+  try{const j=await taxFetch(tax);
+   if(j&&j.code==='00'&&j.data){const n=document.getElementById('c-invname'),a=document.getElementById('c-invaddr');if(n)n.value=j.data.name||'';if(a)a.value=j.data.address||'';
+    const on=/đang hoạt động/i.test(j.data.status||'');say(`${ic('check',14)} Đã tra cứu thông tin doanh nghiệp từ dữ liệu thuế.${on?'':' Doanh nghiệp không ở trạng thái đang hoạt động, anh/chị kiểm tra lại trước khi xuất hóa đơn.'}`,on?'ok':'bad');toast('Đã tra cứu thông tin doanh nghiệp');}
+   else if(j&&j.code==='51')say('Không tìm thấy mã số thuế này. Anh/chị kiểm tra lại số, hoặc nhập tay tên và địa chỉ doanh nghiệp.','bad');
+   else say('Chưa tra cứu được lúc này (có thể do tra quá nhiều lần). Anh/chị thử lại sau ít phút hoặc nhập tay.','bad');
+  }catch(e){say('Không kết nối được dịch vụ tra cứu. Anh/chị kiểm tra mạng hoặc nhập tay tên và địa chỉ doanh nghiệp.','bad');}
+  if(btn)btn.disabled=false;},
+ payDone:()=>{S.pay.status='processing';render();window.scrollTo(0,0);
+  setTimeout(()=>{if(S.pay.sim==='fail'){S.pay.status='failed';toast('Chưa nhận được thanh toán','bad');}else{S.pay.status='success';S.enrolled=true;S.order.paidAt=today();toast('Đã nhận thanh toán, khóa học đã được kích hoạt');setTimeout(()=>{sendConfirmEmail();render();setTimeout(()=>{sendInvoiceEmail();render();},2600);},1800);}render();},1400);},
+ payCopy:(d,el)=>{const v=el&&el.dataset.c||'',lb={acc:'số tài khoản',amt:'số tiền',note:'mã đơn'}[d.v]||'';
+  const ok=()=>{toast('Đã sao chép '+lb+': '+v);if(el){el.innerHTML=ic('check',16);el.classList.add('ok');setTimeout(()=>{el.innerHTML=ic('copy',16);el.classList.remove('ok');},1800);}};
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(v).then(ok,()=>{fallbackCopy(v);ok();});else{fallbackCopy(v);ok();}},
+ qrDownload:()=>qrDownload(),
  payChange:()=>{S.pay.status=null;S.pay.support=false;render();},
  paySupport:()=>{S.pay.support=true;render();},
  // onboarding
@@ -339,19 +394,19 @@ const ACT={
 
 /* ---------- xử lý form (data-f="…") ---------- */
 const FORMS={
- checkoutSubmit:f=>{if(!S.loggedIn||!S.account){go('checkout');return;}const fd=new FormData(f);const o=Object.fromEntries(fd.entries());o.invoice=!!fd.get('invoice');o.email=S.account.email;
+ checkoutSubmit:f=>{if(!S.loggedIn||!S.account){go('checkout');return;}const fd=new FormData(f);const o=Object.fromEntries(fd.entries());o.invoice=!!fd.get('invoice');o.agree=!!fd.get('agree');o.email=S.account.email;
   S.order={...(S.order||{}),...o};
   if(!o.name.trim()){T.err={checkout:'Chưa có họ và tên. Nhập họ tên người học.',field:'c-name'};render();return;}
   if(!o.phone.trim()){T.err={checkout:'Chưa có số điện thoại / Zalo. Nhập số để Học viện liên hệ hỗ trợ.',field:'c-phone'};render();return;}
   if(!/^[0-9+\s().-]{9,}$/.test(o.phone.trim())){T.err={checkout:'Số điện thoại chưa đúng. Nhập ít nhất 9 chữ số, ví dụ: 0912 345 678.',field:'c-phone'};render();return;}
   if(!/^\S+@\S+\.\S+$/.test(o.email)){T.err={checkout:'Email chưa đúng định dạng. Ví dụ đúng: ten@congty.vn.',field:'c-email'};render();return;}
-  if(o.invoice&&!String(o.taxId||'').trim()){T.err={checkout:'Chưa có mã số thuế. Nhập mã số thuế, hoặc bỏ chọn "Xuất hóa đơn cho công ty".',field:'c-tax'};render();return;}
-  if(o.invoice&&!String(o.invName||'').trim()){T.err={checkout:'Chưa có tên công ty trên hóa đơn. Nhập tên công ty, hoặc bỏ chọn "Xuất hóa đơn cho công ty".',field:'c-invname'};render();return;}
-  if(o.invoice&&!String(o.invAddr||'').trim()){T.err={checkout:'Chưa có địa chỉ công ty. Nhập địa chỉ ghi trên hóa đơn, hoặc bỏ chọn "Xuất hóa đơn cho công ty".',field:'c-invaddr'};render();return;}
-  if(o.invoice&&!/^\S+@\S+\.\S+$/.test(String(o.invEmail||'').trim())){T.err={checkout:'Email nhận hóa đơn công ty chưa đúng. Nhập email kế toán, ví dụ: ketoan@congty.vn, hoặc bỏ chọn "Xuất hóa đơn cho công ty".',field:'c-invemail'};render();return;}
+  if(o.invoice&&!String(o.taxId||'').trim()){T.err={checkout:'Chưa có mã số thuế doanh nghiệp. Nhập mã số thuế, hoặc bỏ chọn "Xuất hóa đơn doanh nghiệp".',field:'c-tax'};render();return;}
+  if(o.invoice&&!String(o.invName||'').trim()){T.err={checkout:'Chưa có tên doanh nghiệp. Nhập tên doanh nghiệp, hoặc bỏ chọn "Xuất hóa đơn doanh nghiệp".',field:'c-invname'};render();return;}
+  if(o.invoice&&!String(o.invAddr||'').trim()){T.err={checkout:'Chưa có địa chỉ doanh nghiệp. Nhập địa chỉ ghi trên hóa đơn, hoặc bỏ chọn "Xuất hóa đơn doanh nghiệp".',field:'c-invaddr'};render();return;}
+  if(o.invoice&&!/^\S+@\S+\.\S+$/.test(String(o.invEmail||'').trim())){T.err={checkout:'Email nhận hóa đơn chưa đúng. Nhập email kế toán, ví dụ: ketoan@congty.vn, hoặc bỏ chọn "Xuất hóa đơn doanh nghiệp".',field:'c-invemail'};render();return;}
+  if(!o.agree){T.err={checkout:'Anh/chị cần đồng ý với Điều khoản &amp; quy định trước khi tạo mã thanh toán.',field:'c-agree'};render();return;}
   T.err={};S.pay.method=o.method;S.order={...o,code:(S.order&&S.order.code)||'AICEO-'+Math.floor(100000+Math.random()*900000)};S.profile.name=o.name;S.profile.company=o.company;
-  S.pay.status='processing';S.pay.support=false;render();window.scrollTo(0,0);
-  setTimeout(()=>{if(S.pay.sim==='fail'){S.pay.status='failed';toast('Thanh toán chưa thành công','bad');}else{S.pay.status='success';S.enrolled=true;S.order.paidAt=today();toast('Thanh toán thành công, khóa học đã được kích hoạt');setTimeout(()=>{sendConfirmEmail();render();setTimeout(()=>{sendInvoiceEmail();render();},2600);},1800);}render();},1400);},
+  S.pay.status='await';S.pay.until=Date.now()+PAY_HOLD;S.pay.support=false;render();window.scrollTo(0,0);},
  acRegister:f=>{const fd=new FormData(f),v=k=>String(fd.get(k)||'').trim(),d={name:v('name'),phone:v('phone'),email:v('email').toLowerCase()};T.acDraft=d;
   const bad=(m,field)=>{T.err={ac:m,field};render();};
   if(!d.name)return bad('Chưa có họ và tên.','a-name');
@@ -433,6 +488,8 @@ function vpSync(){const p=document.querySelector('.player');if(!p)return;const c
 const vpCloseMenu=()=>{const m=document.querySelector('.vp-menu:not([hidden])');if(!m)return false;m.hidden=true;const b=document.querySelector('[data-a="vpMenu"]');if(b){b.setAttribute('aria-expanded','false');b.focus();}return true;};
 document.addEventListener('input',e=>{const t=e.target;if(!t.classList||!t.classList.contains('vp-vol'))return;const v=+t.value;T.vp.vol=v;T.vp.muted=v===0;t.style.setProperty('--v',v+'%');t.setAttribute('aria-valuetext',`Âm lượng ${v}%`);const b=t.previousElementSibling;if(b){b.innerHTML=ic(vpVolIc(),19);const l=T.vp.muted?'Bật tiếng':'Tắt tiếng';b.setAttribute('aria-label',l);b.title=l;}});
 document.addEventListener('click',e=>{if(!e.target.closest('.vp-menu,[data-a="vpMenu"]')){const m=document.querySelector('.vp-menu:not([hidden])');if(m){m.hidden=true;const b=document.querySelector('[data-a="vpMenu"]');if(b)b.setAttribute('aria-expanded','false');}}},true);
+document.addEventListener('input',e=>{if(e.target&&e.target.id==='c-tax')taxPrefetch(e.target.value);});
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target&&e.target.id==='c-tax'){e.preventDefault();ACT.taxLookup();}});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&vpCloseMenu())e.stopImmediatePropagation();},true);
 ['fullscreenchange','webkitfullscreenchange'].forEach(t=>document.addEventListener(t,vpSync));
 // góp ý: hiện chữ mô tả ngay khi chọn số sao
@@ -461,6 +518,8 @@ document.addEventListener('dragleave',e=>{const z=e.target.closest&&e.target.clo
 document.addEventListener('drop',e=>{const z=e.target.closest&&e.target.closest('.ex-drop');if(!z)return;e.preventDefault();z.classList.remove('over');if(e.dataTransfer&&e.dataTransfer.files.length)addExFiles(z.dataset.id,e.dataTransfer.files);});
 Object.keys(S.done||{}).forEach(k=>{if(S.done[k]&&S.spent[k]==null){try{S.spent[k]=U(k).m;}catch(e){}}});
 // thời gian thực học: đếm thời gian đang mở trang bài tập (tab đang hiện), 5 giây một lần; lưu mỗi 30 giây
+// đếm ngược thời gian giữ mã thanh toán: sửa trực tiếp số trên màn hình, hết giờ thì vẽ lại để hiện thông báo hết hạn
+setInterval(()=>{if(S.screen!=='checkout'||S.pay.status!=='await')return;const el=document.getElementById('pay-left');if(!el)return;const l=payLeft();el.textContent=fmtLeft(l);if(!l&&!el.closest('.end'))render();},1000);
 let spentTick=0;setInterval(()=>{if(S.screen!=='lesson'||!S.unit||document.visibilityState!=='visible')return;const u=U(S.unit);if(!u||u.kind!=='exercise')return;S.spent[S.unit]=(S.spent[S.unit]||0)+5/60;if(++spentTick%6===0)save();},5000);
 // cộng đồng: chủ đề "Thắng lợi AI" đã bỏ, bài cũ chuyển sang "Chia sẻ use case"
 if(S.comm&&Array.isArray(S.comm.posts))S.comm.posts.forEach(p=>{if(p.cat==='win')p.cat='usecase';});
@@ -471,7 +530,12 @@ if(!S.evMerged){S.comm=S.comm||{};S.comm.events=S.comm.events||{};const r=S.evRe
 if(Array.isArray(S.mails)){const seen=new Set();S.mails.forEach(m=>{if(seen.has(m.id))m.id=mailId('d');seen.add(m.id);});}
 // sự kiện cộng đồng đã đăng ký trước khi có email xác nhận: bổ sung email (mỗi sự kiện 1 lần)
 if(S.comm&&S.comm.events&&Array.isArray(S.mails))Object.keys(S.comm.events).forEach(i=>{if(S.comm.events[i])sendEventEmail(+i);});
-if(!PAY_METHODS[S.pay.method])S.pay.method='qr';
+// tin chatbot đã lưu từ trước vẫn ghi "12 năng lực" → đổi thành 10 năng lực (khóa có 12 module, 10 năng lực AI)
+['ob','plan'].forEach(k=>{if(!S[k])return;const j=JSON.stringify(S[k]),n=j.replace(/qua 12 năng lực/g,'qua 10 năng lực').replace(/đi đủ 12 năng lực AI/g,'đi đủ 12 module (10 năng lực AI)');if(n!==j)S[k]=JSON.parse(n);});
+if(!PAY_METHODS[S.pay.method])S.pay.method='bank';
+if(S.pay.status==='await'&&!S.pay.until)S.pay.until=Date.now()+PAY_HOLD;
+// phương thức cũ "qr" → "bank" (chuyển khoản ngân hàng) cho đơn và email đã có
+[S.order,...(S.mails||[]).map(m=>m.order)].forEach(o=>{if(o&&o.method&&!PAY_METHODS[o.method])o.method='bank';});
 // tài khoản Học viện: dữ liệu cũ đã đăng ký khóa thì tạo tài khoản từ đơn hàng
 if(S.enrolled&&!S.account&&S.order){S.account={name:S.order.name,phone:S.order.phone,email:S.order.email,createdAt:S.order.paidAt||today()};S.loggedIn=true;}
 if(!SCREENS[S.screen])S.screen='landing';

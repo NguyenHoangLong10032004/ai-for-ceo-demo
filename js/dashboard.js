@@ -39,7 +39,7 @@ function dashStats(){
 const hm=m=>m>=60?`${Math.floor(m/60)} giờ${m%60?` ${m%60} phút`:''}`:`${m} phút`;
 // lời động viên theo tiến độ
 function cheer(p){
- if(p>=100)return 'Chúc mừng! Anh/chị đã đi hết hành trình 12 năng lực AI.';
+ if(p>=100)return 'Chúc mừng! Anh/chị đã đi hết hành trình 10 năng lực AI.';
  if(p>=75)return 'Chỉ còn vài bước nữa là về đích. Giữ nhịp này nhé!';
  if(p>=50)return 'Đã qua nửa chặng đường. Bức tranh AI cho doanh nghiệp đang rõ dần.';
  if(p>0)return 'Khởi đầu rất tốt. Mỗi ngày một bài, anh/chị sẽ thấy AI làm được gì cho công ty mình.';
@@ -160,7 +160,7 @@ function chartLessonTime(){
  const ls=lessons(),N=ls.length,ni=nextLesson(),W=1000,H=200,m={l:44,r:6,t:14,b:28},iw=W-m.l-m.r,ih=H-m.t-m.b;
  const act=ls.map(ks=>spentOf(ks)),val=act;
  const max=Math.max(10,Math.ceil(Math.max(...val)/10)*10),band=iw/N,bw=Math.max(8,Math.min(100,band*.72));
- const Y=v=>m.t+ih-(v/max)*ih,every=N<=15?1:N<=30?3:5;
+ const Y=v=>m.t+ih-(v/max)*ih,every=N<=30?1:2; // hiện đủ số thứ tự từng bài (theo yêu cầu user); lộ trình > 30 bài thì cách 1 số cho khỏi chồng chữ
  const bars=ls.map((ks,i)=>{const done=lessonDone(i),cur=i===ni,at=lessonDoneAt(i);
   const x=m.l+i*band+(band-bw)/2,y=Math.min(Y(val[i]),m.t+ih-(val[i]>0?6:0)),c=done?CH.lesson:cur?CH.doing:'var(--line-2)';
   const t=tip(`Bài ${i+1} · ${lessonTitle(ks,i,ls)}`,done||act[i]>0?`Thực học ${fmtMin(act[i])}`:'Chưa học',done?`Hoàn thành ${at?fmtShort(at):''}`:cur?'Đang học':'');
@@ -272,7 +272,7 @@ async function drawDashCard(g){
  card(X,580,RW,360);g.fillStyle='#172033';g.font=F(700,19);g.fillText('Thời gian học từng bài',X+24,618);g.fillStyle='#667085';g.font=F(500,15);g.fillText('Số phút thực học mỗi bài',X+24,642);
  const mins=ls.map(ks=>spentOf(ks)),mm=Math.max(10,Math.ceil(Math.max(...mins)/10)*10),N=ls.length,x0=X+64,x1=X+RW-24,y0=900,hh=220,band=(x1-x0)/N,bw=Math.max(4,Math.min(56,band*.72));
  g.strokeStyle='#EEF1F6';g.lineWidth=1;[0,.5,1].forEach(f=>{const y=y0-hh*f;g.beginPath();g.moveTo(x0,y);g.lineTo(x1,y);g.stroke();g.fillStyle='#98A2B3';g.font=F(500,13);g.textAlign='right';g.fillText(Math.round(mm*f)+'′',x0-8,y+4);});
- const every=N<=15?1:N<=30?3:5;
+ const every=N<=30?1:2;
  mins.forEach((m,i)=>{const x=x0+i*band+(band-bw)/2;if(m>0){g.fillStyle=lessonDone(i)?CH.lesson:CH.doing;const h=Math.max(3,hh*m/mm);rr(g,x,y0-h,bw,h,Math.min(4,bw/2));g.fill();}
   if(i%every===0||i===N-1){g.fillStyle='#667085';g.font=F(500,13);g.textAlign='center';g.fillText(i+1,x+bw/2,y0+20);}});
  g.textAlign='center';g.fillStyle='#667085';g.font=F(500,16);g.fillText('sieutangtruong.vn · #AIforCEO',W/2,978);g.textAlign='left';

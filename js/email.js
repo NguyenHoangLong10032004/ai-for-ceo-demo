@@ -134,7 +134,7 @@ function invoiceEmail(o,opt={}){
  <table role="presentation" width="100%" cellpadding="0" cellspacing="0">${row('Tên công ty',esc(o.invName||''))}${row('Mã số thuế',esc(o.taxId||''))}${row('Địa chỉ',esc(o.invAddr||''))}${row('Người mua hàng',esc(o.name||''))}${row('Hình thức thanh toán','Chuyển khoản')}</table>
  ${h('Nội dung')}
  <table role="presentation" width="100%" cellpadding="0" cellspacing="0">${row('Khóa học AI for CEO · Trọn khóa (1 học viên)',money(COURSE.list))}${row(esc(COURSE.promo),'−'+money(SAVE))}${row('Tổng tiền thanh toán',money(COURSE.price),true)}</table>
- <p style="margin:8px 0 20px;font-size:12.5px;color:#5B6472">Thuế GTGT áp dụng theo quy định hiện hành. Số liệu trong bản demo là minh họa.</p>
+ <p style="margin:8px 0 20px;font-size:12.5px;color:#5B6472">Thuế GTGT áp dụng theo quy định hiện hành.</p>
  ${p(`Tệp đính kèm: hóa đơn bản PDF và XML. Cần điều chỉnh thông tin hóa đơn, Quý công ty vui lòng phản hồi tới <a href="mailto:${ACADEMY.billing}" style="color:#1747C9">${ACADEMY.billing}</a> kèm số hóa đơn.`)}
 </td></tr>
 ${emailFooter({logo,reason:`Quý công ty nhận email này vì là đơn vị mua hàng trên hóa đơn của đơn ${esc(o.code)}.`})}</table></div>`;

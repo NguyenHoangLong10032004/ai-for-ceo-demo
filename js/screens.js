@@ -97,7 +97,7 @@ function landing(){
  <ul class="aha">${['"AI không còn chỉ là chatbot."','"AI có thể hiểu dữ liệu của tôi, tạo sản phẩm số, dùng công cụ và tham gia quy trình."','"AI đang trở thành một lớp trí tuệ nằm trên các hệ thống doanh nghiệp."','"Vấn đề không còn là có nên dùng AI hay không, mà là nên đưa AI vào đâu trước."'].map(x=>`<li>${x}</li>`).join('')}</ul>
 </section>
 
-<section class="band" id="modules"><div class="wrap sec">${secHead('12 module · 12 năng lực','Mỗi module là một năng lực, mỗi năng lực có demo thật','Mỗi module gồm 4 video ngắn (mở vấn đề, demo năng lực, giải thích cho CEO, CEO takeaway) và 1 bài tập áp dụng cho công ty. Các module được chia thành bài học theo lịch anh/chị chọn.')}
+<section class="band" id="modules"><div class="wrap sec">${secHead('12 module · 10 năng lực','10 năng lực AI, mỗi năng lực có demo thật','Mỗi module gồm 4 video ngắn (mở vấn đề, demo năng lực, giải thích cho CEO, CEO takeaway) và 1 bài tập áp dụng cho công ty. Các module được chia thành bài học theo lịch anh/chị chọn.')}
  <div class="grid g4">${mods.map(x=>`<article class="card mod"><span class="no">MODULE ${modNo(x)}</span><h3>${esc(x.title)}</h3><p>${esc(clip(x.demo,120))}</p></article>`).join('')}</div>
 </div></section>
 
@@ -142,37 +142,88 @@ function landing(){
 
 /* ---------- 2. Đăng ký & thanh toán ---------- */
 function checkout(){
- const ac=S.account||{},o=S.order||{name:ac.name||'',phone:ac.phone||'',email:ac.email||'',company:SAMPLE_PROFILE.company,invoice:true,taxId:'0312345678',invName:SAMPLE_PROFILE.company,invEmail:'ketoan@minhan.vn',invAddr:'125 Nguyễn Văn Linh, Quận 7, TP.HCM'};
+ const ac=S.account||{},o=S.order||{name:ac.name||'',phone:ac.phone||'',email:ac.email||'',company:'',invoice:true,taxId:'0312345678',invName:SAMPLE_PROFILE.company,invEmail:'ketoan@minhan.vn',invAddr:'125 Nguyễn Văn Linh, Quận 7, TP.HCM'};
  const st=S.pay.status;
- const steps=['Xác nhận','Thông tin','Thanh toán','Hoàn tất'];const at=st==='success'?3:st?2:1;
+ const steps=['Xác nhận thông tin','Thanh toán','Hoàn tất'];const at=st==='success'?2:st?1:0; // 3 bước (theo đề xuất user): gộp Xác nhận + Thông tin
  const stepper=`<div class="stepper">${steps.map((s,i)=>`<span class="${i<at?'ok':i===at?'on':''}"><i>${i<at?'✓':i+1}</i>${s}</span>`).join('')}</div>`;
- const summary=`<aside class="card pad sticky"><h3 class="h3" style="margin-bottom:10px">Đơn đăng ký</h3>
+ const summary=`<aside class="card pad sticky"><h3 class="h3" style="margin-bottom:10px">Thông tin đơn hàng</h3>
   <div class="sum-row"><span class="k">Khóa học</span><span class="v">AI for CEO · Trọn khóa</span></div>
   <div class="sum-row"><span class="k">Học phí</span><span class="v tnum">${money(COURSE.list)}</span></div>
-  <div class="sum-row disc"><span class="k">${COURSE.promo}</span><span class="v tnum">−${money(SAVE)}</span></div>
+  <div class="sum-row disc"><span class="k">Ưu đãi</span><span class="v tnum">−${money(SAVE)}</span></div>
   <div class="sum-row" style="align-items:center"><span class="k">Tổng thanh toán</span><span class="v total tnum">${money(COURSE.price)}</span></div>
-  <ul class="promise" style="margin-top:16px;font-size:14.5px;gap:10px">${COURSE.perks.slice(0,4).filter(x=>!x.startsWith('Live Zoom')).map(x=>`<li>${ic('check',15)}<span>${x}</span></li>`).join('')}</ul></aside>`;
+  </aside>`;
  let main;
- if(st==='processing')main=`<div class="card status"><div class="spin" role="status" aria-label="Đang xử lý"></div><h3 class="h3">Đang xử lý giao dịch…</h3><p class="muted">Vui lòng không đóng trang.</p></div>`;
- else if(st==='failed')main=`<div class="card status"><span class="big bad">${ic('x',28)}</span><h3 class="h3">Giao dịch chưa thành công</h3><p class="muted" style="max-width:46ch">Ngân hàng từ chối giao dịch (mô phỏng). Tiền chưa bị trừ. Anh/chị có thể thử lại, sửa thông tin, hoặc nhờ hỗ trợ.</p>
-  <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center"><button class="btn btn-primary" data-a="payRetry">Thử lại</button><button class="btn btn-line" data-a="payChange">Sửa thông tin</button><button class="btn btn-line" data-a="paySupport">${ic('headset',16)} Cần hỗ trợ</button></div>
+ if(st==='await')main=payView();
+ else if(st==='processing')main=`<div class="card status"><div class="spin" role="status" aria-label="Đang xử lý"></div><h3 class="h3">Đang xử lý giao dịch…</h3><p class="muted">Vui lòng không đóng trang.</p></div>`;
+ else if(st==='failed')main=`<div class="card status"><span class="big bad">${ic('x',28)}</span><h3 class="h3">Chưa nhận được thanh toán</h3><p class="muted" style="max-width:48ch">Hệ thống chưa nhận được tiền chuyển khoản cho đơn <b>${esc(S.order.code)}</b> (mô phỏng). Anh/chị kiểm tra lại số tài khoản, số tiền, nội dung chuyển khoản rồi thử lại, hoặc nhờ hỗ trợ.</p>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center"><button class="btn btn-primary" data-a="payRetry">Xem lại thông tin chuyển khoản</button><button class="btn btn-line" data-a="payChange">Sửa thông tin</button><button class="btn btn-line" data-a="paySupport">${ic('headset',16)} Cần hỗ trợ</button></div>
   ${S.pay.support?`<div class="callout info" style="text-align:left"><b>Hỗ trợ thanh toán</b><span>Đội CSKH đã nhận yêu cầu và sẽ gọi lại trong 15 phút (mô phỏng). Hotline minh họa: <b class="tnum">1900 0000</b>. Mã đơn: <b>${esc(S.order.code)}</b>.</span></div>`:''}</div>`;
- else if(st==='success')main=`<div class="card status"><span class="big ok">${ic('check',30)}</span><h3 class="h2" style="font-size:30px">Đăng ký thành công</h3><p class="muted" style="max-width:50ch">Thanh toán đã được ghi nhận và quyền truy cập khóa AI for CEO đã được kích hoạt cho <b>${esc(S.order.email)}</b>.${S.order.invoice?' Hóa đơn điện tử sẽ được xuất theo thông tin công ty đã cung cấp.':''}</p>
+ else if(st==='success')main=`<div class="card status"><span class="big ok">${ic('check',30)}</span><h3 class="h2" style="font-size:30px">Đăng ký thành công</h3><p class="muted" style="max-width:50ch">Thanh toán đã được ghi nhận<br>Quyền truy cập khóa <b>AI for CEO</b> đã được kích hoạt cho <b>${esc(S.order.email)}</b>.</p>
   <div style="width:100%;max-width:420px;text-align:left;border-top:1px solid var(--line)"><div class="sum-row"><span class="k">Mã đơn</span><span class="v tnum">${esc(S.order.code)}</span></div><div class="sum-row"><span class="k">Học viên</span><span class="v">${esc(S.order.name)}</span></div><div class="sum-row"><span class="k">Đã thanh toán</span><span class="v tnum">${money(COURSE.price)}</span></div><div class="sum-row"><span class="k">Trạng thái</span><span class="v"><span class="pill ok">Đã kích hoạt</span></span></div></div>
   <button class="btn btn-primary btn-lg" data-a="go" data-to="mycourses">Vào khóa học ${ic('arrow')}</button>
-  ${(cm=>cm?`<p class="hint mail-note">${ic('mail',14)} Đã gửi 2 email (xác nhận đăng ký, hướng dẫn truy cập khóa học) tới <b>${esc(S.order.email)}</b>${S.order.phone?` và tin nhắn Zalo OA tới <b>${esc(S.order.phone)}</b>`:''}.</p>`:`<p class="hint mail-note">${ic('mail',14)} Đang gửi email xác nhận tới <b>${esc(S.order.email)}</b>…</p>`)(S.mails.find(m=>m.kind==='confirm'&&m.code===S.order.code))}${S.order.invoice?(im=>`<div class="callout info inv-note" role="status"><span class="inv-ico">${ic('file',18)}</span><div><b>${im?'Đã xuất hóa đơn điện tử':'Đang xuất hóa đơn điện tử…'}</b><span>${im?`Hóa đơn số <b>${esc((im.order.inv||{}).no||'')}</b> cho ${esc(S.order.invName||'')} đã được gửi tới <b>${esc(S.order.invEmail)}</b>.`:`Hóa đơn cho ${esc(S.order.invName||'')} sẽ được gửi tới <b>${esc(S.order.invEmail)}</b>.`}</span></div></div>`)(S.mails.find(m=>m.kind==='invoice'&&!m.sample&&m.code===S.order.code)):''}</div>`;
+  ${(cm=>cm?`<p class="hint mail-note">${ic('mail',14)} Vui lòng kiểm tra email <b>${esc(S.order.email)}</b>${S.order.phone?` và Zalo <b>${esc(S.order.phone)}</b>`:''} để xem xác nhận đăng ký và hướng dẫn truy cập khóa học.</p>`:`<p class="hint mail-note">${ic('mail',14)} Đang gửi email xác nhận tới <b>${esc(S.order.email)}</b>…</p>`)(S.mails.find(m=>m.kind==='confirm'&&m.code===S.order.code))}${S.order.invoice?(im=>`<div class="callout info inv-note" role="status"><span class="inv-ico">${ic('file',18)}</span><div><b>${im?'Đã xuất hóa đơn điện tử':'Đang xuất hóa đơn điện tử…'}</b><span>${im?`Hóa đơn số <b>${esc((im.order.inv||{}).no||'')}</b> cho ${esc(S.order.invName||'')} đã được gửi tới <b>${esc(S.order.invEmail)}</b>.`:`Hóa đơn cho ${esc(S.order.invName||'')} sẽ được gửi tới <b>${esc(S.order.invEmail)}</b>.`}</span></div></div>`)(S.mails.find(m=>m.kind==='invoice'&&!m.sample&&m.code===S.order.code)):''}</div>`;
  else main=`<form class="card form" data-f="checkoutSubmit" novalidate>
   <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><h3 class="h3">Thông tin người học</h3></div>
   <div class="row2"><div class="field"><label for="c-name">Họ và tên <span class="req" aria-hidden="true">*</span></label><input class="inp" id="c-name" name="name" value="${esc(o.name)}" required aria-required="true" autocomplete="name"></div><div class="field"><label for="c-phone">Số điện thoại / Zalo <span class="req" aria-hidden="true">*</span></label><input class="inp" id="c-phone" name="phone" type="tel" value="${esc(o.phone)}" required aria-required="true" autocomplete="tel"></div></div>
-  <div class="row2"><div class="field"><label for="c-email">Email nhận tài khoản <span class="req" aria-hidden="true">*</span></label><input class="inp" id="c-email" name="email" type="email" value="${esc(ac.email||o.email)}" readonly aria-readonly="true" aria-describedby="c-email-h"></div><div class="field"><label for="c-company">Công ty</label><input class="inp" id="c-company" name="company" value="${esc(o.company)}"></div></div>
-  <p class="hint ck-acc" id="c-email-h">${ic('lock',13)}<span>Email nhận tài khoản là email tài khoản Học viện của anh/chị, khóa học được kích hoạt cho email này.</span><button type="button" class="btn-link" data-a="acSwitch">Dùng tài khoản khác</button></p>
-  <label class="opt" for="c-inv" style="justify-self:start"><input type="checkbox" id="c-inv" name="invoice" ${o.invoice?'checked':''} data-a="invToggle"><span>Xuất hóa đơn cho công ty</span></label>
-  <div class="row2" id="inv-box" ${o.invoice?'':'hidden'}><div class="field"><label for="c-tax">Mã số thuế <span class="req" aria-hidden="true">*</span></label><input class="inp" id="c-tax" name="taxId" aria-required="true" value="${esc(o.taxId||'')}"></div><div class="field"><label for="c-invname">Tên công ty trên hóa đơn <span class="req" aria-hidden="true">*</span></label><input class="inp" id="c-invname" name="invName" aria-required="true" value="${esc(o.invName||'')}"></div><div class="field" style="grid-column:1/-1"><label for="c-invaddr">Địa chỉ công ty <span class="req" aria-hidden="true">*</span></label><input class="inp" id="c-invaddr" name="invAddr" aria-required="true" value="${esc(o.invAddr||'')}"></div><div class="field" style="grid-column:1/-1"><label for="c-invemail">Email nhận hóa đơn công ty <span class="req" aria-hidden="true">*</span></label><input class="inp" id="c-invemail" name="invEmail" aria-required="true" type="email" value="${esc(o.invEmail||'')}" placeholder="Ví dụ: ketoan@congty.vn" autocomplete="email"></div></div>
-  <fieldset><legend>Phương thức thanh toán</legend><div class="opt-grid">${Object.entries(PAY_METHODS).map(([v,l],i)=>`<label class="opt" for="pm-${i}"><input type="radio" id="pm-${i}" name="method" value="${v}" ${S.pay.method===v?'checked':''}><span>${l}</span></label>`).join('')}</div></fieldset>
-  <div class="demo-box"><span class="t">Mô phỏng cổng thanh toán</span><div class="seg" role="group" aria-label="Kết quả mô phỏng"><button type="button" class="${S.pay.sim==='success'?'on':''}" data-a="paySim" data-v="success">Thành công</button><button type="button" class="${S.pay.sim==='fail'?'on':''}" data-a="paySim" data-v="fail">Thất bại</button></div></div>
+  <div class="row2"><div class="field"><label for="c-email">Email nhận tài khoản <span class="req" aria-hidden="true">*</span></label><input class="inp" id="c-email" name="email" type="email" value="${esc(ac.email||o.email)}" readonly aria-readonly="true" aria-describedby="c-email-h"></div><div class="field"><label for="c-company">Công ty</label><input class="inp" id="c-company" name="company" autocomplete="organization" placeholder="Ví dụ: Công ty CP ABC" value="${esc(o.company===SAMPLE_PROFILE.company?'':(o.company||''))}"></div></div>
+  <p class="hint ck-acc" id="c-email-h"><button type="button" class="btn-link" data-a="acSwitch">Dùng tài khoản khác</button></p>
+  <label class="opt" for="c-inv" style="justify-self:start"><input type="checkbox" id="c-inv" name="invoice" ${o.invoice?'checked':''} data-a="invToggle"><span>Xuất hóa đơn doanh nghiệp</span></label>
+  <div class="row2" id="inv-box" ${o.invoice?'':'hidden'}><div class="field"><label for="c-tax">Mã số thuế doanh nghiệp <span class="req" aria-hidden="true">*</span></label><div class="tax-in"><input class="inp" id="c-tax" name="taxId" aria-required="true" inputmode="numeric" placeholder="Ví dụ: 0100109106" aria-describedby="c-tax-st" value="${esc(o.taxId||'')}"><button type="button" class="tax-btn" data-a="taxLookup">${ic('search',16)} Kiểm tra</button></div><p class="hint tax-st" id="c-tax-st" role="status" aria-live="polite">Nhập mã số thuế rồi bấm Kiểm tra, tên và địa chỉ doanh nghiệp sẽ tự điền.</p></div><div class="field"><label for="c-invname">Tên doanh nghiệp <span class="req" aria-hidden="true">*</span></label><input class="inp" id="c-invname" name="invName" aria-required="true" value="${esc(o.invName||'')}"></div><div class="field" style="grid-column:1/-1"><label for="c-invaddr">Địa chỉ doanh nghiệp <span class="req" aria-hidden="true">*</span></label><input class="inp" id="c-invaddr" name="invAddr" aria-required="true" value="${esc(o.invAddr||'')}"></div><div class="field" style="grid-column:1/-1"><label for="c-invemail">Email nhận hóa đơn <span class="req" aria-hidden="true">*</span></label><input class="inp" id="c-invemail" name="invEmail" aria-required="true" type="email" value="${esc(o.invEmail||'')}" placeholder="Ví dụ: ketoan@congty.vn" autocomplete="email"></div></div>
+  <fieldset><legend>Phương thức thanh toán</legend><div class="opt-grid">${Object.entries(PAY_METHODS).map(([v,l],i)=>`<label class="opt" for="pm-${i}"><input type="radio" id="pm-${i}" name="method" value="${v}" ${S.pay.method===v?'checked':''}><span>${l}</span></label>`).join('')}<label class="opt opt-off" for="pm-card" aria-disabled="true"><input type="radio" id="pm-card" name="method" value="card" disabled><span class="opt-txt"><span>Thẻ thanh toán</span><small>Tạm thời chưa hỗ trợ</small></span><span class="card-brands" aria-hidden="true"><i class="cb-visa">VISA</i><i class="cb-mc"><b></b><b></b></i><i class="cb-jcb">JCB</i><i class="cb-amex">AMEX</i></span></label></div></fieldset>
+  <div class="ck-terms"><label class="ck-agree" for="c-agree"><input type="checkbox" id="c-agree" name="agree" ${o.agree?'checked':''} aria-required="true" ${T.err.field==='c-agree'?'aria-invalid="true"':''}><span>Tôi đã đọc và đồng ý với <button type="button" class="btn-link" data-a="policy">Điều khoản &amp; quy định</button>. <span class="req" aria-hidden="true">*</span></span></label></div>
   ${T.err.checkout?`<p class="err">${T.err.checkout}</p>`:''}
-  <div class="form-foot"><span class="hint"><span class="req">*</span> Thông tin bắt buộc. Bấm thanh toán là anh/chị đồng ý với điều khoản khóa học.</span><button class="btn btn-primary btn-lg">Thanh toán ${money(COURSE.price)}</button></div></form>`;
+  <div class="form-foot"><span class="hint"><span class="req">*</span> Thông tin bắt buộc.</span><button class="btn btn-primary btn-lg">Tiếp tục thanh toán ${ic('arrow')}</button></div></form>`;
  return `<section class="wrap page"><div class="crumbs"><button data-a="go" data-to="landing">AI for CEO</button><span>/</span><span>Đăng ký & thanh toán</span></div>${stepper}<div class="two"><div>${main}</div>${summary}</div></section>`;
+}
+
+/* ---------- Màn thanh toán: chuyển khoản ngân hàng (theo yêu cầu user) ----------
+   2 cách song song: (1) quét mã QR, mã điền sẵn số tài khoản + số tiền + nội dung; (2) chuyển khoản thủ công, mỗi dòng
+   số tài khoản / số tiền / nội dung có nút Sao chép riêng. Demo: mã QR chỉ là hình minh họa (không quét được, tránh chuyển nhầm
+   tiền vào tài khoản có thật); nút "Mô phỏng: ngân hàng báo đã nhận tiền" thay cho việc hệ thống tự đối soát. */
+function fakeQR(seed){
+ const n=29,cell=(x,y)=>{let h=2166136261;const k=seed+'|'+x+'|'+y;for(let i=0;i<k.length;i++){h^=k.charCodeAt(i);h=Math.imul(h,16777619);}return (h>>>0)%100<47;};
+ const fin=(x,y)=>[[0,0],[n-7,0],[0,n-7]].some(([a,b])=>x>=a&&x<a+7&&y>=b&&y<b+7),finOn=(x,y)=>{for(const [a,b] of [[0,0],[n-7,0],[0,n-7]]){const i=x-a,j=y-b;if(i>=0&&i<7&&j>=0&&j<7)return i===0||i===6||j===0||j===6||(i>=2&&i<=4&&j>=2&&j<=4);}return false;};
+ const sep=(x,y)=>[[0,0],[n-8,0],[0,n-8]].some(([a,b])=>x>=a&&x<a+8&&y>=b&&y<b+8);
+ let r='';for(let y=0;y<n;y++)for(let x=0;x<n;x++){const on=fin(x,y)?finOn(x,y):sep(x,y)?false:(x>11&&x<17&&y>11&&y<17)?false:cell(x,y);if(on)r+=`M${x},${y}h1v1h-1z`;}
+ return `<svg class="qr-svg" viewBox="-2 -2 ${n+4} ${n+4}" role="img" aria-label="Mã QR chuyển khoản (minh họa)"><rect x="-2" y="-2" width="${n+4}" height="${n+4}" fill="#fff"/><path d="${r}" fill="#111827"/></svg>`;
+}
+// thời gian giữ mã thanh toán (đếm ngược ở góc phải); hết giờ thì tạo lại mã
+const PAY_HOLD=30*60*1000;
+const payLeft=()=>Math.max(0,(S.pay.until||0)-Date.now());
+const fmtLeft=ms=>{const t=Math.ceil(ms/1000);return String(Math.floor(t/60)).padStart(2,'0')+':'+String(t%60).padStart(2,'0');};
+function payView(){
+ const o=S.order,note=transferNote(o),amt=COURSE.price,left=payLeft();
+ const cp=(k,label,val)=>`<button type="button" class="pay-cp" data-a="payCopy" data-v="${k}" data-c="${esc(val)}" aria-label="Sao chép ${label}" title="Sao chép">${ic('copy',16)}</button>`;
+ const row=(label,val,copy,cls='')=>`<div class="pay-row${cls}"><span class="k">${label}</span><b class="v tnum">${val}</b>${copy||'<span></span>'}</div>`;
+ const qr=BANK.real?`<img class="qr-svg" src="${bankQR(amt,note)}" alt="Mã VietQR tài khoản ${esc(BANK.name)} của ${esc(ACADEMY.name)}">`:fakeQR(o.code);
+ return `<div class="card pad pay">
+  <div class="pay-h"><h3 class="h3">Thanh toán</h3><span class="pay-timer${left?'':' end'}" role="timer" aria-label="Thời gian giữ mã thanh toán">${ic('clock',18)} <b class="tnum" id="pay-left">${fmtLeft(left)}</b></span></div>
+  ${left?'':`<div class="callout warn"><b>Mã thanh toán đã hết hạn</b><span>Anh/chị tạo mã mới để tiếp tục chuyển khoản. Nếu đã chuyển khoản, hệ thống vẫn ghi nhận theo nội dung ${esc(note)}.</span><div><button type="button" class="btn btn-line btn-sm" data-a="payRenew">${ic('refresh',15)} Tạo lại mã thanh toán</button></div></div>`}
+  <div class="pay-grid">
+   <figure class="pay-qr">
+    <div class="vqr">
+     <div class="vqr-brand" aria-hidden="true"><span class="v1">VIET</span><span class="v2">QR</span></div>
+     <div class="vqr-code">${qr}${BANK.real?'':'<span class="vqr-mid" aria-hidden="true">V</span>'}</div>
+     <div class="vqr-partners" aria-hidden="true"><span class="napas">napas <i>247</i></span><span class="sep"></span><span class="tpb">${esc(BANK.name)}</span></div>
+     <div class="vqr-info"><b>${esc(BANK.holder)}</b><span class="tnum">${esc(BANK.acc.replace(/\s/g,''))}</span><span>Số tiền: <span class="tnum">${amt.toLocaleString('vi-VN')}</span> VND</span></div>
+    </div>
+    <figcaption>Quét QR bằng app ngân hàng</figcaption>
+   </figure>
+   <div class="pay-side">
+    <div class="pay-rows">
+     ${row('Số tiền',money(amt),cp('amt','số tiền',String(amt)))}
+     ${row('Mã đơn (BẮT BUỘC)',esc(note),cp('note','mã đơn',note),' must')}
+     ${row('Ngân hàng',esc(BANK.name))}
+     ${row('Số tài khoản',esc(BANK.acc.replace(/\s/g,'')),cp('acc','số tài khoản',BANK.acc.replace(/\s/g,'')))}
+     ${row('Chủ tài khoản',esc(BANK.holder),'',' holder')}
+    </div>
+    <p class="pay-warn"><span aria-hidden="true">⚠️</span> <span>Nội dung chuyển khoản PHẢI có mã <b>${esc(note)}</b>. Hệ thống tự xác nhận sau 30 giây - 2 phút.</span></p>
+   </div>
+  </div>
+  <div class="demo-box"><span class="t">Mô phỏng ngân hàng</span><div class="seg" role="group" aria-label="Kết quả mô phỏng"><button type="button" class="${S.pay.sim==='success'?'on':''}" data-a="paySim" data-v="success">Nhận đủ tiền</button><button type="button" class="${S.pay.sim==='fail'?'on':''}" data-a="paySim" data-v="fail">Chưa nhận được</button></div><button type="button" class="btn btn-primary btn-sm" data-a="payDone">Mô phỏng: ngân hàng báo có tiền</button></div>
+  <div class="pay-foot"><button type="button" class="btn-link" data-a="payChange">← Sửa thông tin đăng ký</button><button type="button" class="btn-link" data-a="paySupport">${ic('headset',15)} Cần hỗ trợ thanh toán</button></div>
+  ${S.pay.support?`<div class="callout info"><b>Hỗ trợ thanh toán</b><span>Đội CSKH đã nhận yêu cầu và sẽ gọi lại trong 15 phút (mô phỏng). Hotline: <b class="tnum">${ACADEMY.hotline}</b>. Mã đơn: <b>${esc(o.code)}</b>.</span></div>`:''}
+ </div>`;
 }
 
 /* ---------- 2a. Tài khoản Học viện (đề xuất mới, US-03.2): bắt buộc có tài khoản trước khi đăng ký mua khóa học ----------
@@ -201,7 +252,6 @@ function account(){
   <p class="ac-alt">Chưa có tài khoản? <button type="button" class="btn-link" data-a="acTab" data-v="register">Đăng ký miễn phí</button></p></form>`;
  return `<section class="wrap page ac-page"><div class="card ac">
   <div class="ac-h"><img class="logo-img" src="img/logo.png" onerror="this.onerror=null;this.src='../Logo.png'" alt="Siêu Tăng Trưởng" width="1725" height="237"></div>
-  ${need?`<div class="callout info"><b>Cần tài khoản để đăng ký khóa học</b><span>Khóa AI for CEO được kích hoạt cho email của tài khoản Học viện.</span></div>`:''}
   <div class="seg ac-tabs" role="tablist" aria-label="Tài khoản"><button role="tab" aria-selected="${tab==='register'}" class="${tab==='register'?'on':''}" data-a="acTab" data-v="register">Tạo tài khoản</button><button role="tab" aria-selected="${tab==='login'}" class="${tab==='login'?'on':''}" data-a="acTab" data-v="login">Đăng nhập</button></div>
   ${tab==='login'?login:reg}</div></section>`;
 }
@@ -234,7 +284,7 @@ function mycourses(){
     <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap"><h3 class="h3">AI for CEO</h3><span class="pill ${status[1]}">${status[0]}</span></div>
     ${started?`<div style="display:grid;gap:6px"><div class="bar"><i style="width:${st.pct}%"></i></div><span class="hint tnum">${st.lessonsDone}/${st.n} bài học · ${subsCount()}/${Object.keys(TASKS).length} bài tập${ni>=0?` · Tiếp theo: Bài ${ni+1}`:''}</span></div>`
      :''}
-    <div class="kv"><div><span>Kích hoạt</span><b>${esc((S.order&&S.order.paidAt)||today())}</b></div><div><span>Mã đơn</span><b class="tnum">${esc((S.order&&S.order.code)||'')}</b></div><div><span>Thời hạn truy cập</span><b>Trọn đời</b></div></div>
+    <div class="kv"><div><span>Ngày kích hoạt</span><b>${esc((S.order&&S.order.paidAt)||today())}</b></div><div><span>Mã đơn</span><b class="tnum">${esc((S.order&&S.order.code)||'')}</b></div><div><span>Thời hạn truy cập</span><b>1 năm</b></div></div>
     <button class="btn btn-primary btn-lg btn-block" data-a="openCourse">${cta} ${ic('arrow')}</button>
    </div></article>
   <article class="card pad" style="display:grid;gap:10px;align-content:start;border-style:dashed"><h3 class="h3">Khám phá thêm</h3><p class="muted">Thử thách, khóa chuyên đề, cộng đồng.</p><div><button class="btn btn-line btn-sm" data-a="go" data-to="landing">Xem khóa học ${ic('arrow',15)}</button></div></article>
@@ -247,7 +297,7 @@ function onboarding(){
  if(S.ob.flow.some(s=>!Q[s]))fixOb();
  if(!S.ob.done&&S.ob.i>=S.ob.flow.length&&!T.obTyping)finishOb();
  const p=S.profile;const st=S.ob.flow[S.ob.i];const fromEval=!!S.eval;
- const rows=[['Ngành',p.industry,fromEval],['Quy mô nhân sự',p.size,fromEval],['Hiện trạng sử dụng AI',p.level?LEVELS[p.level]:'',fromEval],['Phòng ban quan tâm',p.goals&&p.goals.length?goalsText(p.goals):'',fromEval],['Bài toán muốn giải',p.problem,false],['Thời gian hoàn thành',p.days?`${p.days} ngày`:'',false],['Thời gian mỗi ngày',p.minPerSession?p.minPerSession+' phút':'',false],['Số bài học',profileComplete(p)?lessonsOf(p)+' bài, mỗi ngày 1 bài':'',false]];
+ const rows=[['Ngành',p.industry,fromEval],['Quy mô nhân sự',p.size,fromEval],['Hiện trạng sử dụng AI',p.level?LEVELS[p.level]:'',fromEval],['Phòng ban quan tâm',p.goals&&p.goals.length?goalsText(p.goals):'',fromEval],['Bài toán muốn giải',p.problem,false],['Thời gian hoàn thành',p.days?`${p.days} ngày`:'',false],['Thời gian học mỗi ngày',p.minPerSession?p.minPerSession+' phút':'',false],['Số bài học',profileComplete(p)?lessonsOf(p)+' bài, mỗi ngày 1 bài':'',false]];
  const need=[p.industry,p.size,p.level,p.goals&&p.goals.length,p.days,p.minPerSession];const pct=Math.round(need.filter(Boolean).length/need.length*100);
  let chips='';
  if(st&&!T.obTyping){const q=Q[st];chips=q.chips(p).map(([v,l])=>q.multi?`<button class="chip ${S.ob.multi.includes(v)?'on':''}" data-a="obToggle" data-v="${esc(v)}">${esc(l)}</button>`:`<button class="chip" data-a="obChip" data-v="${esc(v)}" data-l="${esc(l)}">${esc(l)}</button>`).join('')+(q.multi?`<button class="chip cta" data-a="obGoalsDone" ${S.ob.multi.length?'':'disabled'}>Xong</button>`:'');}
