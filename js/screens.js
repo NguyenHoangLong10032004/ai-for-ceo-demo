@@ -15,7 +15,7 @@ function header(){
  const inCourse=['mycourses','onboarding','syllabus','learn','lesson','complete','outputs','dashboard'].includes(S.screen);
  return `<header class="hdr"><div class="wrap">
  <button class="logo" data-a="go" data-to="landing" aria-label="Trang chủ"><img class="logo-img" src="img/logo.png" onerror="this.onerror=null;this.src='../Logo.png'" alt="Siêu Tăng Trưởng" width="1725" height="237"></button>
- <nav class="nav"><button class="${!inCourse&&S.screen!=='community'?'on':''}" data-a="go" data-to="landing">AI for CEO</button><button data-a="go" data-to="landing">Khóa học</button><button data-a="go" data-to="landing">Thử thách</button><button class="${S.screen==='community'?'on':''}" data-a="openCommunity" title="Mở cộng đồng ở tab mới">Cộng đồng</button><button data-a="go" data-to="landing">Blog / Tin tức</button>${S.enrolled?`<button class="${inCourse?'on':''}" data-a="go" data-to="mycourses">Khóa học của tôi</button>`:''}</nav>
+ <nav class="nav"><button class="${!inCourse&&!['community','courses'].includes(S.screen)?'on':''}" data-a="go" data-to="landing">AI for CEO</button><button class="${S.screen==='courses'?'on':''}" data-a="go" data-to="courses">Khóa học</button><button data-a="go" data-to="landing">Thử thách</button><button class="${S.screen==='community'?'on':''}" data-a="openCommunity" title="Mở cộng đồng ở tab mới">Cộng đồng</button><button data-a="go" data-to="landing">Blog / Tin tức</button>${S.enrolled?`<button class="${inCourse?'on':''}" data-a="go" data-to="mycourses">Khóa học của tôi</button>`:''}</nav>
  <div class="hdr-r">${name?`<button class="me" data-a="go" data-to="${S.enrolled?'mycourses':'landing'}"><span class="avatar">${esc(name.trim().split(/\s+/).pop()[0]||'N')}</span><span class="n">${esc(name)}</span></button>`:`<button class="btn btn-ghost btn-sm" data-a="acOpen" data-v="login">Đăng nhập</button><button class="btn btn-primary btn-sm" data-a="acOpen" data-v="register">Đăng ký</button>`}</div>
  </div></header>`;
 }
@@ -265,7 +265,7 @@ const evBtn=(e,cls='btn-sm')=>evOn(e)?`<span class="pill ok">${ic('check',12)} �
 function eventsCard(){
  const ev=upcomingEvents();if(!ev.length)return '';
  return `<div class="card pad ev-card"><b class="ev-h">${ic('cal',16)} Sự kiện sắp tới</b><ul class="ev-list">${ev.map(e=>{
-  return `<li><span class="ev-ico">${ic(e.icon,16)}</span><div><span class="tag">${e.type}</span><b>${esc(e.title)}</b><span class="hint">${esc(evWhen(e))}</span>
+  return `<li class="ev-${e.k}"><span class="ev-ico">${ic(e.icon,16)}</span><div><span class="tag">${e.type}</span><b>${esc(e.title)}</b><span class="hint">${esc(evWhen(e))}</span>
    <div>${evBtn(e)}</div></div></li>`;}).join('')}</ul></div>`;
 }
 
@@ -279,7 +279,7 @@ function mycourses(){
  return `<section class="wrap page">
  <div class="page-head"><span class="eyebrow">Tài khoản học viên</span><h2 class="h2">Khóa học của tôi</h2><p class="sub">Khóa học đã đăng ký.</p></div>
  <div class="grid g2" style="align-items:start">
-  <article class="card course"><button class="course-thumb" data-a="openCourse" aria-label="Mở khóa AI for CEO"><span class="k">Khóa học trọng tâm</span><span class="n">AI for <b>CEO</b></span><span class="s">12 module · 12 bài tập</span></button>
+  <article class="card course"><button class="course-thumb" data-a="openCourse" aria-label="Mở khóa AI for CEO">${COURSE.cover?`<img class="crs-cover" src="${esc(COURSE.cover)}" alt="">`:''}<span class="k">Khóa học trọng tâm</span><span class="n">AI for <b>CEO</b></span><span class="s">12 module · 12 bài tập</span></button>
    <div class="pad" style="display:grid;gap:14px">
     <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap"><h3 class="h3">AI for CEO</h3><span class="pill ${status[1]}">${status[0]}</span></div>
     ${started?`<div style="display:grid;gap:6px"><div class="bar"><i style="width:${st.pct}%"></i></div><span class="hint tnum">${st.lessonsDone}/${st.n} bài học · ${subsCount()}/${Object.keys(TASKS).length} bài tập${ni>=0?` · Tiếp theo: Bài ${ni+1}`:''}</span></div>`
@@ -287,7 +287,7 @@ function mycourses(){
     <div class="kv"><div><span>Ngày kích hoạt</span><b>${esc((S.order&&S.order.paidAt)||today())}</b></div><div><span>Mã đơn</span><b class="tnum">${esc((S.order&&S.order.code)||'')}</b></div><div><span>Thời hạn truy cập</span><b>1 năm</b></div></div>
     <button class="btn btn-primary btn-lg btn-block" data-a="openCourse">${cta} ${ic('arrow')}</button>
    </div></article>
-  <article class="card pad" style="display:grid;gap:10px;align-content:start;border-style:dashed"><h3 class="h3">Khám phá thêm</h3><p class="muted">Thử thách, khóa chuyên đề, cộng đồng.</p><div><button class="btn btn-line btn-sm" data-a="go" data-to="landing">Xem khóa học ${ic('arrow',15)}</button></div></article>
+  <article class="card pad" style="display:grid;gap:10px;align-content:start;border-style:dashed"><h3 class="h3">Khám phá thêm</h3><p class="muted">Thử thách, khóa chuyên đề, cộng đồng.</p><div><button class="btn btn-line btn-sm" data-a="go" data-to="courses">Xem khóa học ${ic('arrow',15)}</button></div></article>
  </div></section>`;
 }
 
@@ -304,8 +304,7 @@ function onboarding(){
  if(S.ob.done)chips=`<button class="chip cta" data-a="genPlan">${ic('spark',14)} Tạo lộ trình cá nhân</button>`;
  return `<section class="wrap page">
  <div class="crumbs"><button data-a="go" data-to="mycourses">Khóa học của tôi</button><span>/</span><span>AI for CEO</span><span>/</span><span>Onboarding</span></div>
- <div class="page-head"><span class="eyebrow">AI for CEO · Onboarding</span><h2 class="h2">Chào mừng anh/chị ${esc(firstName())}</h2><p class="sub" style="max-width:none">Trả lời vài câu hỏi để nhận lộ trình riêng.</p>
- <div class="phases">${PHASES.map((x,i)=>`<span><b>${i+1}</b>${x.name}</span>`).join('')}</div></div>
+ <div class="page-head"><span class="eyebrow">AI for CEO · Onboarding</span><h2 class="h2">Chào mừng anh/chị ${esc(firstName())}</h2><p class="sub" style="max-width:none">Trả lời vài câu hỏi để nhận lộ trình riêng.</p></div>
  <div class="two"><div class="card chat">
   <div class="chat-h"><span class="bot-av">${ic('bot')}</span><div><b>Trợ lý lộ trình</b><span>Cá nhân hóa lộ trình theo hồ sơ của anh/chị</span></div><span class="step-count" aria-live="polite">${S.ob.done?`${ic('check',14)} Hồ sơ đã đủ`:`Câu ${Math.min(S.ob.i+1,S.ob.flow.length)}/${S.ob.flow.length}`}</span></div>
   <div class="chat-log" id="ob-log">${S.ob.msgs.map(m=>`<div class="msg ${m.role}">${fmt(m.text)}</div>`).join('')}${T.obTyping?'<div class="msg bot typing">Đang soạn…</div>':''}</div>
@@ -389,16 +388,16 @@ function syllabus(){
  const cta=!P.accepted?`<button class="btn btn-primary btn-lg" data-a="acceptPlan" ${P.warning?'disabled':''}>${P.wasActive?'Lưu lộ trình':'Bắt đầu học'} ${ic('arrow',16)}</button>`
   :ni>=0?`<button class="btn btn-primary btn-lg" data-a="openLesson" data-v="${ni}">${st.lessonsDone===0&&subsCount()===0?'Bắt đầu học':'Học tiếp'} ${ic('arrow',16)}</button>`:`<button class="btn btn-primary btn-lg" data-a="go" data-to="complete">Nhận chứng nhận ${ic('arrow',16)}</button>`;
  const head=`<section class="card cl-hero"><div class="cl-hero-l">
-   <h1>Lộ trình của bạn</h1>
+   <h1>Lộ trình của anh/chị</h1>
    <p class="cl-sum">${st.n} bài · ${P.profile.days} ngày · ~${avg} phút/ngày</p>
-   <p class="cl-sub">${ic('spark',14)} Lộ trình dành riêng cho bạn · <button class="btn-link" data-a="drawerOpen" data-v="why">Vì sao tôi nhận lộ trình này?</button></p>
+   <p class="cl-sub">${ic('spark',14)} <button class="btn-link" data-a="drawerOpen" data-v="why">Vì sao tôi nhận lộ trình này?</button></p>
    <div class="cl-bar"><span><i style="width:${st.pct}%"></i></span><b>${st.pct}% hoàn thành</b></div></div>
   <div class="cl-hero-r">${cta}<button class="btn btn-line" data-a="drawerOpen" data-v="adjust">${ic('refresh',15)} Điều chỉnh lộ trình</button></div></section>`;
  const warn=P.warning?`<div class="callout warn cl-warn"><b>Mỗi bài khoảng ${P.warning.perLesson} phút, vượt ${P.profile.minPerSession} phút/ngày</b><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-primary btn-sm" data-a="fixDays" data-v="${Math.min(P.warning.needDays,MAX_DAYS)}">Học trong ${Math.min(P.warning.needDays,MAX_DAYS)} ngày</button>${P.warning.needMin?`<button class="btn btn-line btn-sm" data-a="fixPace" data-v="${P.warning.needMin}">Học ${P.warning.needMin} phút/ngày</button>`:''}</div></div>`:'';
  const cards=[[st.n,'Bài học','var(--blue)','book'],[CAP_MAP.length,'Năng lực AI','var(--teal)','spark'],[Object.keys(TASKS).length,'Bài tập','var(--purple)','file'],[`${P.profile.days} ngày`,'Lộ trình','var(--orange)','cal']];
  const cardHTML=`<div class="dh-kpis cl-kpis">${cards.map(([v,l,c,i])=>`<div class="dh-kpi" style="--c:${c}"><span class="ico">${ic(i,18)}</span><b>${v}</b><span>${l}</span></div>`).join('')}</div>`;
  return `<section class="wrap page cl-page"><div class="crumbs"><button data-a="go" data-to="mycourses">Khóa học của tôi</button><span>/</span><button data-a="go" data-to="${P.wasActive?'learn':'onboarding'}">AI for CEO</button><span>/</span><span>Lộ trình</span></div>
- ${head}${warn}${cardHTML}<section class="cl-sec"><div class="cl-sec-h"><h2 class="h3">Hành trình của bạn</h2>${clToggleBtn('syl')}</div>${courseList('syl',{cta:!!(P.accepted||P.wasActive),why:true})}</section></section>`;
+ ${head}${warn}${cardHTML}<section class="cl-sec"><div class="cl-sec-h"><h2 class="h3">Lộ trình của anh/chị</h2>${clToggleBtn('syl')}</div>${courseList('syl',{cta:!!(P.accepted||P.wasActive),why:true})}</section></section>`;
 }
 
 /* ---------- 6. Khóa học AI for CEO (Học) ---------- */
@@ -607,4 +606,31 @@ function complete(){
 }
 
 /* ---------- đăng ký màn hình ---------- */
-const SCREENS={landing,account,checkout,mycourses,onboarding,syllabus,learn,lesson,complete,outputs,dashboard,community};
+/* ---------- Trang Khóa học (danh sách khóa học của Học viện, đề xuất mới theo yêu cầu user 10/2026) ----------
+   Hiện có 1 khóa: AI for CEO, thẻ dọc trong lưới 3 thẻ/hàng (ảnh bìa 16:9). Thêm khóa sau này: thêm thẻ
+   vào lưới crs-grid. Nội dung thẻ lấy từ dữ liệu sẵn có (COURSE, trang giới thiệu), không thêm cam kết mới. */
+function courses(){
+ const mods=LIB.filter(x=>x.type==='module').length,enr=S.enrolled;
+ // đã mua khóa: chỉ còn nút "Vào học" ở cuối thẻ (rộng hết thẻ); chưa mua: giá + nút "Đăng ký"
+ const cta=enr?`<button class="btn btn-primary btn-lg" data-a="openCourse">Vào học ${ic('arrow')}</button>`
+  :`<button class="btn btn-primary btn-lg" data-a="go" data-to="checkout">Đăng ký ${ic('arrow')}</button>`;
+ return `<section class="wrap page crs">
+ <div class="page-head"><span class="eyebrow">Học viện Siêu Tăng Trưởng</span><h1 class="h2">Khóa học</h1></div>
+ <div class="crs-grid"><article class="card crs-feat">
+  <button class="crs-thumb" data-a="go" data-to="landing" aria-label="Xem giới thiệu khóa AI for CEO">${COURSE.cover?`<img class="crs-cover" src="${esc(COURSE.cover)}" alt="">`:''}<span class="k">Khóa học trọng tâm</span><span class="n">AI for <b>CEO</b></span><span class="s">${mods} module · ${CAP_MAP.length} năng lực</span></button>
+  <div class="crs-body">
+   
+   <h2 class="crs-name">AI for CEO</h2>
+   <p class="crs-desc">Khóa cập nhật năng lực AI dành cho CEO qua các ví dụ thực tế. Không học tool, không học prompt: tận mắt thấy AI đã làm được gì.</p>
+   <div class="crs-foot${enr?' enr':''}">
+    ${enr?''
+     :`<div class="crs-price" title="${esc(COURSE.promo)}"><b class="tnum">${money(COURSE.price)}</b><span class="crs-old"><span class="strike tnum">${money(COURSE.list)}</span><span class="crs-off">−${OFF}%</span></span></div>`}
+    <div class="crs-cta">${cta}</div>
+   </div>
+  </div>
+ </article></div>
+ <p class="crs-more">${ic('spark',15)} Các khóa học khác của Học viện sẽ sớm được cập nhật tại đây.</p>
+ </section>`;
+}
+
+const SCREENS={courses,landing,account,checkout,mycourses,onboarding,syllabus,learn,lesson,complete,outputs,dashboard,community};

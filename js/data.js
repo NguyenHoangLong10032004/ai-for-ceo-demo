@@ -229,7 +229,8 @@ const modNo=x=>String(x.no).padStart(2,'0');
 const itemTitle=x=>x.type==='module'?`Module ${modNo(x)}: ${x.title}`:x.title;
 
 /* ---------- học phí & thông tin bán hàng ---------- */
-const COURSE={list:12000000,price:8800000,promo:'Ưu đãi ra mắt tháng đầu',
+// cover: ảnh bìa khóa học tỉ lệ 16:9 (vd. "img/aiceo-cover.jpg", gợi ý 1280×720), để trống thì dùng nền xanh có chữ
+const COURSE={cover:"",list:12000000,price:8800000,promo:'Ưu đãi ra mắt tháng đầu',
  perks:['12 module video demo quay sẵn, chia thành bài học theo lịch của anh/chị','12 bài tập áp dụng cho chính công ty, lưu thành bộ output mang về','Lộ trình cá nhân hóa theo số ngày muốn hoàn thành và phòng ban quan tâm','Live Zoom hằng tháng "AI đến đâu rồi?": năng lực mới, demo mới, hỏi đáp','AI Learning Assistant hỏi đáp 24/7 theo nội dung khóa học','Ưu tiên đăng ký Offline Executive Briefing','Certificate và cộng đồng CEO AI Community']};
 const SAVE=COURSE.list-COURSE.price, OFF=Math.round(SAVE/COURSE.list*100);
 const TOTAL_MIN=LIB.filter(x=>x.req).reduce((a,x)=>a+x.min,0);
@@ -250,12 +251,13 @@ const transferNote=o=>(o&&o.code||'').replace(/\W/g,''); // nội dung chuyển 
 const EMAILJS={serviceId:"",templateId:"",publicKey:""};
 const ACADEMY={name:"Học viện Siêu Tăng Trưởng",sender:"no-reply@sieutangtruong.vn",support:"info@sieutangtruong.com",hotline:"0936 038 739",zalo:"Zalo OA Siêu Tăng Trưởng",hours:"9:00–18:00, thứ Hai đến thứ Sáu",workDays:"Thứ 2 – Thứ 6",workTime:"9:00 – 18:00",web:"sieutangtruong.vn",address:"100 Nguyễn Văn Lượng, Phường Gò Vấp, Hồ Chí Minh",billing:"ketoan@sieutangtruong.vn",footerWeb:"sieutangtruong.com",tagline:"Nền tảng cộng đồng & học tập, giúp bạn áp dụng AI để tăng trưởng kinh doanh nhanh chóng."};
 // Dashboard: Capacity Map 10 năng lực AI = Module 02–11 (màu theo brief ai_for_ceo_ui_redesign.md) (Module 01 là khởi động, Module 12 là đích đến)
-const CAP_MAP=[{id:"M02",icon:"book",color:"#1D4ED8"},{id:"M03",icon:"eye",color:"#0E7490"},{id:"M04",icon:"pen",color:"#DB2777"},{id:"M05",icon:"search",color:"#9333EA"},{id:"M06",icon:"code",color:"#4F46E5"},{id:"M07",icon:"link",color:"#0F766E"},{id:"M08",icon:"zap",color:"#EA580C"},{id:"M09",icon:"bot",color:"#B45309"},{id:"M10",icon:"users",color:"#15803D"},{id:"M11",icon:"shield",color:"#DC2626"}];
+// out = output của năng lực (sản phẩm CEO làm ra ở bài tập của module đó), hiện trên Bản đồ hành trình
+const CAP_MAP=[{id:"M02",out:"3 bộ tài liệu cho AI đọc trước",icon:"book",color:"#1D4ED8"},{id:"M03",out:"Cuộc họp, hình ảnh cần số hóa",icon:"eye",color:"#0E7490"},{id:"M04",out:"Nội dung tốn công nhất để AI tạo",icon:"pen",color:"#DB2777"},{id:"M05",out:"Bộ câu hỏi kinh doanh hằng tuần",icon:"search",color:"#9333EA"},{id:"M06",out:"Công cụ nội bộ + bản dựng thử",icon:"code",color:"#4F46E5"},{id:"M07",out:"Bản đồ hệ thống cho AI kết nối",icon:"link",color:"#0F766E"},{id:"M08",out:"1 quy trình sẵn sàng tự động hóa",icon:"zap",color:"#EA580C"},{id:"M09",out:"Bản giao việc cho AI Agent",icon:"bot",color:"#B45309"},{id:"M10",out:"Mỗi phòng ban 1 việc cho AI",icon:"users",color:"#15803D"},{id:"M11",out:"Ranh giới dùng AI của công ty",icon:"shield",color:"#DC2626"}];
 // màu từng chương trên bản đồ hành trình
 const PHASE_COLOR={P1:"#3874FF",P2:"#7C5CFC",P3:"#18A999",P4:"#EF8426",P5:"#E66AAD"};
 // Góp ý sau khi hoàn thành khóa (đề xuất mới): 5 khía cạnh chấm 1–5 sao + gợi ý nhanh, điểm giới thiệu 0–10, nhận xét mở
 const FEEDBACK_ASPECTS=[
- {k:"course",label:"Khóa học nói chung",hint:"Khóa học đáp ứng kỳ vọng của anh/chị đến đâu",tags:["Đúng nhu cầu của CEO","Đáng thời gian bỏ ra","Mở ra góc nhìn mới","Chưa đủ sâu"]},
+ {k:"course",label:"Khóa học nói chung",hint:"Mức độ hài lòng của anh/chị về khóa học",tags:["Đúng nhu cầu của CEO","Đáng thời gian bỏ ra","Mở ra góc nhìn mới","Chưa đủ sâu"]},
  {k:"content",label:"Nội dung",hint:"Video demo, phần giải thích cho CEO, bài tập",tags:["Demo thực tế","Dễ hiểu","Bài tập sát doanh nghiệp","Video hơi dài","Cần thêm ví dụ theo ngành"]},
  {k:"system",label:"Hệ thống học",hint:"Website, lộ trình cá nhân hóa, Dashboard",tags:["Lộ trình hợp lý","Dễ sử dụng","Dashboard trực quan","Khó tìm bài học","Tải trang chậm"]},
  {k:"support",label:"Hỗ trợ & dịch vụ",hint:"Trợ lý AI, chuyên gia, chăm sóc khách hàng, Live Zoom",tags:["Trợ lý AI hữu ích","Chuyên gia phản hồi nhanh","Live Zoom bổ ích","Phản hồi còn chậm"]},

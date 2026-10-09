@@ -44,12 +44,12 @@ async function qrDownload(){
  try{await new Promise((ok,bad)=>{img.onload=ok;img.onerror=bad;img.src=url;});}catch(e){window.open(url,'_blank');return;}
  const W=900,H=1240,c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');
  g.fillStyle='#fff';g.fillRect(0,0,W,H);g.textAlign='center';g.fillStyle='#101828';
- g.font='700 40px Roboto, Arial, sans-serif';g.fillText('Quét mã để thanh toán',W/2,90);
- g.font='400 26px Roboto, Arial, sans-serif';g.fillStyle='#667085';g.fillText('Khóa học AI for CEO · Mã đơn '+(o&&o.code||''),W/2,136);
+ g.font='700 40px Inter, Arial, sans-serif';g.fillText('Quét mã để thanh toán',W/2,90);
+ g.font='400 26px Inter, Arial, sans-serif';g.fillStyle='#667085';g.fillText('Khóa học AI for CEO · Mã đơn '+(o&&o.code||''),W/2,136);
  const q=620,qx=(W-q)/2,qy=180;g.strokeStyle='#E6EAF0';g.lineWidth=2;g.strokeRect(qx-14,qy-14,q+28,q+28);
  g.imageSmoothingEnabled=false;g.drawImage(img,qx,qy,q,q);
  const lines=[['Chủ tài khoản',BANK.holder],['Ngân hàng',BANK.name+' · '+BANK.acc],['Số tiền',money(amt)],['Nội dung',note]];
- let y=qy+q+80;lines.forEach(([k,v])=>{g.font='400 24px Roboto, Arial, sans-serif';g.fillStyle='#667085';g.fillText(k,W/2,y);g.font='700 30px Roboto, Arial, sans-serif';g.fillStyle=k==='Số tiền'?'#EF8426':'#101828';g.fillText(v,W/2,y+38);y+=82;});
+ let y=qy+q+80;lines.forEach(([k,v])=>{g.font='400 24px Inter, Arial, sans-serif';g.fillStyle='#667085';g.fillText(k,W/2,y);g.font='700 30px Inter, Arial, sans-serif';g.fillStyle=k==='Số tiền'?'#EF8426':'#101828';g.fillText(v,W/2,y+38);y+=82;});
  const blob=await new Promise(r=>{try{c.toBlob(r,'image/png');}catch(e){r(null);}});
  if(!blob){window.open(url,'_blank');return;}
  const name=`ma-qr-thanh-toan-${(o&&o.code||'aiceo').replace(/\W/g,'')}.png`,file=window.File?new File([blob],name,{type:'image/png'}):null;
@@ -154,13 +154,28 @@ function readUC(f){const fd=new FormData(f);return [0,1,2].map(i=>({uc:String(fd
 
 /* ---------- vẽ màn hình & điều hướng ---------- */
 const $app=document.getElementById('app');
+/* Dải xanh thương hiệu đầu trang (brand Học viện, trừ Dashboard & Cộng đồng): các phần tiêu đề đứng trước hàng thẻ đầu tiên
+   được gắn .on-band (chữ trắng); chiều cao dải = tới hàng thẻ đầu tiên + 72px (thẻ chồng lên dải). Trang giới thiệu: dải phủ cả khối hero. */
+function brandBand(){
+ return; // đã tắt dải xanh đầu trang: user muốn nền trắng (10/2026); giữ hàm để bật lại nếu cần
+ const m=document.querySelector('main.brand-pg');if(!m)return;const sec=m.firstElementChild;if(!sec)return;
+ const mt=m.getBoundingClientRect().top;
+ if(S.screen==='landing'){const h=m.querySelector('.hero');if(!h)return;if(h.firstElementChild)h.firstElementChild.classList.add('on-band');m.style.setProperty('--band',Math.round(h.getBoundingClientRect().bottom-mt)+'px');return;}
+ let stop=null;
+ for(const c of sec.children){const hd=c.matches('.page-head,.cl-top,.lsn-top,.crumbs,.stepper,.bar')||(!c.className&&!!c.querySelector('h1,h2')&&!c.querySelector('.card,canvas,.player'));if(!hd){stop=c;break;}c.classList.add('on-band');}
+ const y=stop?stop.getBoundingClientRect().top-mt+(stop.matches('.lsn')?0:72):sec.getBoundingClientRect().bottom-mt;
+ m.style.setProperty('--band',Math.max(150,Math.round(y))+'px');
+}
+let bandT=0;addEventListener('resize',()=>{clearTimeout(bandT);bandT=setTimeout(brandBand,120);});
 function render(){
  const scr=SCREENS[S.screen]||landing;
  // giữ chữ đang gõ dở trong ô chat chuyên gia khi màn hình vẽ lại (vd. chuyên gia vừa trả lời)
  const cmT=document.getElementById('cm-title'),cmB=document.getElementById('cm-body'),cmC=document.getElementById('cm-cat');if(cmT&&cmB&&T.commWrite)T.commDraft={title:cmT.value,body:cmB.value,cat:cmC?cmC.value:'ask'};
  const capEl=document.getElementById('share-cap');if(capEl)T.shareCap=capEl.value;
  const exIn=document.getElementById('ex-in'),exFocus=exIn&&document.activeElement===exIn;if(exIn)T.expertDraft=exIn.value;
- $app.innerHTML=demoBar()+header()+`<main>${scr()}</main>`+footer()+fab()+mailView()+shareView()+mediaViewer()+remindView()+zaloView()+drawerView();
+ const brandPg=!['dashboard','community'].includes(S.screen);
+ $app.innerHTML=demoBar()+header()+`<main class="scr-${S.screen}${brandPg?' brand-pg':''}">${scr()}</main>`+footer()+fab()+mailView()+shareView()+mediaViewer()+remindView()+zaloView()+drawerView();
+ brandBand();
  if(T.share)drawShare();
  if(document.getElementById('cert-cv'))drawCert();
  if(!T.syncing)save(); // vẽ lại do tab kia vừa lưu thì không lưu ngược lại
@@ -301,7 +316,7 @@ const ACT={
  vpSet:d=>{const k=d.k,v=k==='speed'?+d.v:k==='cc'?d.v==='true':d.v;T.vp[k]=v;vpSync();const o=VP_OPTS[k].opts.find(x=>x[0]===v);toast(`${VP_OPTS[k].label}: ${o?o[1]:v}`);},
  vpPop:()=>{const p=document.querySelector('.player');const w=window.open('','aiceo-video','width=820,height=480');if(!w){toast('Trình duyệt đã chặn cửa sổ mới. Vui lòng cho phép cửa sổ bật lên.','bad');return;}
   const t=p?p.dataset.title:'',l=p?p.dataset.label:'';
-  w.document.open();w.document.write(`<!doctype html><html lang="vi"><head><meta charset="utf-8"><title>${t} · AI for CEO</title><style>body{margin:0;height:100vh;display:grid;place-items:center;background:radial-gradient(120% 90% at 80% 0%,#22304F,#172033 60%);color:#fff;font-family:Roboto,system-ui,sans-serif;text-align:center}main{display:grid;gap:12px;justify-items:center;padding:24px}small{font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;color:#AEB6CA;font-weight:700}h1{font-size:22px;margin:0;max-width:32ch}p{color:#AEB6CA;font-size:13px;margin:0}</style></head><body><main><small>${l}</small><h1>${t}</h1><p>Video mô phỏng. Bản thật sẽ phát tiếp video ở đúng vị trí đang xem.</p></main></body></html>`);w.document.close();w.focus();},
+  w.document.open();w.document.write(`<!doctype html><html lang="vi"><head><meta charset="utf-8"><title>${t} · AI for CEO</title><style>body{margin:0;height:100vh;display:grid;place-items:center;background:radial-gradient(120% 90% at 80% 0%,#22304F,#172033 60%);color:#fff;font-family:Inter,system-ui,sans-serif;text-align:center}main{display:grid;gap:12px;justify-items:center;padding:24px}small{font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;color:#AEB6CA;font-weight:700}h1{font-size:22px;margin:0;max-width:32ch}p{color:#AEB6CA;font-size:13px;margin:0}</style></head><body><main><small>${l}</small><h1>${t}</h1><p>Video mô phỏng. Bản thật sẽ phát tiếp video ở đúng vị trí đang xem.</p></main></body></html>`);w.document.close();w.focus();},
  vpFull:()=>{const p=document.querySelector('.player');if(!p)return;if(document.fullscreenElement){document.exitFullscreen();return;}const f=p.requestFullscreen||p.webkitRequestFullscreen;if(!f){toast('Trình duyệt này chưa hỗ trợ toàn màn hình','bad');return;}const r=f.call(p);if(r&&r.catch)r.catch(()=>toast('Trình duyệt không cho phép toàn màn hình','bad'));},
  markNext:()=>{markDone(S.unit);advance();},
  asstLesson:()=>{T.asstOpen=true;T.tab="ai";askAssistant('Giải thích phần này theo góc nhìn CEO và công ty tôi có thể dùng ở đâu?');},

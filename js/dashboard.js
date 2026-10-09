@@ -221,14 +221,14 @@ function shareView(){
 // vẽ ảnh 1200×630 (khung chuẩn ảnh chia sẻ Facebook)
 async function drawShare(){
  const cv=document.getElementById('share-cv');if(!cv)return;
- try{await document.fonts.load('800 40px Roboto');await document.fonts.load('600 20px Roboto');}catch(e){}
+ try{await document.fonts.load('800 40px Inter');await document.fonts.load('600 20px Inter');}catch(e){}
  // ảnh Dashboard: khung chuẩn 1200×630; ảnh hành trình: cao theo số bài
  if(T.share==='cert'){cv.width=2000;cv.height=1414;await drawCert(cv);return;}
  const JL=T.share==='journey'?jShareLayout():null;if(JL){cv.width=JL.W*2;cv.height=JL.H*2;}else{cv.width=DC.W*2;cv.height=DC.H*2;}
  const g=cv.getContext('2d');g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,cv.width,cv.height);g.scale(2,2);
  await (JL?drawJourneyCard(g,JL):drawDashCard(g));
 }
-const F=(w,s)=>`${w} ${s}px Roboto, Arial, sans-serif`;
+const F=(w,s)=>`${w} ${s}px Inter, Arial, sans-serif`;
 function rr(g,x,y,w,h,r){g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath();}
 // xuống dòng tối đa n dòng trong bề rộng max
 function wrapText(g,t,max,n){const w=String(t).split(' '),out=[];let line='';for(const x of w){const tryL=line?line+' '+x:x;if(g.measureText(tryL).width<=max||!line)line=tryL;else{out.push(line);line=x;}}if(line)out.push(line);if(out.length>n){out.length=n;out[n-1]=fitText(g,out[n-1]+' …',max);}return out;}
@@ -287,7 +287,7 @@ function svgInline(html,P=70){
  const box=document.createElement('div');box.className='dash';box.style.cssText='position:fixed;left:-99999px;top:0;width:1100px;visibility:hidden';box.innerHTML=html;document.body.appendChild(box);
  const sv=box.querySelector('svg');if(!sv){box.remove();return null;}
  const src=[sv,...sv.querySelectorAll('*')],cl=sv.cloneNode(true),dst=[cl,...cl.querySelectorAll('*')];
- src.forEach((el,k)=>{const cs=getComputedStyle(el),o=dst[k];if(o.tagName==='title'){o.remove();return;}let st='';SVG_PROPS.forEach(p=>{const v=cs.getPropertyValue(p);if(v)st+=p+':'+v+';';});st+="font-family:Roboto,Arial,sans-serif;";o.setAttribute('style',st);o.removeAttribute('class');});
+ src.forEach((el,k)=>{const cs=getComputedStyle(el),o=dst[k];if(o.tagName==='title'){o.remove();return;}let st='';SVG_PROPS.forEach(p=>{const v=cs.getPropertyValue(p);if(v)st+=p+':'+v+';';});st+="font-family:Inter,Arial,sans-serif;";o.setAttribute('style',st);o.removeAttribute('class');});
  box.remove();
  const vb=(cl.getAttribute('viewBox')||'0 0 1000 1000').split(/\s+/).map(Number);
  vb[0]-=P;vb[2]+=2*P;cl.setAttribute('viewBox',vb.join(' '));
@@ -317,13 +317,13 @@ async function drawJourneyCard(g,Lay){
   logoAt(64,64,42);
   g.fillStyle='#3874FF';g.font=F(800,16);g.fillText('BẢN ĐỒ HÀNH TRÌNH',64,190);
   g.fillStyle='#172033';g.font=F(800,48);g.fillText('Hành trình',64,246);g.fillText('AI for CEO',64,302);
-  g.fillStyle='#172033';g.font=F(700,24);g.fillText(fitText(g,name,380),64,358);g.fillStyle='#667085';g.font=F(500,20);g.fillText(`${d.lessonsDone}/${d.N} bài đã đi qua`,64,390);
+  g.fillStyle='#172033';g.font=F(700,24);g.fillText(fitText(g,name,380),64,358);g.fillStyle='#667085';g.font=F(500,20);g.fillText(`${d.caps}/${CAP_MAP.length} năng lực AI đã chinh phục`,64,390);
   g.fillStyle='#667085';g.font=F(500,15);g.fillText('sieutangtruong.vn · #AIforCEO',64,H-60);
  }else{
   logoAt(64,62,42);
   g.textAlign='right';g.fillStyle='#3874FF';g.font=F(800,15);g.fillText('BẢN ĐỒ HÀNH TRÌNH',W-64,74);
   g.fillStyle='#172033';g.font=F(800,34);g.fillText('Hành trình AI for CEO',W-64,114);
-  g.fillStyle='#667085';g.font=F(500,19);g.fillText(fitText(g,`${name} · ${d.lessonsDone}/${d.N} bài đã đi qua`,700),W-64,146);
+  g.fillStyle='#667085';g.font=F(500,19);g.fillText(fitText(g,`${name} · ${d.caps}/${CAP_MAP.length} năng lực AI đã chinh phục`,700),W-64,146);
   g.font=F(500,15);g.fillText('sieutangtruong.vn · #AIforCEO',W-64,H-50);g.textAlign='left';
  }
  g.lineCap='round';g.lineJoin='round';
@@ -348,7 +348,7 @@ function certLogo(){
 }
 async function drawCert(target){
  const cv=target||document.getElementById('cert-cv');if(!cv)return;
- try{await document.fonts.load('800 60px Roboto');await document.fonts.load('600 30px Roboto');await document.fonts.load('500 30px Roboto');}catch(e){}
+ try{await document.fonts.load('800 60px Inter');await document.fonts.load('600 30px Inter');await document.fonts.load('500 30px Inter');}catch(e){}
  const logo=await certLogo(),g=cv.getContext('2d'),W=2000,H=1414,cx=W/2,d=dashStats(),p=S.profile;
  // nền + khung
  g.fillStyle='#FFFDF8';g.fillRect(0,0,W,H);
@@ -396,127 +396,139 @@ function certPrint(){
 }
 
 /* ---------- Bản đồ hành trình (đi từ dưới lên, Về đích ở trên): 3 kiểu để chọn ----------
-   jData(): mỗi bài học = {i, title, st: done|cur|locked, pi (chương), color}
-   1 Con đường uốn lượn (jRoad) · 2 Leo núi (jMountain) · 3 Đường gấp khúc theo chương (jSnake) */
+   Theo yêu cầu user (10/2026): bản đồ KHÔNG còn hiện từng bài học, mà hiện **10 năng lực AI** (CAP_MAP = Module 02–11)
+   và **output của từng năng lực** (CAP_MAP.out = sản phẩm CEO làm ra ở bài tập của module). Xuất phát = Module 01, Về đích = Module 12.
+   jData(): mỗi năng lực = {i, id, title, out, st: done|cur|locked, pi (chương), color}; J.fin = đã về đích (xong cả Module 12).
+   1 Con đường uốn lượn (jRoad) · 2 Leo núi (jMountain) · 3 Đường gấp khúc (jSnake) */
 const J_VERS=[[1,'Con đường'],[2,'Leo núi'],[3,'Đường gấp khúc']];
-const J_ST={done:'Hoàn thành',cur:'Đang học',locked:'Chưa mở'};
+const J_ST={done:'Đã chinh phục',cur:'Đang chinh phục',locked:'Chưa mở'};
 function jData(){
- const ls=lessons(),ni=nextLesson();
- return ls.map((ks,i)=>{const ph=L[U(ks[0]).id].phase,pi=PHASES.findIndex(p=>p.id===ph);
-  return {i,title:lessonTitle(ks,i,ls),st:lessonDone(i)?'done':i===ni?'cur':'locked',pi,color:PHASE_COLOR[ph]};});
+ const J=CAP_MAP.map((c,i)=>{const m=L[c.id];return {i,id:c.id,title:m.cap,out:c.out||'',s:capState(c.id),pi:PHASES.findIndex(p=>p.id===m.phase),color:c.color};});
+ const ci=J.findIndex(j=>j.s!=='done');
+ J.forEach((j,k)=>{j.st=j.s==='done'?'done':k===ci?'cur':'locked';});
+ J.fin=ci<0&&itemDone('M12');
+ return J;
 }
 function journeyHTML(){
  const v=T.jmVer||1,J=jData();
  return v===2?jMountain(J):v===3?jSnake(J):jRoad(J);
 }
-const jTip=j=>`Bài ${j.i+1} · ${j.title} · ${J_ST[j.st]}`;
+const jTip=j=>`Năng lực ${capNo(j.i)} · ${j.title} · Output: ${j.out} · ${J_ST[j.st]}`;
+const jDone=J=>J.filter(j=>j.st==='done').length;
+const jAria=J=>`Bản đồ hành trình: ${jDone(J)}/${J.length} năng lực AI đã chinh phục`;
+// nhóm năng lực theo chương (dùng cho vùng chương ở Kiểu 1)
+function jGroups(J){const g=[];J.forEach((j,k)=>{let x=g.find(y=>y.pi===j.pi);if(!x)g.push(x={pi:j.pi,idx:[]});x.idx.push(k);});
+ g.forEach(x=>{x.dn=x.idx.filter(k=>J[k].st==='done').length;x.state=x.dn===x.idx.length?'done':x.idx.some(k=>J[k].st!=='locked')?'doing':'todo';});return g;}
+// Về đích: tên 3 use case học viên đã nộp ở bài tập Module 12 (theo yêu cầu user); chưa nộp thì trả [] và hiện "Chọn 3 use case cho doanh nghiệp"
+function jUseCases(){const s=S.subs&&S.subs.M12;if(!s||!s.text)return [];const p=exSplit(s.text,3,true)||[];
+ return p.map(t=>String(t||'').split('\n')[0].replace(/^[\s:.\-–]+/,'').trim()).filter(Boolean).slice(0,3);}
+const jCut=(t,n)=>t.length>n?t.slice(0,Math.max(1,n-1)).trim()+'…':t;
 // đường cong mượt qua các điểm (tiếp tuyến đứng ở mỗi điểm)
 const jCurve=pts=>pts.map((p,k)=>k?`C${pts[k-1][0]},${(pts[k-1][1]+p[1])/2} ${p[0]},${(pts[k-1][1]+p[1])/2} ${p[0]},${p[1]}`:`M${p[0]},${p[1]}`).join(' ');
 
-/* Kiểu 1: con đường (thiết kế lại cho đẹp và dễ đọc): con đường uốn lượn mềm đi từ dưới lên, bề rộng đều;
-   mỗi chương là một vùng nền nhạt màu chương, nhãn "CHƯƠNG k · TÊN · x/y" ở đầu vùng (đặt phía không có đường);
-   mỗi bài là một mốc tròn trên đường (đã học: màu chương + ✓ · đang học: viền cam + vầng sáng · chưa mở: trắng viền xám);
-   nhãn bài là thẻ nhỏ đặt phía ngoài khúc cua ("BÀI k" + tên năng lực tối đa 2 dòng), thẻ bài đang học viền cam + "Bạn đang ở đây".
-   Đoạn đường đã đi tô màu chương; biển Xuất phát ở chân đường, cúp Về đích ở đỉnh. Màn hình hẹp dùng khung 600 để chữ đủ to. */
+/* Kiểu 1: con đường uốn lượn đi từ dưới lên; mỗi chương là một vùng nền nhạt màu chương có nhãn "CHƯƠNG k · TÊN · x/y";
+   mỗi năng lực là một mốc tròn trên đường (đã chinh phục: màu năng lực + ✓ · đang chinh phục: viền cam + vầng sáng + "BẠN ĐANG Ở ĐÂY" · chưa mở: trắng viền xám);
+   thẻ nhãn 2 dòng: "01  Tên năng lực" + "Output: …". Màn hình hẹp dùng khung 600 để chữ đủ to. */
 function jRoad(J,opt={}){
- const share=!!opt.share,N=J.length,narrow=!share&&!opt.wide&&typeof innerWidth!=='undefined'&&innerWidth<700,W=share?1000:narrow?600:1000,CX=W/2,A=share?115:narrow?110:190,RH=share?62:narrow?96:88,GAP=share?40:46,TOP=share?200:196,BOT=share?92:104;
- const big=share||narrow;
- const ci=J.findIndex(j=>j.st==='cur'),done=ci<0,ls=lessons(),chs=chapters();
- // vị trí mốc: từ dưới lên, giữa 2 chương chừa khoảng cho nhãn chương
- const xs=J.map((_,i)=>CX+A*Math.sin(i*2*Math.PI/6.5+.35));let y=0;const ys=J.map((j,i)=>{if(i)y+=RH+(j.pi!==J[i-1].pi?GAP:0);return y;});
+ const share=!!opt.share,N=J.length,narrow=!share&&!opt.wide&&typeof innerWidth!=='undefined'&&innerWidth<700,W=share?1000:narrow?600:1000,CX=W/2,A=share?115:narrow?110:100,RH=narrow?128:100,GAP=46,TOP=196,BOT=104;
+ const ci=J.findIndex(j=>j.st==='cur'),fin=!!J.fin,all3=ci<0,chs=jGroups(J),uc=jUseCases();
+ // máy tính: mốc lệch trái/phải xen kẽ (về phía thẻ của nó) + lệch nhẹ ngẫu nhiên → đường quanh co chữ S (theo yêu cầu user)
+ // máy tính: mốc xen kẽ trái/phải nhưng độ lệch và khoảng cách dọc KHÔNG đều (khúc cua gắt, khúc thoải) → đường quanh co tự nhiên; thẻ xen kẽ 2 bên, cùng bề rộng, xếp thẳng cột sát mép → chữ phân bổ đều 2 bên (theo yêu cầu user)
+ const wide=!share&&!narrow,J_OFF=[110,-40,-140,-35,145,35,-120,-150,15,135],J_DY=[100,126,92,134,96,120,104,130,94],xs=J.map((_,i)=>wide?CX+J_OFF[i%10]:CX+A*Math.sin(i*2*Math.PI/6.5+.35));let y=0;const ys=J.map((j,i)=>{if(i)y+=(wide?J_DY[(i-1)%9]:RH)+(j.pi!==J[i-1].pi?GAP:0);return y;});
  const span=y,H=TOP+span+BOT,Y=i=>H-BOT-ys[i];
- const P=J.map((_,i)=>[xs[i],Y(i)]),start=[xs[0],H-40],goal=[CX,TOP-(share?104:118)];
- const short=i=>{const ids=[...new Set(ls[i].map(k=>U(k).id))].map(id=>L[id]);const m=ids.filter(x=>x.type==='module');return (m.length?m:ids).map(x=>x.cap||x.title).join(' + ');};
- const wrap=(t,n)=>{const w=t.split(' '),o=[];let l='';for(const x of w){if((l+' '+x).trim().length>n&&l){o.push(l);l=x;}else l=(l+' '+x).trim();}if(l)o.push(l);if(o.length>2){o.length=2;o[1]=o[1].slice(0,n-1)+'…';}return o;};
+ const P=J.map((_,i)=>[xs[i],Y(i)]),start=[xs[0],H-40],goal=[CX,TOP-118];
  const curve=pts=>jCurve(pts);
- // vùng chương
- const bands=chs.map(c=>{const f=c.idx[0],l=c.idx[c.idx.length-1],y0=Y(f)+68,y1=Y(l)-42,col=PHASE_COLOR[PHASES[c.pi].id]||'#3874FF',lock=c.state==='todo';
-  const dn=c.idx.filter(i=>J[i].st==='done').length,txt=`CHƯƠNG ${c.pi+1} · ${PHASES[c.pi].name.toUpperCase()}`,cnt=`${dn}/${c.idx.length}`;
-  const right=xs[f]<CX,tw=Math.min(W-48,txt.length*(share?13.5:narrow?10:9)+cnt.length*(share?13.5:narrow?10:9)+(share?70:50)),cx0=right?W-24-tw:24,cy=y0-38;
-  return [`<rect x="0" y="${y1}" width="${W}" height="${y0-y1}" rx="22" fill="${lock?'#98A2B3':col}" fill-opacity="${lock?.04:.06}"/>`,`<g class="jr3-band"><rect x="${cx0}" y="${cy-(share?4:0)}" width="${tw}" height="${share?40:32}" rx="${share?20:16}" fill="#fff"/><rect x="${cx0}" y="${cy-(share?4:0)}" width="${tw}" height="${share?40:32}" rx="${share?20:16}" fill="${lock?'#EEF1F6':col}" fill-opacity="${lock?1:.14}"/>
-   <text x="${cx0+(share?20:16)}" y="${cy+(share?23:21)}" class="jr3-chip" fill="${lock?'#8A94A6':col}">${esc(txt)}</text><text x="${cx0+tw-(share?20:16)}" y="${cy+(share?23:21)}" text-anchor="end" class="jr3-cnt" fill="${lock?'#8A94A6':col}">${cnt}</text></g>`];});
- // đường: nền + đoạn đã đi (theo màu chương)
+ const bands=chs.map(c=>{const f=c.idx[0],l=c.idx[c.idx.length-1],y0=Y(f)+72,y1=Y(l)-52,col=PHASE_COLOR[PHASES[c.pi].id]||'#3874FF',lock=c.state==='todo';
+  const txt=`CHƯƠNG ${c.pi+1} · ${PHASES[c.pi].name.toUpperCase()}`,cnt=`${c.dn}/${c.idx.length}`;
+  const right=xs[f]<CX,tw=Math.min(W-48,txt.length*(narrow?10:9)+cnt.length*(narrow?10:9)+50),cx0=right?W-24-tw:24,cy=y0-38;
+  return [`<rect x="0" y="${y1}" width="${W}" height="${y0-y1}" rx="22" fill="${lock?'#98A2B3':col}" fill-opacity="${lock?.04:.06}"/>`,`<g class="jr3-band"><rect x="${cx0}" y="${cy}" width="${tw}" height="32" rx="16" fill="#fff"/><rect x="${cx0}" y="${cy}" width="${tw}" height="32" rx="16" fill="${lock?'#EEF1F6':col}" fill-opacity="${lock?1:.14}"/>
+   <text x="${cx0+16}" y="${cy+21}" class="jr3-chip" fill="${lock?'#8A94A6':col}">${esc(txt)}</text><text x="${cx0+tw-16}" y="${cy+21}" text-anchor="end" class="jr3-cnt" fill="${lock?'#8A94A6':col}">${cnt}</text></g>`];});
  const all=[start,...P,goal];
  const road=`<path d="${curve(all)}" class="jr3-edge"/><path d="${curve(all)}" class="jr3-road"/>`;
- const segs=P.map((p,i)=>{const prev=i?P[i-1]:start,on=done||i<=ci;return on?`<path d="${curve([prev,p])}" class="jr3-on" stroke="${J[i].color}"/>`:'';}).join('')+(done?`<path d="${curve([P[N-1],goal])}" class="jr3-on" stroke="#F5B942"/>`:'');
+ const segs=P.map((p,i)=>{const prev=i?P[i-1]:start,on=all3||i<=ci;return on?`<path d="${curve([prev,p])}" class="jr3-on" stroke="${J[i].color}"/>`:'';}).join('')+(fin?`<path d="${curve([P[N-1],goal])}" class="jr3-on" stroke="#F5B942"/>`:'');
  const lane=`<path d="${curve(all)}" class="jr3-lane"/>`;
- // mốc + thẻ nhãn
  const nodes=J.map((j,i)=>{const [x,yy]=P[i],cur=j.st==='cur',lock=j.st==='locked',col=j.color;
-  const right=narrow?W-x>=x:x>=CX,room=(right?W-x:x)-48,k=`BÀI ${i+1}`,kw=k.length*(share?13.5:narrow?9.4:8.2),chw=share?14.8:narrow?10:8.4,pad=share?50:narrow?38:32,n=Math.max(4,Math.min(narrow?16:24,Math.floor((room-kw-pad)/chw))),nm0=short(i),nm=nm0.length>n?nm0.slice(0,n-1).trim()+'…':nm0,cw=kw+nm.length*chw+pad,hh=share?58:narrow?40:34,chh=hh;
-  const R=share?26:21;let cx0=right?x+R+17:x-R-17-cw;cx0=Math.max(10,Math.min(W-10-cw,cx0));const cy0=yy-chh/2,ty=cy0+hh/2+(share?9:narrow?6:5),lx=right?cx0:cx0+cw;
+  // máy tính: đường gần giữa, thẻ xen kẽ trái/phải và rộng đều tới mép để 2 bên cân đối (theo yêu cầu user); điện thoại: thẻ đặt phía còn nhiều chỗ
+  const right=narrow?W-x>=x:i%2===0,full=!narrow,room=full?CX-24-140-42:(right?W-x:x)-48,k=capNo(i),kw=k.length*(narrow?10:9.6)+10,chw=narrow?10:9,ochw=narrow?7.8:6.4,pad=32;
+  const nm=jCut(j.title,Math.max(4,Math.floor((room-kw-pad)/chw))),ot=jCut('Output: '+j.out,Math.max(6,Math.floor((room-pad)/ochw)));
+  const cw=full?room:Math.max(kw+nm.length*chw,ot.length*ochw)+pad,hh=narrow?66:60,R=21;
+  let cx0=full?(right?W-24-cw:24):(right?x+R+17:x-R-17-cw);cx0=Math.max(10,Math.min(W-10-cw,cx0));const cy0=yy-hh/2,lx=right?cx0:cx0+cw;
   return `<g class="jr3-n ${j.st}" role="img" aria-label="${esc(jTip(j))}"><title>${esc(jTip(j))}</title>
    <line x1="${right?x+R+3:x-R-3}" y1="${yy}" x2="${lx}" y2="${yy}" class="jr3-lead" stroke="${lock?'#D5DCE6':cur?'#EF8426':col}"/>
-   <rect x="${cx0}" y="${cy0}" width="${cw}" height="${chh}" rx="12" class="jr3-card ${j.st}" stroke="${cur?'#EF8426':lock?'#E3E8F0':col}" stroke-opacity="${cur||lock?1:.35}"/>
-   ${cur?(()=>{const pw=share?200:narrow?176:150,ph=share?36:30,px0=Math.max(6,Math.min(W-6-pw,right?x-R-14-pw:x+R+14)),tip=right?`M${px0+pw},${yy-7} L${px0+pw+8},${yy} L${px0+pw},${yy+7}Z`:`M${px0},${yy-7} L${px0-8},${yy} L${px0},${yy+7}Z`;return `<g class="jr3-here"><rect x="${px0}" y="${yy-ph/2}" width="${pw}" height="${ph}" rx="${ph/2}"/><path d="${tip}"/><text x="${px0+pw/2}" y="${yy+(share?6.5:5)}" text-anchor="middle" class="jr3-here-t">BẠN ĐANG Ở ĐÂY</text></g>`;})():''}<text x="${cx0+14}" y="${ty}" class="jr3-line"><tspan class="jr3-k" fill="${lock?'#98A2B3':cur?'#EF8426':col}">${k}</tspan><tspan class="jr3-t ${j.st}" dx="8">${esc(nm)}</tspan></text>
+   <rect x="${cx0}" y="${cy0}" width="${cw}" height="${hh}" rx="12" class="jr3-card ${j.st}" stroke="${cur?'#EF8426':lock?'#E3E8F0':col}" stroke-opacity="${cur||lock?1:.35}"/>
+   ${cur?(()=>{const pw=narrow?176:150,ph=30,px0=Math.max(6,Math.min(W-6-pw,right?x-R-14-pw:x+R+14)),tip=right?`M${px0+pw},${yy-7} L${px0+pw+8},${yy} L${px0+pw},${yy+7}Z`:`M${px0},${yy-7} L${px0-8},${yy} L${px0},${yy+7}Z`;return `<g class="jr3-here"><rect x="${px0}" y="${yy-ph/2}" width="${pw}" height="${ph}" rx="${ph/2}"/><path d="${tip}"/><text x="${px0+pw/2}" y="${yy+5}" text-anchor="middle" class="jr3-here-t">BẠN ĐANG Ở ĐÂY</text></g>`;})():''}
+   <text x="${cx0+14}" y="${cy0+(narrow?27:24)}" class="jr3-line"><tspan class="jr3-k" fill="${lock?'#98A2B3':cur?'#EF8426':col}">${k}</tspan><tspan class="jr3-t ${j.st}" dx="8">${esc(nm)}</tspan></text>
+   <text x="${cx0+14}" y="${cy0+(narrow?52:46)}" class="jr3-o ${j.st}">${esc(ot)}</text>
    ${cur?`<circle cx="${x}" cy="${yy}" r="${R+13}" fill="#EF8426" opacity=".16"/>`:''}
    <circle cx="${x}" cy="${yy}" r="${R}" fill="${j.st==='done'?col:'#fff'}" stroke="${j.st==='done'?'#fff':cur?'#EF8426':'#A9B4C6'}" stroke-width="${j.st==='done'?4:4.5}"/>
    ${j.st==='done'?`<circle cx="${x}" cy="${yy}" r="${R+3}" fill="none" stroke="${col}" stroke-width="2"/>`:''}
-   <text x="${x}" y="${yy+(share?8:6.5)}" text-anchor="middle" class="jr3-num" fill="${j.st==='done'?'#fff':cur?'#EF8426':'#667085'}">${j.st==='done'?'✓':i+1}</text></g>`;}).join('');
- // xuất phát + về đích
+   <text x="${x}" y="${yy+6.5}" text-anchor="middle" class="jr3-num" fill="${j.st==='done'?'#fff':cur?'#EF8426':'#667085'}">${j.st==='done'?'✓':i+1}</text></g>`;}).join('');
  const [sx,sy]=start,[gx,gy]=goal;
  const startEl=`<g><rect x="${sx-66}" y="${sy-4}" width="132" height="32" rx="16" class="jr3-startb"/><text x="${sx}" y="${sy+17}" text-anchor="middle" class="jr3-start">XUẤT PHÁT</text></g>`;
- const goalEl=`<g class="jr3-goal"><circle cx="${gx}" cy="${gy}" r="44" fill="${done?'#F5B942':'#FFF6E0'}" stroke="#F5B942" stroke-width="4"/><text x="${gx}" y="${gy+13}" text-anchor="middle" class="jr3-star" fill="${done?'#fff':'#E0A21B'}">🏆</text>
-  <text x="${gx}" y="${gy-62}" text-anchor="middle" class="jr3-gt">${done?'ĐÃ VỀ ĐÍCH':'VỀ ĐÍCH'}</text><text x="${gx}" y="${gy+72}" text-anchor="middle" class="jr3-gs">Chọn 3 use case cho doanh nghiệp</text></g>`;
- return `<div class="jr3"><svg viewBox="0 0 ${W} ${H}" class="${share?'shr':narrow?'nar':''}" role="img" aria-label="Bản đồ hành trình: ${J.filter(j=>j.st==='done').length}/${N} bài đã hoàn thành">${bands.map(b=>b[0]).join('')}${road}${segs}${lane}${bands.map(b=>b[1]).join('')}${startEl}${goalEl}${nodes}</svg></div>`;
+ const goalEl=`<g class="jr3-goal"><circle cx="${gx}" cy="${gy}" r="44" fill="${fin?'#F5B942':'#FFF6E0'}" stroke="#F5B942" stroke-width="4"/><text x="${gx}" y="${gy+13}" text-anchor="middle" class="jr3-star" fill="${fin?'#fff':'#E0A21B'}">🏆</text>
+  <text x="${gx}" y="${gy-62}" text-anchor="middle" class="jr3-gt">${fin?'ĐÃ VỀ ĐÍCH':'VỀ ĐÍCH'}</text>${uc.length?(()=>{const cx0=gx+62,cw=W-cx0-12,n=Math.floor((cw-40)/(narrow?8.6:7.4)),h=34+uc.length*24;return `<rect x="${cx0}" y="${gy-h/2}" width="${cw}" height="${h}" rx="12" class="jr3-uc"/><text x="${cx0+16}" y="${gy-h/2+24}" class="jr3-uch">3 USE CASE CỦA ANH/CHỊ</text>${uc.map((u,k)=>`<text x="${cx0+16}" y="${gy-h/2+50+k*24}" class="jr3-ucl"><tspan class="jr3-ucn">${k+1}</tspan><tspan dx="8">${esc(jCut(u,n))}</tspan><title>${esc(u)}</title></text>`).join('')}`;})():`<text x="${gx}" y="${gy+72}" text-anchor="middle" class="jr3-gs">Chọn 3 use case cho doanh nghiệp</text>`}</g>`;
+ return `<div class="jr3"><svg viewBox="0 0 ${W} ${H}" class="${narrow?'nar':''}" role="img" aria-label="${jAria(J)}">${bands.map(b=>b[0]).join('')}${road}${segs}${lane}${startEl}${goalEl}${nodes}</svg></div>`;
 }
 
-/* Kiểu 2: leo núi: đường mòn zigzag từ chân núi lên đỉnh, mỗi chấm là một bài, nhãn chương ở mép trái/phải */
+/* Kiểu 2: leo núi: đường mòn zigzag từ chân núi lên đỉnh, mỗi chấm là một năng lực; nhãn năng lực + output ở mép trái/phải
+   có đường gióng tới chấm (nhãn cùng phía tự giãn cách để không chồng nhau) */
 function jMountain(J){
  const N=J.length,P=[[250,492],[560,432],[270,362],[522,292],[322,222],[470,162],[382,104],[400,62]];
  const seg=P.slice(1).map((p,k)=>Math.hypot(p[0]-P[k][0],p[1]-P[k][1])),tot=seg.reduce((a,b)=>a+b,0);
  const at=t=>{let d=t*tot;for(let k=0;k<seg.length;k++){if(d<=seg[k]){const f=d/seg[k];return [P[k][0]+(P[k+1][0]-P[k][0])*f,P[k][1]+(P[k+1][1]-P[k][1])*f];}d-=seg[k];}return P[P.length-1];};
- const pos=J.map(j=>at((j.i+1)/(N+1))),ci=J.findIndex(j=>j.st==='cur'),tReach=ci<0?1:(ci+1)/(N+1);
+ const pos=J.map(j=>at((j.i+1)/(N+1))),ci=J.findIndex(j=>j.st==='cur'),fin=!!J.fin,tReach=ci<0?(fin?1:N/(N+1)):(ci+1)/(N+1);
  const walked=[P[0]];{let d=tReach*tot;for(let k=0;k<seg.length;k++){if(d<=seg[k]){walked.push(at(tReach));break;}walked.push(P[k+1]);d-=seg[k];}}
  const ln=a=>a.map((p,k)=>(k?'L':'M')+p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ');
- const ch=chapters(),firstOf=PHASES.map((_,p)=>J.findIndex(j=>j.pi===p)).filter(k=>k>=0);
- const flags=firstOf.map(k=>{const [px,py]=pos[k],j=J[k],left=px<400,c=ch.find(c=>c.pi===j.pi),tx=left?14:786,lx=left?178:622;
-  return `<g class="jm-flag ${c.state}"><line x1="${px}" y1="${py}" x2="${lx}" y2="${py}" stroke="${j.color}" stroke-width="1.5" stroke-dasharray="3 4"/><text x="${tx}" y="${py-4}" text-anchor="${left?"start":"end"}" class="jm-t"><tspan class="jm-ch" fill="${j.color}">Chương ${j.pi+1}</tspan><tspan x="${tx}" dy="18">${esc(PHASES[j.pi].name)}</tspan></text></g>`;}).join("");
- const dots=J.map((j,k)=>{const [px,py]=pos[k],r=j.st==='cur'?13:N>30?6:8;
-  return `<g class="jm-dot ${j.st}" role="img" aria-label="${esc(jTip(j))}"><title>${esc(jTip(j))}</title><circle cx="${px}" cy="${py}" r="${r}" fill="${j.st==='done'?j.color:'var(--surface)'}" stroke="${j.st==='locked'?'var(--line-2)':j.color}" stroke-width="${j.st==='cur'?4:2}"/>${j.st==='cur'?`<text x="${px}" y="${py+4}" text-anchor="middle" class="jm-n" fill="${j.color}">${j.i+1}</text>`:''}</g>`;}).join('');
+ // vị trí nhãn: mỗi phía xếp từ trên xuống, cách nhau tối thiểu 42 đơn vị
+ const ly=J.map((_,k)=>pos[k][1]);
+ ['L','R'].forEach(sd=>{const ks=J.map((_,k)=>k).filter(k=>(pos[k][0]<400)===(sd==='L')).sort((p,q)=>ly[p]-ly[q]);
+  for(let m=1;m<ks.length;m++)if(ly[ks[m]]-ly[ks[m-1]]<42)ly[ks[m]]=ly[ks[m-1]]+42;
+  const over=ks.length?ly[ks[ks.length-1]]-520:0;if(over>0)ks.forEach(k=>{ly[k]-=over;});});
+ const labels=J.map((j,k)=>{const [px,py]=pos[k],left=px<400,tx=left?14:786,lock=j.st==='locked',cur=j.st==='cur';
+  const w=Math.max((capNo(j.i)+'  '+j.title).length*8.6,('Output: '+j.out).length*6.6),lx=left?Math.min(px-14,tx+w+10):Math.max(px+14,tx-w-10),yy=ly[k];
+  return `<g class="jm-cap ${j.st}"><path d="M${px},${py} L${lx},${yy-6} L${left?tx+w+4:tx-w-4},${yy-6}" fill="none" stroke="${lock?'#C9D1DD':j.color}" stroke-width="1.3" stroke-dasharray="3 4"/>
+   <text x="${tx}" y="${yy-10}" text-anchor="${left?'start':'end'}" class="jm-ct ${j.st}"><tspan class="jm-ch" fill="${lock?'#98A2B3':cur?'var(--orange)':j.color}">${capNo(j.i)}</tspan><tspan dx="6">${esc(j.title)}</tspan></text>
+   <text x="${tx}" y="${yy+8}" text-anchor="${left?'start':'end'}" class="jm-o ${j.st}">Output: ${esc(j.out)}</text></g>`;}).join('');
+ const dots=J.map((j,k)=>{const [px,py]=pos[k],r=j.st==='cur'?13:9;
+  return `<g class="jm-dot ${j.st}" role="img" aria-label="${esc(jTip(j))}"><title>${esc(jTip(j))}</title><circle cx="${px}" cy="${py}" r="${r}" fill="${j.st==='done'?j.color:'var(--surface)'}" stroke="${j.st==='locked'?'var(--line-2)':j.color}" stroke-width="${j.st==='cur'?4:2}"/>${j.st==='cur'?`<text x="${px}" y="${py+4}" text-anchor="middle" class="jm-n" fill="${j.color}">${j.i+1}</text>`:j.st==='done'?`<text x="${px}" y="${py+4}" text-anchor="middle" class="jm-n" fill="#fff">✓</text>`:''}</g>`;}).join('');
  const cur=ci>=0?(()=>{const [px,py]=pos[ci];return `<g class="jm-here"><rect x="${px-70}" y="${py+20}" width="140" height="30" rx="15"/><text x="${px}" y="${py+40}" text-anchor="middle">Bạn đang ở đây</text></g>`;})():'';
- const done=ci<0;
- return `<div class="jm"><figure class="jm-fig"><svg viewBox="0 0 800 548" role="img" aria-label="Bản đồ leo núi: ${J.filter(j=>j.st==='done').length}/${N} bài đã hoàn thành">
+ return `<div class="jm"><figure class="jm-fig"><svg viewBox="0 0 800 548" role="img" aria-label="${jAria(J)}">
   <defs><linearGradient id="jmG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="jm-s1"/><stop offset="1" class="jm-s2"/></linearGradient></defs>
   <path class="jm-back" d="M0,500 L170,250 L300,380 L560,150 L800,470 L800,500Z"/>
   <path d="M30,500 L400,40 L770,500Z" fill="url(#jmG)"/><path class="jm-snow" d="M400,40 L452,105 L428,96 L408,116 L384,98 L352,106Z"/>
   <path class="jm-trail" d="${ln(P)}"/><path class="jm-trail walked" d="${ln(walked)}"/>
-  <g class="jm-top ${done?'done':''}"><line x1="400" y1="58" x2="400" y2="14" stroke="var(--ink)" stroke-width="2.5"/><path d="M400,14 l26,9 l-26,9z" fill="var(--orange)"/><text x="436" y="30" class="jm-t"><tspan class="jm-ch" fill="var(--orange)">Về đích</tspan><tspan x="436" dy="18">Nhận chứng nhận</tspan></text></g>
-  ${flags}${dots}${cur}
+  <g class="jm-top ${fin?'done':''}"><line x1="400" y1="58" x2="400" y2="14" stroke="var(--ink)" stroke-width="2.5"/><path d="M400,14 l26,9 l-26,9z" fill="var(--orange)"/><text x="436" y="30" class="jm-t"><tspan class="jm-ch" fill="var(--orange)">Về đích</tspan>${(()=>{const uc=jUseCases();return uc.length?uc.map((u,k)=>`<tspan x="436" dy="${k?17:19}" class="jm-uc">${k+1}. ${esc(jCut(u,50))}</tspan>`).join(''):'<tspan x="436" dy="18">Chọn 3 use case</tspan>';})()}</text></g>
+  ${labels}${dots}${cur}
   <text x="252" y="524" text-anchor="end" class="jm-t">Xuất phát</text></svg></figure></div>`;
 }
 
-/* Kiểu 3: đường gấp khúc dạng lưới (theo ảnh user gửi), **đi từ dưới lên**: hàng dưới cùng chạy trái → phải,
-   quay đầu chữ U lên hàng trên chạy phải → trái…, kết thúc ở cúp Về đích trên cùng. Mỗi bài là một nút tròn:
-   đã học = màu chương + ✓, đang học = viền màu chương + vầng sáng + nhãn "Bạn đang ở đây", chưa mở = trắng viền xám.
-   Đoạn đã đi: nét liền màu chương; đoạn chưa đi: chấm xám. Chip "CHƯƠNG k" trên nút đầu chương. Nhãn dưới nút: "Bài k" + năng lực. */
+/* Kiểu 3: đường gấp khúc dạng lưới, đi từ dưới lên (hàng dưới trái → phải, quay đầu chữ U lên hàng trên…), kết thúc ở cúp Về đích.
+   Mỗi năng lực là một nút tròn (đã chinh phục = màu năng lực + ✓, đang chinh phục = vầng sáng + "Bạn đang ở đây", chưa mở = trắng viền xám);
+   nhãn dưới nút: tên năng lực + "Output: …". Chip "CHƯƠNG k" trên nút đầu chương. */
 function jSnake(J){
- const N=J.length,COLS=(typeof innerWidth!=='undefined'&&innerWidth<700)?3:5,R=Math.ceil(N/COLS),W=1000,RH=205,TOP=150,H=TOP+R*RH+10;
- const ci=J.findIndex(j=>j.st==='cur'),done=ci<0,ls=lessons();
+ const N=J.length,COLS=(typeof innerWidth!=='undefined'&&innerWidth<700)?3:5,R=Math.ceil(N/COLS),W=1000,RH=235,TOP=200,H=TOP+R*RH+10,uc=jUseCases();
+ const ci=J.findIndex(j=>j.st==='cur'),fin=!!J.fin;
  const cx=c=>110+c*(780/(COLS-1)),pos=i=>{const r=Math.floor(i/COLS),p=i%COLS,c=r%2?COLS-1-p:p;return [cx(c),TOP+(R-1-r)*RH+50];};
- const short=i=>{const ids=[...new Set(ls[i].map(k=>U(k).id))].map(id=>L[id]);const m=ids.filter(x=>x.type==='module');return (m.length?m:ids).map(x=>x.cap||x.title).join(' + ');};
- const wrap=(t,n=22)=>{const w=t.split(' '),o=[];let l='';for(const x of w){if((l+' '+x).trim().length>n&&l){o.push(l);l=x;}else l=(l+' '+x).trim();}if(l)o.push(l);if(o.length>2){o.length=2;o[1]=o[1].slice(0,n-1)+'…';}return o;};
- // đoạn nối i → i+1 (cùng hàng: thẳng; sang hàng trên: vòng chữ U ở mép)
- const seg=(p,q)=>{if(p[1]===q[1])return `M${p[0]},${p[1]} L${q[0]},${q[1]}`;const out=p[0]>W/2?1:-1,k=95*out;return `M${p[0]},${p[1]} C${p[0]+k},${p[1]} ${q[0]+k},${q[1]} ${q[0]},${q[1]}`;};
+ const wrap=(t,n=20)=>{const w=t.split(' '),o=[];let l='';for(const x of w){if((l+' '+x).trim().length>n&&l){o.push(l);l=x;}else l=(l+' '+x).trim();}if(l)o.push(l);if(o.length>2){o.length=2;o[1]=jCut(o[1],n);}return o;};
+ const seg=(p,q)=>{if(p[1]===q[1])return `M${p[0]},${p[1]} L${q[0]},${q[1]}`;const out=p[0]>W/2?1:-1,k=130*out;return `M${p[0]},${p[1]} C${p[0]+k},${p[1]} ${q[0]+k},${q[1]} ${q[0]},${q[1]}`;};
  const P=J.map(j=>pos(j.i));
- // điểm Về đích: phía trên nút cuối, nối bằng vòng chữ U nếu nút cuối ở mép, nếu không thì đi thẳng lên
- const last=P[N-1],gp=[last[0],last[1]-RH],goalAt=[gp[0],TOP-40];
+ const last=P[N-1],goalAt=[last[0],TOP-80];
  const lines=J.slice(0,-1).map((j,k)=>{const on=ci<0||k+1<=ci,col=J[k+1].color;return `<path d="${seg(P[k],P[k+1])}" class="jg-ln ${on?'on':''}" ${on?`style="stroke:${col}"`:''}/>`;}).join('')
-  +`<path d="M${last[0]},${last[1]} L${goalAt[0]},${goalAt[1]+34}" class="jg-ln ${done?'on':''}" ${done?'style="stroke:#F5B942"':''}/>`;
+  +`<path d="M${last[0]},${last[1]} L${goalAt[0]},${goalAt[1]+34}" class="jg-ln ${fin?'on':''}" ${fin?'style="stroke:#F5B942"':''}/>`;
  const firstOf=new Set(PHASES.map((_,p)=>J.findIndex(j=>j.pi===p)).filter(k=>k>=0));
- const nodes=J.map((j,k)=>{const [x,y]=P[k],col=j.color,cur=j.st==='cur',lines2=wrap(short(j.i));
+ const nodes=J.map((j,k)=>{const [x,y]=P[k],col=j.color,cur=j.st==='cur',nm=wrap(j.title,22),ot=wrap('Output: '+j.out,22);
   const chip=firstOf.has(j.i)?(()=>{const t='CHƯƠNG '+(j.pi+1),w=t.length*9+26,yy=y-(cur?92:58);return `<rect x="${x-w/2}" y="${yy}" width="${w}" height="26" rx="13" fill="${j.st==='locked'?'#EEF1F6':col}" fill-opacity="${j.st==='locked'?1:.14}"/><text x="${x}" y="${yy+18}" text-anchor="middle" class="jg-chip" fill="${j.st==='locked'?'#98A2B3':col}">${t}</text>`;})():'';
   const here=cur?`<g class="jg-here"><rect x="${x-74}" y="${y-62}" width="148" height="28" rx="8"/><path d="M${x-6},${y-34} L${x},${y-28} L${x+6},${y-34}Z"/><text x="${x}" y="${y-43}" text-anchor="middle">Bạn đang ở đây</text></g>`:'';
+  let ty=y+50;const txt=nm.map(l=>{const t=`<text x="${x}" y="${ty}" text-anchor="middle" class="jg-b ${j.st}">${esc(l)}</text>`;ty+=21;return t;}).join('')+ot.map(l=>{const t=`<text x="${x}" y="${ty}" text-anchor="middle" class="jg-s ${j.st}">${esc(l)}</text>`;ty+=19;return t;}).join('');
   return `<g class="jg-n ${j.st}" role="img" aria-label="${esc(jTip(j))}"><title>${esc(jTip(j))}</title>
    ${cur?`<circle cx="${x}" cy="${y}" r="34" fill="${col}" opacity=".16"/>`:''}
    <circle cx="${x}" cy="${y}" r="24" fill="${j.st==='done'?col:'#fff'}" stroke="${j.st==='locked'?'#D5DCE6':j.st==='done'?'#fff':col}" stroke-width="${j.st==='done'?4:3.5}"/>
    ${j.st==='done'?`<circle cx="${x}" cy="${y}" r="27" fill="none" stroke="${col}" stroke-width="2"/>`:''}
    <text x="${x}" y="${y+7}" text-anchor="middle" class="jg-num" fill="${j.st==='done'?'#fff':j.st==='locked'?'#98A2B3':col}">${j.st==='done'?'✓':j.i+1}</text>
-   <text x="${x}" y="${y+50}" text-anchor="middle" class="jg-b ${j.st}">Bài ${j.i+1}</text>
-   ${lines2.map((l,m)=>`<text x="${x}" y="${y+72+m*19}" text-anchor="middle" class="jg-s ${j.st}">${esc(l)}</text>`).join('')}
-   ${chip}${here}</g>`;}).join('');
+   ${txt}${here}</g>`;}).join('');
  const [gx,gy]=goalAt;
- const goal=`<g class="jg-goal ${done?'done':''}"><circle cx="${gx}" cy="${gy}" r="30" fill="${done?'#F5B942':'#FFF6E0'}" stroke="#F5B942" stroke-width="3"/><text x="${gx}" y="${gy+10}" text-anchor="middle" class="jg-star" fill="${done?'#fff':'#E0A21B'}">★</text>
-  <text x="${gx+(gx>W/2?-44:44)}" y="${gy-2}" text-anchor="${gx>W/2?'end':'start'}" class="jg-b">Về đích</text><text x="${gx+(gx>W/2?-44:44)}" y="${gy+18}" text-anchor="${gx>W/2?'end':'start'}" class="jg-s">Chọn 3 use case cho doanh nghiệp</text></g>`;
- const p0=P[0],start=`<g><rect x="${p0[0]-62}" y="${p0[1]+112}" width="124" height="30" rx="8" class="jg-startb"/><text x="${p0[0]}" y="${p0[1]+132}" text-anchor="middle" class="jg-start">XUẤT PHÁT</text></g>`;
- return `<div class="jg"><svg viewBox="0 0 ${W} ${H+40}" role="img" aria-label="Bản đồ hành trình: ${J.filter(j=>j.st==='done').length}/${N} bài đã hoàn thành">${lines}${goal}${nodes}${start}</svg></div>`;
+ const goal=`<g class="jg-goal ${fin?'done':''}"><circle cx="${gx}" cy="${gy}" r="30" fill="${fin?'#F5B942':'#FFF6E0'}" stroke="#F5B942" stroke-width="3"/><text x="${gx}" y="${gy+10}" text-anchor="middle" class="jg-star" fill="${fin?'#fff':'#E0A21B'}">★</text>
+  ${(()=>{const tx=gx+(gx>W/2?-44:44),an=gx>W/2?'end':'start';return uc.length?`<text x="${tx}" y="${gy-30}" text-anchor="${an}" class="jg-b">Về đích · 3 use case của anh/chị</text>${uc.map((u,k)=>`<text x="${tx}" y="${gy-8+k*21}" text-anchor="${an}" class="jg-s jg-uc">${k+1}. ${esc(jCut(u,48))}<title>${esc(u)}</title></text>`).join('')}`:`<text x="${tx}" y="${gy-2}" text-anchor="${an}" class="jg-b">Về đích</text><text x="${tx}" y="${gy+18}" text-anchor="${an}" class="jg-s">Chọn 3 use case cho doanh nghiệp</text>`;})()}</g>`;
+ const p0=P[0],start=`<g><rect x="${p0[0]-62}" y="${p0[1]+136}" width="124" height="30" rx="8" class="jg-startb"/><text x="${p0[0]}" y="${p0[1]+156}" text-anchor="middle" class="jg-start">XUẤT PHÁT</text></g>`;
+ return `<div class="jg"><svg viewBox="0 0 ${W} ${H+70}" role="img" aria-label="${jAria(J)}">${lines}${goal}${nodes}${start}</svg></div>`;
 }
