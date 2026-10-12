@@ -162,7 +162,7 @@ function checkout(){
  else if(st==='success')main=`<div class="card status"><span class="big ok">${ic('check',30)}</span><h3 class="h2" style="font-size:30px">Đăng ký thành công</h3><p class="muted" style="max-width:50ch">Thanh toán đã được ghi nhận<br>Quyền truy cập khóa <b>AI for CEO</b> đã được kích hoạt cho <b>${esc(S.order.email)}</b>.</p>
   <div style="width:100%;max-width:420px;text-align:left;border-top:1px solid var(--line)"><div class="sum-row"><span class="k">Mã đơn</span><span class="v tnum">${esc(S.order.code)}</span></div><div class="sum-row"><span class="k">Học viên</span><span class="v">${esc(S.order.name)}</span></div><div class="sum-row"><span class="k">Đã thanh toán</span><span class="v tnum">${money(COURSE.price)}</span></div><div class="sum-row"><span class="k">Trạng thái</span><span class="v"><span class="pill ok">Đã kích hoạt</span></span></div></div>
   <button class="btn btn-primary btn-lg" data-a="go" data-to="mycourses">Vào khóa học ${ic('arrow')}</button>
-  ${(cm=>cm?`<p class="hint mail-note">${ic('mail',14)} Vui lòng kiểm tra email <b>${esc(S.order.email)}</b>${S.order.phone?` và Zalo <b>${esc(S.order.phone)}</b>`:''} để xem xác nhận đăng ký và hướng dẫn truy cập khóa học.</p>`:`<p class="hint mail-note">${ic('mail',14)} Đang gửi email xác nhận tới <b>${esc(S.order.email)}</b>…</p>`)(S.mails.find(m=>m.kind==='confirm'&&m.code===S.order.code))}${S.order.invoice?(im=>`<div class="callout info inv-note" role="status"><span class="inv-ico">${ic('file',18)}</span><div><b>${im?'Đã xuất hóa đơn điện tử':'Đang xuất hóa đơn điện tử…'}</b><span>${im?`Hóa đơn số <b>${esc((im.order.inv||{}).no||'')}</b> cho ${esc(S.order.invName||'')} đã được gửi tới <b>${esc(S.order.invEmail)}</b>.`:`Hóa đơn cho ${esc(S.order.invName||'')} sẽ được gửi tới <b>${esc(S.order.invEmail)}</b>.`}</span></div></div>`)(S.mails.find(m=>m.kind==='invoice'&&!m.sample&&m.code===S.order.code)):''}</div>`;
+  ${(cm=>cm?`<p class="hint mail-note">${ic('mail',14)} Vui lòng kiểm tra email <b>${esc(S.order.email)}</b>${S.order.phone?` và Zalo <b>${esc(S.order.phone)}</b>`:''} để xem xác nhận đăng ký và hướng dẫn truy cập khóa học.</p>`:`<p class="hint mail-note">${ic('mail',14)} Đang gửi email xác nhận tới <b>${esc(S.order.email)}</b>…</p>`)(S.mails.find(m=>m.kind==='confirm'&&m.code===S.order.code))}${S.order.invoice?(im=>`<div class="callout info inv-note" role="status"><span class="inv-ico">${ic('file',18)}</span><div><b>${im?'Đã xuất hóa đơn điện tử':'Đang xuất hóa đơn điện tử…'}</b><span>${im?`Hóa đơn số <b>${esc((im.order.inv||{}).no||'')}</b> cho ${esc(S.order.invName||'')} đã được gửi tới <b>${esc(S.order.invEmail)}</b>.`:`Hóa đơn cho ${esc(S.order.invName||'')} sẽ được gửi tới <b>${esc(S.order.invEmail)}</b>.`}</span><div><button type="button" class="btn btn-line btn-sm inv-open" data-a="invView">${ic('eye',15)} Xem trước hóa đơn</button></div></div></div>`)(S.mails.find(m=>m.kind==='invoice'&&!m.sample&&m.code===S.order.code)):''}</div>`;
  else main=`<form class="card form" data-f="checkoutSubmit" novalidate>
   <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><h3 class="h3">Thông tin thanh toán</h3></div>
   <div class="row2"><div class="field"><label for="c-name">Họ và tên <span class="req" aria-hidden="true">*</span></label><input class="inp" id="c-name" name="name" value="${esc(o.name)}" required aria-required="true" autocomplete="name"></div><div class="field"><label for="c-phone">Số điện thoại / Zalo <span class="req" aria-hidden="true">*</span></label><input class="inp" id="c-phone" name="phone" type="tel" value="${esc(o.phone)}" required aria-required="true" autocomplete="tel"></div></div>
@@ -181,6 +181,40 @@ function checkout(){
    2 cách song song: (1) quét mã QR, mã điền sẵn số tài khoản + số tiền + nội dung; (2) chuyển khoản thủ công, mỗi dòng
    số tài khoản / số tiền / nội dung có nút Sao chép riêng. Demo: mã QR chỉ là hình minh họa (không quét được, tránh chuyển nhầm
    tiền vào tài khoản có thật); nút "Mô phỏng: ngân hàng báo đã nhận tiền" thay cho việc hệ thống tự đối soát. */
+/* ---------- Xem trước hóa đơn GTGT (đề xuất mới theo yêu cầu user 10/2026, theo "Mẫu hóa đơn đăng ký.pdf") ----------
+   Hiện khi thanh toán thành công và đơn có chọn "Xuất hóa đơn doanh nghiệp". Dữ liệu lấy từ đơn hàng; số hóa đơn có sau khi phát hành
+   (trước đó ghi "Chưa cấp số"). Thuế suất GTGT chưa chốt nên để trống. Hệ thống thật: lấy bản hóa đơn từ nhà cung cấp hóa đơn điện tử. */
+function invoicePaper(o){
+ const inv=o.inv||{},d=(inv.date||o.paidAt||today()).split('/'),amt=COURSE.price,rows=9;
+ const ln=(k,en,v,cls='')=>`<div class="iv-ln ${cls}"><span>${k} <i>(${en})</i>:</span><b>${v||''}</b></div>`;
+ return `<article class="iv-paper" aria-label="Hóa đơn giá trị gia tăng">
+ <span class="iv-c tl"></span><span class="iv-c tr"></span><span class="iv-c bl"></span><span class="iv-c br"></span>
+ ${inv.no?'':'<span class="iv-wm" aria-hidden="true">BẢN XEM TRƯỚC</span>'}
+ <header class="iv-top"><div class="iv-title"><h2>HÓA ĐƠN GIÁ TRỊ GIA TĂNG</h2><p class="iv-en">(VAT INVOICE)</p><p class="iv-date">Ngày <i>(Date)</i> <u>${d[0]||''}</u> tháng <i>(month)</i> <u>${d[1]||''}</u> năm <i>(year)</i> <u>${d[2]||''}</u></p></div>
+  <div class="iv-serial"><p>Ký hiệu <i>(Serial)</i>: ${SELLER.series}</p><p>Số <i>(No.)</i>: <b class="iv-no">${inv.no?esc(inv.no):'Chưa cấp số'}</b></p></div></header>
+ <section class="iv-seller"><div>${ln('Đơn vị bán hàng','Seller',`<span class="iv-red">${SELLER.name}</span>`)}${ln('Mã số thuế','Tax code',`<span class="iv-tax">${SELLER.taxId.split('').join(' ')}</span>`)}${ln('Địa chỉ','Address',SELLER.address)}</div><div class="iv-qr">${fakeQR(o.code||'INV')}</div></section>
+ <section class="iv-buyer">${ln('Họ tên người mua hàng','Buyer',esc(o.name||''),'dot')}${ln('Tên đơn vị','Company name',esc(o.invName||o.company||''),'dot')}${ln('Mã số thuế','Tax code',esc(o.taxId||''),'dot')}${ln('Địa chỉ','Address',esc(o.invAddr||''),'dot')}
+  <div class="iv-2">${ln('Hình thức thanh toán','Payment method','Chuyển khoản','dot')}${ln('Số tài khoản','A/C No.','','dot')}</div></section>
+ <table class="iv-tb"><thead><tr><th>STT<br><i>(No.)</i></th><th>Tên hàng hóa, dịch vụ<br><i>(Name of goods, services)</i></th><th>Đơn vị tính<br><i>(Unit)</i></th><th>Số lượng<br><i>(Quantity)</i></th><th>Đơn giá<br><i>(Unit price)</i></th><th>Thành tiền<br><i>(Amount)</i></th></tr>
+  <tr class="iv-no-r"><td>(1)</td><td>(2)</td><td>(3)</td><td>(4)</td><td>(5)</td><td>(6)=(4)x(5)</td></tr></thead>
+  <tbody><tr><td>1</td><td class="l">Khóa học AI for CEO · Trọn khóa</td><td>Khóa</td><td>1</td><td class="r">${amt.toLocaleString('vi-VN')}</td><td class="r">${amt.toLocaleString('vi-VN')}</td></tr>${'<tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>'.repeat(rows-1)}</tbody>
+  <tfoot><tr><td colspan="3" class="l">Tỷ giá <i>(Exchange rate)</i>:</td><td colspan="2" class="r">Cộng tiền hàng <i>(Sub total)</i>:</td><td class="r">${amt.toLocaleString('vi-VN')}</td></tr>
+   <tr><td colspan="3" class="l">Thuế suất GTGT <i>(VAT rate)</i>:</td><td colspan="2" class="r">Tiền thuế GTGT <i>(VAT amount)</i>:</td><td class="r"></td></tr>
+   <tr><td colspan="5" class="r">Tổng cộng tiền thanh toán <i>(Total payment)</i>:</td><td class="r"><b>${amt.toLocaleString('vi-VN')}</b></td></tr>
+   <tr><td colspan="6" class="l">Số tiền viết bằng chữ <i>(Amount in words)</i>: <b>${vnMoneyWords(amt)}</b></td></tr></tfoot></table>
+ <section class="iv-sign"><div><b>Người mua hàng <i>(Buyer)</i></b></div><div><b>Người bán hàng <i>(Seller)</i></b><div class="iv-stamp"><b>${inv.no?'Signature Valid':'Mẫu:'}</b><span>Ký bởi: ${SELLER.name}</span><span>Ký ngày: ${inv.no?esc(inv.date||''):''}</span></div></div></section>
+ <p class="iv-check">(Cần kiểm tra, đối chiếu khi lập, giao, nhận hóa đơn)</p>
+ <p class="iv-prov">${SELLER.provider}</p></article>`;
+}
+function invoiceView(){
+ if(!T.invView||!S.order||!S.order.invoice)return '';
+ const o=S.order,im=S.mails.find(m=>m.kind==='invoice'&&!m.sample&&m.code===o.code),oo=im?{...o,inv:im.order.inv}:o;
+ return `<div class="mail-ov iv-ov" role="presentation"><div class="iv-dlg" role="dialog" aria-modal="true" aria-label="Xem trước hóa đơn">
+  <div class="iv-bar"><div><b>Xem trước hóa đơn GTGT</b><span>${im?`Hóa đơn số ${esc(im.order.inv.no)} đã gửi tới ${esc(o.invEmail)}`:`Bản xem trước, hóa đơn chính thức sẽ gửi tới ${esc(o.invEmail)}`}</span></div>
+   <div class="iv-act"><button class="btn btn-line btn-sm" data-a="invPrint">${ic('download',15)} In / Lưu PDF</button><button class="x" data-a="invClose" aria-label="Đóng">${ic('x')}</button></div></div>
+  <div class="iv-scroll">${invoicePaper(oo)}</div>
+  <p class="iv-foot hint">${ic('info',14)} Kiểm tra tên đơn vị, mã số thuế, địa chỉ. Cần điều chỉnh, anh/chị gửi email tới <b>${ACADEMY.billing}</b> kèm mã đơn <b>${esc(o.code)}</b>.</p></div></div>`;
+}
 function fakeQR(seed){
  const n=29,cell=(x,y)=>{let h=2166136261;const k=seed+'|'+x+'|'+y;for(let i=0;i<k.length;i++){h^=k.charCodeAt(i);h=Math.imul(h,16777619);}return (h>>>0)%100<47;};
  const fin=(x,y)=>[[0,0],[n-7,0],[0,n-7]].some(([a,b])=>x>=a&&x<a+7&&y>=b&&y<b+7),finOn=(x,y)=>{for(const [a,b] of [[0,0],[n-7,0],[0,n-7]]){const i=x-a,j=y-b;if(i>=0&&i<7&&j>=0&&j<7)return i===0||i===6||j===0||j===6||(i>=2&&i<=4&&j>=2&&j<=4);}return false;};
@@ -283,7 +317,7 @@ function mycourses(){
   <article class="card course"><button class="course-thumb" data-a="openCourse" aria-label="Mở khóa AI for CEO">${COURSE.cover?`<img class="crs-cover" src="${esc(COURSE.cover)}" alt="">`:''}<span class="k">Khóa học trọng tâm</span><span class="n">AI for <b>CEO</b></span><span class="s">${LIB.length} chương · ${ALL_BAI.length} bài</span></button>
    <div class="pad" style="display:grid;gap:14px">
     <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap"><h3 class="h3">AI for CEO</h3><span class="pill ${status[1]}">${status[0]}</span></div>
-    ${started?`<div style="display:grid;gap:6px"><div class="bar"><i style="width:${st.upct}%"></i></div><span class="hint tnum">${st.unitsDone}/${st.units} bài học · ${subsCount()}/${Object.keys(TASKS).length} bài tập${cu?` · Tiếp theo: ${esc(unitLabel(U(cu)))}`:''}</span></div>`
+    ${started?`<div style="display:grid;gap:6px"><div style="display:flex;align-items:center;gap:10px"><div class="bar" style="flex:1"><i style="width:${st.upct}%"></i></div><b class="tnum" style="font-size:14px;color:var(--blue)">${st.upct}%</b></div><span class="hint tnum">${st.unitsDone}/${st.units} bài học · ${subsCount()}/${Object.keys(TASKS).length} bài tập</span></div>`
      :''}
     <div class="kv"><div><span>Ngày kích hoạt</span><b>${esc((S.order&&S.order.paidAt)||today())}</b></div><div><span>Mã đơn</span><b class="tnum">${esc((S.order&&S.order.code)||'')}</b></div><div><span>Thời hạn truy cập</span><b>1 năm</b></div></div>
     <button class="btn btn-primary btn-lg btn-block" data-a="openCourse">${cta} ${ic('arrow')}</button>

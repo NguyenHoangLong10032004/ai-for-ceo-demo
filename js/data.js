@@ -216,6 +216,22 @@ const transferNote=o=>(o&&o.code||'').replace(/\W/g,''); // nội dung chuyển 
 // Thông tin Học viện dùng ở chân trang, email và mục hỗ trợ (hotline, email info, địa chỉ, giờ làm việc lấy theo chân trang website user gửi; email kế toán vẫn là minh họa)
 // Gửi email THẬT qua EmailJS (emailjs.com). Để trống = chỉ gửi vào Hộp thư mô phỏng.
 // Lấy 3 mã trong tài khoản EmailJS: Email Services → Service ID · Email Templates → Template ID · Account → Public Key
+// Đơn vị bán hàng trên hóa đơn GTGT (theo "Mẫu hóa đơn đăng ký.pdf" user gửi 10/2026; nhà cung cấp hóa đơn điện tử: EasyInvoice – SoftDreams)
+const SELLER={name:'CÔNG TY TNHH HỌC VIỆN TIA CHỚP XANH',taxId:'0319381409',address:'97 Trần Thị Nghỉ, Phường Hạnh Thông, Thành phố Hồ Chí Minh, Việt Nam',series:'1C26TYY',provider:'Đơn vị cung cấp giải pháp: Công ty cổ phần đầu tư công nghệ và thương mại SOFTDREAMS, MST: 0105987432, Http://easyinvoice.vn/'};
+// đọc số tiền bằng chữ, vd. 8800000 → "Tám triệu tám trăm nghìn đồng"
+function vnMoneyWords(n){
+ n=Math.round(n);if(!n)return 'Không đồng';
+ const d=['không','một','hai','ba','bốn','năm','sáu','bảy','tám','chín'];
+ const three=(x,full)=>{const h=Math.floor(x/100),t=Math.floor(x%100/10),u=x%10,o=[];
+  if(full||h)o.push(d[h]+' trăm');
+  if(t>1){o.push(d[t]+' mươi');if(u===1)o.push('mốt');else if(u===5)o.push('lăm');else if(u)o.push(d[u]);}
+  else if(t===1){o.push('mười');if(u===5)o.push('lăm');else if(u)o.push(d[u]);}
+  else if(u){if(full||h)o.push('lẻ');o.push(d[u]);}
+  return o.join(' ');};
+ const units=['','nghìn','triệu','tỷ'],g=[];let x=n;while(x>0){g.push(x%1000);x=Math.floor(x/1000);}
+ const out=[];for(let i=g.length-1;i>=0;i--){if(!g[i])continue;out.push(three(g[i],i<g.length-1)+(units[i]?' '+units[i]:''));}
+ const s=out.join(' ').replace(/\s+/g,' ').trim();return s.charAt(0).toUpperCase()+s.slice(1)+' đồng';
+}
 const EMAILJS={serviceId:"",templateId:"",publicKey:""};
 const ACADEMY={name:"Học viện Siêu Tăng Trưởng",sender:"no-reply@sieutangtruong.vn",support:"info@sieutangtruong.com",hotline:"0936 038 739",zalo:"Zalo OA Siêu Tăng Trưởng",hours:"9:00–18:00, thứ Hai đến thứ Sáu",workDays:"Thứ 2 – Thứ 6",workTime:"9:00 – 18:00",web:"sieutangtruong.vn",address:"100 Nguyễn Văn Lượng, Phường Gò Vấp, Hồ Chí Minh",billing:"ketoan@sieutangtruong.vn",footerWeb:"sieutangtruong.com",tagline:"Nền tảng cộng đồng & học tập, giúp bạn áp dụng AI để tăng trưởng kinh doanh nhanh chóng."};
 // Dashboard: Capacity Map 10 năng lực AI = Module 02–11 (màu theo brief ai_for_ceo_ui_redesign.md) (Module 01 là khởi động, Module 12 là đích đến)

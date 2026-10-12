@@ -161,7 +161,7 @@ function sendInvoiceEmail(){
  const o=S.order;if(!o||!o.invoice||!o.invEmail)return;
  if(S.mails.some(m=>m.kind==='invoice'&&!m.sample&&m.code===o.code))return; // mỗi đơn 1 hóa đơn
  const n=String(Math.floor(100+Math.random()*900)).padStart(8,'0');
- o.inv={series:'1C26TST',no:n,date:today(),lookup:'STT'+o.code.replace(/\D/g,'')};
+ o.inv={series:SELLER.series,no:n,date:today(),lookup:'STT'+o.code.replace(/\D/g,'')};
  const m={id:'m'+Date.now()+'i',kind:'invoice',code:o.code,to:o.invEmail,at:nowStr(),read:false,order:{...o}};
  S.mails.unshift(m);
  if(realMailOn())sendRealEmail(m);else toast(`Đã xuất hóa đơn điện tử và gửi tới ${o.invEmail}`);
@@ -172,7 +172,7 @@ function ensureSampleInvoice(){
  const b=S.order||{},ac=S.account||{};
  const o={code:b.code||'AICEO-000000',name:b.name||ac.name||SAMPLE_PROFILE.name,email:b.email||ac.email||'long.nguyen@minhan.vn',company:b.company||SAMPLE_PROFILE.company,invoice:true,
   invName:b.invName||b.company||SAMPLE_PROFILE.company,taxId:b.taxId||'0312345678',invAddr:b.invAddr||'125 Nguyễn Văn Linh, Quận 7, TP.HCM',invEmail:b.invEmail||'ketoan@minhan.vn'};
- o.inv={series:'1C26TST',no:'00000001',date:b.paidAt||today(),lookup:'STT'+o.code.replace(/\D/g,'')};
+ o.inv={series:SELLER.series,no:'00000001',date:b.paidAt||today(),lookup:'STT'+o.code.replace(/\D/g,'')};
  S.mails.push({id:'m'+Date.now()+'s',kind:'invoice',sample:true,code:o.code,to:o.invEmail,at:nowStr(),read:false,order:o});
 }
 // Email mẫu "Đăng ký thành công trước ngày khai giảng" trong Hộp thư (theo yêu cầu user): lấy đơn/tài khoản nếu có, thiếu thì dữ liệu mẫu

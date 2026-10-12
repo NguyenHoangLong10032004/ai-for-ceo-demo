@@ -174,7 +174,7 @@ function render(){
  const capEl=document.getElementById('share-cap');if(capEl)T.shareCap=capEl.value;
  const exIn=document.getElementById('ex-in'),exFocus=exIn&&document.activeElement===exIn;if(exIn)T.expertDraft=exIn.value;
  const brandPg=!['dashboard','community'].includes(S.screen);
- $app.innerHTML=demoBar()+header()+`<main class="scr-${S.screen}${brandPg?' brand-pg':''}">${scr()}</main>`+footer()+fab()+mailView()+shareView()+mediaViewer()+remindView()+zaloView()+drawerView();
+ $app.innerHTML=demoBar()+header()+`<main class="scr-${S.screen}${brandPg?' brand-pg':''}">${scr()}</main>`+footer()+fab()+mailView()+shareView()+mediaViewer()+remindView()+zaloView()+drawerView()+invoiceView();
  brandBand();
  if(T.share)drawShare();
  if(document.getElementById('cert-cv'))drawCert();
@@ -308,6 +308,10 @@ const ACT={
  fixPace:d=>{const p0={...S.profile},was=!!(S.plan&&S.plan.wasActive);S.profile.minPerSession=+d.v;S.plan=rulePlan(S.profile);S.plan.wasActive=was;S.adjustLog.push({role:'bot',text:describeChanges(p0,S.profile)});render();},
  acceptPlan:()=>{if(!S.plan||S.plan.warning)return;T.drawer=null;const was=S.plan.wasActive;S.plan.accepted=true;S.plan.wasActive=true;go('learn');toast(was?'Đã lưu lộ trình mới':'Đã xác nhận lộ trình. Bắt đầu Bài 1 nhé!');},
  // học
+ invView:()=>{T.invView=true;render();},
+ invClose:()=>{T.invView=false;render();},
+ invPrint:()=>{const p=document.querySelector('.iv-paper');if(!p)return;let box=document.getElementById('inv-print');if(!box){box=document.createElement('div');box.id='inv-print';document.body.appendChild(box);}
+  box.innerHTML=p.outerHTML;document.body.classList.add('printing-inv');const done=()=>{document.body.classList.remove('printing-inv');window.removeEventListener('afterprint',done);};window.addEventListener('afterprint',done);setTimeout(()=>window.print(),150);},
  openUnit:d=>{const k=d.v;if(!unitOpen(k)){toast(unitLockMsg(k),'bad');return;}S.unit=k;S.lesson=lessonOfUnit(k);S.from=null;T.editEx=null;go('lesson');},
  openLesson:d=>{if(!lessonOpen(+d.v)){toast(lockMsg(+d.v),'bad');return;}S.lesson=+d.v;S.unit=null;S.from=null;go('lesson');},
  selUnit:d=>{S.unit=d.v;render();},
@@ -480,7 +484,7 @@ const FORMS={
 };
 
 /* ---------- gắn sự kiện ---------- */
-document.addEventListener('click',e=>{if(e.target.classList&&e.target.classList.contains('mail-ov')){T.mediaView=null;T.mailOpen=null;T.share=null;T.remindOpen=false;T.zaloOpen=false;T.drawer=null;render();return;}const a=e.target.closest('[data-a]');if(!a||a.disabled)return;const fn=ACT[a.dataset.a];if(!fn)return;if(a.tagName!=='INPUT')e.preventDefault();fn(a.dataset,a,e);});
+document.addEventListener('click',e=>{if(e.target.classList&&e.target.classList.contains('mail-ov')){T.mediaView=null;T.mailOpen=null;T.share=null;T.remindOpen=false;T.zaloOpen=false;T.drawer=null;T.invView=false;render();return;}const a=e.target.closest('[data-a]');if(!a||a.disabled)return;const fn=ACT[a.dataset.a];if(!fn)return;if(a.tagName!=='INPUT')e.preventDefault();fn(a.dataset,a,e);});
 // phần tử không phải nút nhưng bấm được (role=button + data-a): Enter / Space cũng kích hoạt như bấm chuột
 document.addEventListener('keydown',e=>{if(e.key!=='Enter'&&e.key!==' ')return;const t=e.target;if(t&&t.tagName!=='BUTTON'&&t.getAttribute&&t.getAttribute('role')==='button'&&t.dataset&&t.dataset.a){e.preventDefault();t.click();}});
 document.addEventListener('submit',e=>{const f=e.target.closest('[data-f]');if(!f)return;e.preventDefault();const fn=FORMS[f.dataset.f];if(fn)fn(f);});
@@ -516,7 +520,7 @@ document.addEventListener('change',e=>{
  // cài đặt nhắc lịch: cập nhật bản nháp và phần xem trước
  const rk=e.target.dataset&&e.target.dataset.rm;if(rk&&T.remindOpen){if(rk==='preview')T.remindPreview=e.target.value;else if(rk==='day'){const cur=(T.remindDraft||S.remind).days||[],v=+e.target.value;T.remindDraft={...(T.remindDraft||S.remind),days:e.target.checked?[...new Set([...cur,v])]:cur.filter(x=>x!==v)};}else T.remindDraft={...(T.remindDraft||S.remind),[rk]:e.target.type==='checkbox'?e.target.checked:e.target.value};render();return;}
  const n=e.target.name||'';if(n.startsWith('r_')){const s=document.querySelector(`.star-txt[data-for="${n}"]`);if(s)s.textContent=STAR_LABEL[+e.target.value];const fs=e.target.closest('.fb-q');if(fs)fs.classList.remove('bad');}if(n==='nps'){const fs=e.target.closest('.fb-q');if(fs)fs.classList.remove('bad');}});
-document.addEventListener('keydown',e=>{if(T.mediaView){if(e.key==='Escape'){T.mediaView=null;render();return;}if(e.key==='ArrowLeft'||e.key==='ArrowRight'){ACT.mediaNav({v:e.key==='ArrowLeft'?-1:1});return;}}if(e.key==='Escape'&&(T.mailOpen||T.share||T.remindOpen||T.zaloOpen||T.drawer)){T.mailOpen=null;T.share=null;T.remindOpen=false;T.zaloOpen=false;T.drawer=null;render();return;}if(e.key==='Escape'&&T.asstOpen){T.asstOpen=false;render();}});
+document.addEventListener('keydown',e=>{if(T.mediaView){if(e.key==='Escape'){T.mediaView=null;render();return;}if(e.key==='ArrowLeft'||e.key==='ArrowRight'){ACT.mediaNav({v:e.key==='ArrowLeft'?-1:1});return;}}if(e.key==='Escape'&&(T.mailOpen||T.share||T.remindOpen||T.zaloOpen||T.drawer||T.invView)){T.invView=false;T.mailOpen=null;T.share=null;T.remindOpen=false;T.zaloOpen=false;T.drawer=null;render();return;}if(e.key==='Escape'&&T.asstOpen){T.asstOpen=false;render();}});
 
 /* ---------- khởi động ---------- */
 // dọn dữ liệu cũ còn lưu trong trình duyệt từ các phiên bản demo trước
