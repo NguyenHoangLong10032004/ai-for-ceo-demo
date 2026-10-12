@@ -30,8 +30,15 @@ const ACCESS_SUBJECT='Khóa học AI for CEO đã được kích hoạt · Hư�
 const OPEN_DATE='02/11/2026';
 const PRELAUNCH_SUBJECT=`Đăng ký khóa học AI for CEO thành công · Khai giảng ${OPEN_DATE}`;
 const PRELAUNCH_STEPS=[['Truy cập tài khoản Học viện','Anh/chị có thể đăng nhập vào hệ thống Học viện Siêu Tăng Trưởng để kiểm tra thông tin đăng ký và khóa học trong mục <b>Khóa học của tôi</b>.'],
- ['Chuẩn bị cho hành trình học tập',`Khóa học sẽ chính thức mở nội dung từ ngày <b>${OPEN_DATE}</b>. Anh/chị chưa cần thực hiện bài học ở thời điểm hiện tại.`],
- ['Nhận thông báo khai giảng','Vào ngày khai giảng, Học viện sẽ gửi email hướng dẫn bắt đầu học và truy cập chương trình để anh/chị chủ động sắp xếp thời gian.']];
+ ['Chuẩn bị cho hành trình học tập',`Khóa học sẽ chính thức khai giảng từ ngày <b>${OPEN_DATE}</b>. Anh/chị chưa vào học ở thời điểm hiện tại.`],
+ ['Nhận thông báo khai giảng','Vào ngày khai giảng, Học viện sẽ gửi email hướng dẫn bắt đầu học và truy cập khóa học để anh/chị chủ động sắp xếp thời gian.']];
+// email kích hoạt khóa học (part='access'): nội dung theo user 10/2026 — Thông tin khóa học + Hướng dẫn bắt đầu học 3 bước, không có nút
+const ACADEMY_SITE='https://www.sieutangtruong.com/';
+const ACCESS_STEPS=[['Truy cập website Học viện',`Truy cập website Học viện Siêu Tăng Trưởng tại: <a href="${ACADEMY_SITE}" style="color:#1747C9">${ACADEMY_SITE}</a>`],
+ ['Đăng nhập & Truy cập khóa học','Đăng nhập bằng email đã đăng ký, sau đó vào mục <b>Khóa học của tôi</b> và chọn <b>AI for CEO</b>.'],
+ ['Thiết lập lộ trình học cá nhân hóa','Dành khoảng 3 phút trao đổi cùng Trợ lý lộ trình AI để chia sẻ thông tin doanh nghiệp, lĩnh vực quan tâm và thời gian học mong muốn.'],
+ ['Bắt đầu hành trình học tập','Xem lộ trình được cá nhân hóa theo nhu cầu của anh/chị và bắt đầu bài học đầu tiên.']];
+const ACCESS_CLOSE=['Học viện Siêu Tăng Trưởng hy vọng khóa học sẽ mang đến những kiến thức và góc nhìn thiết thực, giúp anh/chị từng bước ứng dụng AI hiệu quả vào hoạt động doanh nghiệp.','Chúc anh/chị có một hành trình học tập hiệu quả!'];
 function confirmEmail(o,opt={}){
  const logo=opt.logo||'img/logo.png',url=opt.url||'#',part=opt.part||'confirm';
  const name=o.name||'anh/chị';
@@ -43,18 +50,14 @@ function confirmEmail(o,opt={}){
  const invoice=o.invoice
   ?p(`Hóa đơn điện tử (VAT) sẽ được xuất cho <b>${esc(o.invName||o.company||'')}</b>${o.taxId?`, mã số thuế <b>${esc(o.taxId)}</b>`:''} và gửi bằng email riêng tới <b>${esc(o.invEmail||o.email)}</b>.`)+p(`Cần điều chỉnh thông tin hóa đơn, anh/chị gửi email tới <a href="mailto:${ACADEMY.billing}" style="color:#1747C9">${ACADEMY.billing}</a> kèm mã đơn <b>${esc(o.code)}</b>.`)
   :p(`Anh/chị chưa yêu cầu xuất hóa đơn công ty. Nếu cần hóa đơn VAT, anh/chị gửi tên công ty, mã số thuế, địa chỉ và mã đơn <b>${esc(o.code)}</b> tới <a href="mailto:${ACADEMY.billing}" style="color:#1747C9">${ACADEMY.billing}</a>.`);
- const pre=part==='access'?'Khóa AI for CEO đã được kích hoạt. Truy cập khóa học và làm Onboarding để nhận lộ trình cá nhân hóa.':'Anh/chị đã đăng ký và thanh toán thành công khóa học AI for CEO.';
+ const pre=part==='access'?'Khóa học AI for CEO đã được kích hoạt thành công trên tài khoản của anh/chị.':'Anh/chị đã đăng ký và thanh toán thành công khóa học AI for CEO.';
  const body=part==='access'?`
- ${p(`Khóa học <b>AI for CEO</b> của anh/chị đã sẵn sàng. Dưới đây là thông tin tài khoản và các bước để bắt đầu học.`)}
- ${h('Tài khoản học')}
- ${p(`Anh/chị học bằng tài khoản email <b>${esc(o.email)}</b>. Vui lòng đăng nhập đúng email này, vì khóa học được gắn với tài khoản đã đăng ký.`)}
- ${h('Quyền truy cập')}
- ${p(`Khóa học <b>AI for CEO</b> đã được <b>kích hoạt</b> trên tài khoản của anh/chị. Anh/chị có thể vào học ngay bây giờ.`)}
- ${h('Bước tiếp theo')}
- <table role="presentation" width="100%" cellpadding="0" cellspacing="0">${steps.map((s,i)=>`<tr><td style="vertical-align:top;padding:6px 12px 6px 0;width:28px"><span style="display:inline-block;width:26px;height:26px;line-height:26px;text-align:center;border-radius:50%;background:#EEF2FC;color:#1747C9;font-weight:700;font-size:13px">${i+1}</span></td><td style="padding:8px 0;font-size:15px;line-height:1.5;color:#2B3240">${s}</td></tr>`).join('')}</table>
- <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:26px 0 8px"><tr><td align="center">
-  <a href="${url}" ${opt.ctaAttr||''} style="display:inline-block;background:#1747C9;color:#FFFFFF;text-decoration:none;font-weight:800;font-size:15px;letter-spacing:.04em;padding:15px 34px;border-radius:10px">TRUY CẬP KHÓA HỌC →</a>
- </td></tr></table>`:`
+ ${p(`Học viện Siêu Tăng Trưởng xin thông báo khóa học <b>AI for CEO</b> đã được <b>kích hoạt thành công</b> trên tài khoản của anh/chị.`)}
+ ${h('Thông tin khóa học')}
+ <table role="presentation" width="100%" cellpadding="0" cellspacing="0">${row('Khóa học','AI for CEO')}${row('Tài khoản đăng nhập',esc(o.email))}${row('Trạng thái','<span style="color:#15803D">Đã kích hoạt</span>')}</table>
+ ${h('Hướng dẫn bắt đầu học')}
+ <table role="presentation" width="100%" cellpadding="0" cellspacing="0">${ACCESS_STEPS.map(([t,d],i)=>`<tr><td style="vertical-align:top;padding:10px 12px 6px 0;width:28px"><span style="display:inline-block;width:26px;height:26px;line-height:26px;text-align:center;border-radius:50%;background:#EEF2FC;color:#1747C9;font-weight:700;font-size:13px">${i+1}</span></td><td style="padding:12px 0 6px;font-size:15px;line-height:1.6;color:#2B3240"><b style="color:#141A26">${t}</b><br>${d}</td></tr>`).join('')}</table>
+ <div style="height:14px"></div>${ACCESS_CLOSE.map(p).join('')}`:`
  ${p(`Học viện Siêu Tăng Trưởng xác nhận anh/chị đã <b>đăng ký và thanh toán thành công</b> khóa học <b>AI for CEO</b>. Cảm ơn anh/chị đã tin tưởng đồng hành cùng Học viện.`)}
  ${h('Thông tin đăng ký')}
  <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
@@ -67,7 +70,7 @@ function confirmEmail(o,opt={}){
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;margin:0 auto;background:#FFFFFF;border:1px solid #E6E8EC;border-radius:12px;border-collapse:separate">
 <tr><td style="padding:24px 32px;border-bottom:1px solid #E6E8EC"><img src="${logo}" alt="${ACADEMY.name}" width="180" style="display:block;height:auto;max-width:180px"></td></tr>
 <tr><td style="padding:32px 32px 8px">
- <h1 style="margin:0 0 18px;font-size:24px;line-height:1.3;color:#141A26">Chào ${esc(name)},</h1>
+ <h1 style="margin:0 0 18px;font-size:24px;line-height:1.3;color:#141A26">Chào ${o.name?'anh/chị ':''}${esc(name)},</h1>
  ${body}
  ${h('Cần hỗ trợ?')}
  ${p(`Nếu gặp vấn đề khi đăng nhập, truy cập khóa học hoặc thanh toán, anh/chị liên hệ:`)}
@@ -81,10 +84,10 @@ ${emailFooter({logo,url:opt.url,reason:`Anh/chị nhận email này vì đã đ�
  // bản chữ thuần cho trình đọc email không hiển thị HTML (email thật nên gửi kèm)
  const support=['CẦN HỖ TRỢ?',`Email: ${ACADEMY.support} · Hotline: ${ACADEMY.hotline} · Zalo: ${ACADEMY.zalo}`,`Giờ hỗ trợ: ${ACADEMY.hours}. Vui lòng cung cấp mã đơn ${o.code} khi liên hệ.`,'',ACADEMY.name,ACADEMY.address];
  const text=(part==='access'
-  ?[`Chào ${name},`,'','Khóa học AI for CEO của anh/chị đã sẵn sàng.','',`TÀI KHOẢN HỌC: ${o.email}`,'Vui lòng đăng nhập đúng email này, vì khóa học được gắn với tài khoản đã đăng ký.','',
-    'QUYỀN TRUY CẬP: khóa học AI for CEO đã được kích hoạt, anh/chị có thể vào học ngay.','',
-    'BƯỚC TIẾP THEO',...steps.map((s,i)=>`${i+1}. ${s.replace(/<[^>]+>/g,'')}`),'',`TRUY CẬP KHÓA HỌC: ${url}`,'']
-  :[`Chào ${name},`,'',`Học viện Siêu Tăng Trưởng xác nhận anh/chị đã đăng ký và thanh toán thành công khóa học AI for CEO. Cảm ơn anh/chị đã tin tưởng đồng hành cùng Học viện.`,'',
+  ?[`Chào ${o.name?'anh/chị ':''}${name},`,'','Học viện Siêu Tăng Trưởng xin thông báo khóa học AI for CEO đã được kích hoạt thành công trên tài khoản của anh/chị.','',
+    'THÔNG TIN KHÓA HỌC','Khóa học: AI for CEO',`Tài khoản đăng nhập: ${o.email}`,'Trạng thái: Đã kích hoạt','',
+    'HƯỚNG DẪN BẮT ĐẦU HỌC',...ACCESS_STEPS.flatMap(([t,d],i)=>[`Bước ${i+1}. ${t}`,d.replace(/<br><br>/g,' ').replace(/<[^>]+>/g,''),'']),...ACCESS_CLOSE,'']
+  :[`Chào ${o.name?'anh/chị ':''}${name},`,'',`Học viện Siêu Tăng Trưởng xác nhận anh/chị đã đăng ký và thanh toán thành công khóa học AI for CEO. Cảm ơn anh/chị đã tin tưởng đồng hành cùng Học viện.`,'',
     'THÔNG TIN ĐĂNG KÝ',`Khóa học: AI for CEO · Trọn khóa`,`Mã đơn: ${o.code}`,`Ngày đăng ký: ${o.paidAt||''}`,`Phương thức thanh toán: ${PAY_METHODS[o.method]||''}`,`Học phí: ${money(COURSE.list)}`,`${COURSE.promo}: −${money(SAVE)}`,`Số tiền đã thanh toán: ${money(COURSE.price)}`,'',
     ...(part==='prelaunch'?['BƯỚC TIẾP THEO',...PRELAUNCH_STEPS.flatMap(([t,d],i)=>[`${i+1}. ${t}`,d.replace(/<br><br>/g,' ').replace(/<[^>]+>/g,''),''])]:[]),
     '']).concat(support).join('\n');
@@ -98,13 +101,13 @@ function enrollZaloMsgs(o){
  const inv=o.invoice
   ?`Hóa đơn điện tử (VAT) sẽ được xuất cho ${o.invName||o.company||''}${o.taxId?`, mã số thuế ${o.taxId}`:''} và gửi bằng email riêng tới ${o.invEmail||o.email}. Cần điều chỉnh thông tin hóa đơn, anh/chị gửi email tới ${ACADEMY.billing} kèm mã đơn ${o.code}.`
   :`Anh/chị chưa yêu cầu xuất hóa đơn công ty. Nếu cần hóa đơn VAT, anh/chị gửi tên công ty, mã số thuế, địa chỉ và mã đơn ${o.code} tới ${ACADEMY.billing}.`;
- return [{icon:'✅',title:CONFIRM_SUBJECT,intro:`Chào ${o.name||'anh/chị'},\nHọc viện Siêu Tăng Trưởng xác nhận anh/chị đã đăng ký và thanh toán thành công khóa học AI for CEO. Cảm ơn anh/chị đã tin tưởng đồng hành cùng Học viện.`,
+ return [{icon:'✅',title:CONFIRM_SUBJECT,intro:`Chào ${o.name?'anh/chị '+o.name:'anh/chị'},\nHọc viện Siêu Tăng Trưởng xác nhận anh/chị đã đăng ký và thanh toán thành công khóa học AI for CEO. Cảm ơn anh/chị đã tin tưởng đồng hành cùng Học viện.`,
    sections:[{h:'Thông tin đăng ký',rows:[['Khóa học','AI for CEO · Trọn khóa'],['Mã đơn',o.code],['Ngày đăng ký',o.paidAt||''],['Phương thức thanh toán',PAY_METHODS[o.method]||''],['Học phí',money(COURSE.list)],[COURSE.promo,'−'+money(SAVE)],['Số tiền đã thanh toán',money(COURSE.price),1]]},
     ],help,cta:'Xem khóa học của tôi',ctaTo:'mycourses'},
-  {icon:'🔓',title:ACCESS_SUBJECT,intro:`Chào ${o.name||'anh/chị'},\nKhóa học AI for CEO của anh/chị đã sẵn sàng. Dưới đây là thông tin tài khoản và các bước để bắt đầu học.`,
-   sections:[{h:'Tài khoản học',p:`Anh/chị học bằng tài khoản email ${o.email}. Vui lòng đăng nhập đúng email này, vì khóa học được gắn với tài khoản đã đăng ký.`},
-    {h:'Quyền truy cập',p:'Khóa học AI for CEO đã được kích hoạt trên tài khoản của anh/chị. Anh/chị có thể vào học ngay bây giờ.'},
-    {h:'Bước tiếp theo',steps:['Truy cập khóa học bằng nút bên dưới',`Đăng nhập bằng email ${o.email}`,'Vào Khóa học của tôi, chọn AI for CEO','Thực hiện Onboarding cùng Trợ lý lộ trình (khoảng 3 phút)','Cho biết mục tiêu, bối cảnh doanh nghiệp và thời gian muốn hoàn thành khóa','Nhận lộ trình học cá nhân hóa và bắt đầu bài học đầu tiên']}],
+  {icon:'🔓',title:ACCESS_SUBJECT,intro:`Chào ${o.name?'anh/chị '+o.name:'anh/chị'},\nHọc viện Siêu Tăng Trưởng xin thông báo khóa học AI for CEO đã được kích hoạt thành công trên tài khoản của anh/chị.`,
+   sections:[{h:'Thông tin khóa học',rows:[['Khóa học','AI for CEO'],['Tài khoản đăng nhập',o.email],['Trạng thái','Đã kích hoạt']]},
+    {h:'Hướng dẫn bắt đầu học',steps:ACCESS_STEPS.map(([t,d])=>`${t}: ${d.replace(/<br><br>/g,' ').replace(/<[^>]+>/g,'')}`)},
+    {p:ACCESS_CLOSE.join(' ')}],
    help,cta:'Truy cập khóa học',ctaTo:'mycourses'}];
 }
 /* ---------- Hộp thư mô phỏng ---------- */
@@ -202,7 +205,7 @@ function eventEmail(ev,r,opt={}){
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;margin:0 auto;background:#FFFFFF;border:1px solid #E6E8EC;border-radius:12px;border-collapse:separate">
 <tr><td style="padding:24px 32px;border-bottom:1px solid #E6E8EC"><img src="${logo}" alt="${ACADEMY.name}" width="180" style="display:block;height:auto;max-width:180px"></td></tr>
 <tr><td style="padding:32px 32px 8px">
- <h1 style="margin:0 0 18px;font-size:24px;line-height:1.3;color:#141A26">Chào ${esc(name)},</h1>
+ <h1 style="margin:0 0 18px;font-size:24px;line-height:1.3;color:#141A26">Chào ${r.name?'anh/chị ':''}${esc(name)},</h1>
  ${p(`Học viện Siêu Tăng Trưởng xác nhận anh/chị đã <b>đăng ký tham gia</b> sự kiện <b>${esc(ev.title)}</b>. ${x.off?'Học viện đã giữ chỗ cho anh/chị.':'Thông tin vào phòng Zoom ở bên dưới.'}`)}
  ${h('Thông tin sự kiện')}
  <table role="presentation" width="100%" cellpadding="0" cellspacing="0">${row('Sự kiện',esc(ev.title))}${row('Ngày',x.date)}${row('Giờ bắt đầu',x.time)}${row('Thời lượng',x.dur)}${row('Hình thức',x.mode)}</table>
@@ -226,7 +229,7 @@ function eventEmail(ev,r,opt={}){
 </td></tr>
 ${emailFooter({logo,reason:`Anh/chị nhận email này vì đã đăng ký sự kiện trong CEO AI Community (mã đăng ký ${esc(r.code)}).`})}
 </table></div>`;
- const text=[`Chào ${name},`,'',`Học viện Siêu Tăng Trưởng xác nhận anh/chị đã đăng ký tham gia sự kiện ${ev.title}.`,'',
+ const text=[`Chào ${r.name?'anh/chị ':''}${name},`,'',`Học viện Siêu Tăng Trưởng xác nhận anh/chị đã đăng ký tham gia sự kiện ${ev.title}.`,'',
   'THÔNG TIN SỰ KIỆN',`Ngày: ${x.date}`,`Giờ bắt đầu: ${x.time}`,`Thời lượng: ${x.dur}`,`Hình thức: ${x.mode}`,'',
   x.off?'ĐỊA ĐIỂM & CHECK-IN':'THÔNG TIN THAM GIA',...(x.off?[`${j.place}, ${j.addr}`,j.checkin,`Mã đăng ký: ${r.code}`]:[`Link Zoom: ${j.zoom}`,`Meeting ID: ${j.id}`,`Mật khẩu: ${j.pass}`]),'',
   'CHUẨN BỊ TRƯỚC',...ev.prep.map(t=>'- '+t),'','Học viện sẽ nhắc trước 1 ngày và trước 1 giờ.',`Không tham gia được: trả lời ${ACADEMY.support} kèm mã ${r.code}.`,'',`Hỗ trợ: ${ACADEMY.support} · ${ACADEMY.hotline}`,ACADEMY.name].join('\n');
