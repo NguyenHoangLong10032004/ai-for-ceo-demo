@@ -147,7 +147,8 @@ function checkout(){
  const steps=['Xác nhận thông tin','Thanh toán','Hoàn tất'];const at=st==='success'?2:st?1:0; // 3 bước (theo đề xuất user): gộp Xác nhận + Thông tin
  const stepper=`<div class="stepper">${steps.map((s,i)=>`<span class="${i<at?'ok':i===at?'on':''}"><i>${i<at?'✓':i+1}</i>${s}</span>`).join('')}</div>`;
  const summary=`<aside class="card pad sticky"><h3 class="h3" style="margin-bottom:10px">Thông tin đơn hàng</h3>
-  <div class="sum-row"><span class="k">Khóa học</span><span class="v">AI for CEO · Trọn khóa</span></div>
+  <div class="sum-item"><div class="sum-thumb" aria-hidden="true">${COURSE.cover?`<img src="${esc(COURSE.cover)}" alt="">`:`<span>AI for <b>CEO</b></span>`}</div><div class="sum-item-t"><b>AI for CEO</b><span class="q">Số lượng: 1</span></div></div>
+  <div class="sum-row"><span class="k">Khóa học</span><span class="v">AI for CEO</span></div>
   <div class="sum-row"><span class="k">Học phí</span><span class="v tnum">${money(COURSE.list)}</span></div>
   <div class="sum-row disc"><span class="k">Ưu đãi</span><span class="v tnum">−${money(SAVE)}</span></div>
   <div class="sum-row" style="align-items:center"><span class="k">Tổng thanh toán</span><span class="v total tnum">${money(COURSE.price)}</span></div>
@@ -163,7 +164,7 @@ function checkout(){
   <button class="btn btn-primary btn-lg" data-a="go" data-to="mycourses">Vào khóa học ${ic('arrow')}</button>
   ${(cm=>cm?`<p class="hint mail-note">${ic('mail',14)} Vui lòng kiểm tra email <b>${esc(S.order.email)}</b>${S.order.phone?` và Zalo <b>${esc(S.order.phone)}</b>`:''} để xem xác nhận đăng ký và hướng dẫn truy cập khóa học.</p>`:`<p class="hint mail-note">${ic('mail',14)} Đang gửi email xác nhận tới <b>${esc(S.order.email)}</b>…</p>`)(S.mails.find(m=>m.kind==='confirm'&&m.code===S.order.code))}${S.order.invoice?(im=>`<div class="callout info inv-note" role="status"><span class="inv-ico">${ic('file',18)}</span><div><b>${im?'Đã xuất hóa đơn điện tử':'Đang xuất hóa đơn điện tử…'}</b><span>${im?`Hóa đơn số <b>${esc((im.order.inv||{}).no||'')}</b> cho ${esc(S.order.invName||'')} đã được gửi tới <b>${esc(S.order.invEmail)}</b>.`:`Hóa đơn cho ${esc(S.order.invName||'')} sẽ được gửi tới <b>${esc(S.order.invEmail)}</b>.`}</span></div></div>`)(S.mails.find(m=>m.kind==='invoice'&&!m.sample&&m.code===S.order.code)):''}</div>`;
  else main=`<form class="card form" data-f="checkoutSubmit" novalidate>
-  <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><h3 class="h3">Thông tin người học</h3></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><h3 class="h3">Thông tin thanh toán</h3></div>
   <div class="row2"><div class="field"><label for="c-name">Họ và tên <span class="req" aria-hidden="true">*</span></label><input class="inp" id="c-name" name="name" value="${esc(o.name)}" required aria-required="true" autocomplete="name"></div><div class="field"><label for="c-phone">Số điện thoại / Zalo <span class="req" aria-hidden="true">*</span></label><input class="inp" id="c-phone" name="phone" type="tel" value="${esc(o.phone)}" required aria-required="true" autocomplete="tel"></div></div>
   <div class="row2"><div class="field"><label for="c-email">Email nhận tài khoản <span class="req" aria-hidden="true">*</span></label><input class="inp" id="c-email" name="email" type="email" value="${esc(ac.email||o.email)}" readonly aria-readonly="true" aria-describedby="c-email-h"></div><div class="field"><label for="c-company">Công ty</label><input class="inp" id="c-company" name="company" autocomplete="organization" placeholder="Ví dụ: Công ty CP ABC" value="${esc(o.company===SAMPLE_PROFILE.company?'':(o.company||''))}"></div></div>
   <p class="hint ck-acc" id="c-email-h"><button type="button" class="btn-link" data-a="acSwitch">Dùng tài khoản khác</button></p>
@@ -220,10 +221,10 @@ function payView(){
     <p class="pay-warn"><span aria-hidden="true">⚠️</span> <span>Nội dung chuyển khoản PHẢI có mã <b>${esc(note)}</b>. Hệ thống tự xác nhận sau 30 giây - 2 phút.</span></p>
    </div>
   </div>
-  <div class="demo-box"><span class="t">Mô phỏng ngân hàng</span><div class="seg" role="group" aria-label="Kết quả mô phỏng"><button type="button" class="${S.pay.sim==='success'?'on':''}" data-a="paySim" data-v="success">Nhận đủ tiền</button><button type="button" class="${S.pay.sim==='fail'?'on':''}" data-a="paySim" data-v="fail">Chưa nhận được</button></div><button type="button" class="btn btn-primary btn-sm" data-a="payDone">Mô phỏng: ngân hàng báo có tiền</button></div>
-  <div class="pay-foot"><button type="button" class="btn-link" data-a="payChange">← Sửa thông tin đăng ký</button><button type="button" class="btn-link" data-a="paySupport">${ic('headset',15)} Cần hỗ trợ thanh toán</button></div>
+  <div class="pay-foot"><button type="button" class="btn-link" data-a="payChange">← Sửa thông tin thanh toán</button><button type="button" class="btn-link" data-a="paySupport">${ic('headset',15)} Cần hỗ trợ thanh toán</button></div>
   ${S.pay.support?`<div class="callout info"><b>Hỗ trợ thanh toán</b><span>Đội CSKH đã nhận yêu cầu và sẽ gọi lại trong 15 phút (mô phỏng). Hotline: <b class="tnum">${ACADEMY.hotline}</b>. Mã đơn: <b>${esc(o.code)}</b>.</span></div>`:''}
- </div>`;
+ </div>
+  <div class="demo-box pay-sim"><span class="t">Mô phỏng ngân hàng</span><div class="seg" role="group" aria-label="Kết quả mô phỏng"><button type="button" class="${S.pay.sim==='success'?'on':''}" data-a="paySim" data-v="success">Nhận đủ tiền</button><button type="button" class="${S.pay.sim==='fail'?'on':''}" data-a="paySim" data-v="fail">Chưa nhận được</button></div><button type="button" class="btn btn-primary btn-sm" data-a="payDone">Mô phỏng: ngân hàng báo có tiền</button></div>`;
 }
 
 /* ---------- 2a. Tài khoản Học viện (đề xuất mới, US-03.2): bắt buộc có tài khoản trước khi đăng ký mua khóa học ----------
@@ -237,7 +238,7 @@ function account(){
   ${inp('a-phone','phone','Số điện thoại / Zalo','tel',d.phone,true,'autocomplete="tel" inputmode="tel" placeholder="Ví dụ: 0912 345 678"')}
   ${inp('a-email','email','Email','email',d.email,true,'autocomplete="email" placeholder="Ví dụ: ten@congty.vn"')}
   ${inp('a-pass','pass','Mật khẩu','password','',true,'autocomplete="new-password" minlength="6" placeholder="Ít nhất 6 ký tự"')}
-  <p class="hint">Email này dùng để đăng nhập và nhận khóa học. <span class="req">*</span> Thông tin bắt buộc.</p>
+  <p class="hint"><span class="req">*</span> Thông tin bắt buộc.</p>
   ${e?`<p class="err">${e}</p>`:''}
   <button class="btn btn-primary btn-lg btn-block">Đăng ký</button>
   <p class="ac-terms">Khi đăng ký, bạn đồng ý với <button type="button" class="btn-link" data-a="policy">Điều khoản &amp; Chính sách bảo mật</button> của chúng tôi.</p>
@@ -613,7 +614,7 @@ function courses(){
  const mods=LIB.filter(x=>x.type==='module').length,enr=S.enrolled;
  // đã mua khóa: chỉ còn nút "Vào học" ở cuối thẻ (rộng hết thẻ); chưa mua: giá + nút "Đăng ký"
  const cta=enr?`<button class="btn btn-primary btn-lg" data-a="openCourse">Vào học ${ic('arrow')}</button>`
-  :`<button class="btn btn-primary btn-lg" data-a="go" data-to="checkout">Đăng ký ${ic('arrow')}</button>`;
+  :`<button class="btn btn-lg crs-buy" data-a="go" data-to="checkout">${ic('cart',18)} MUA KHÓA</button>`;
  return `<section class="wrap page crs">
  <div class="page-head"><span class="eyebrow">Học viện Siêu Tăng Trưởng</span><h1 class="h2">Khóa học</h1></div>
  <div class="crs-grid"><article class="card crs-feat">
@@ -622,14 +623,22 @@ function courses(){
    
    <h2 class="crs-name">AI for CEO</h2>
    <p class="crs-desc">Khóa cập nhật năng lực AI dành cho CEO qua các ví dụ thực tế. Không học tool, không học prompt: tận mắt thấy AI đã làm được gì.</p>
+   <p class="crs-meta">${ic('bookopen',15)} ${LIB.filter(x=>x.type==='module').reduce((n,x)=>n+(x.parts||[]).length,0)} bài học</p>
    <div class="crs-foot${enr?' enr':''}">
     ${enr?''
      :`<div class="crs-price" title="${esc(COURSE.promo)}"><b class="tnum">${money(COURSE.price)}</b><span class="crs-old"><span class="strike tnum">${money(COURSE.list)}</span><span class="crs-off">−${OFF}%</span></span></div>`}
     <div class="crs-cta">${cta}</div>
    </div>
   </div>
- </article></div>
- <p class="crs-more">${ic('spark',15)} Các khóa học khác của Học viện sẽ sớm được cập nhật tại đây.</p>
+ </article>${OTHER_COURSES.map(c=>`<article class="card crs-feat crs-oth">
+  <button class="crs-thumb" data-a="crsDemo" style="background:${c.bg}" aria-label="${esc(c.title)}">${c.cover?`<img class="crs-cover" src="${esc(c.cover)}" alt="">`:''}<span class="k">${c.k}</span><span class="n">${c.n}</span></button>
+  <div class="crs-body">
+   <div class="crs-oh"><h2 class="crs-name" title="${esc(c.title)}">${esc(c.title)}</h2><span class="crs-medal" title="Có chứng nhận hoàn thành">${ic('medal',16)}</span></div>
+   ${c.desc?`<p class="crs-desc">${esc(c.desc)}</p>`:''}
+   <p class="crs-meta">${ic('bookopen',15)} ${c.lessons} bài học</p>
+   <div class="crs-foot"><div class="crs-price"><b class="tnum">${money(c.price)}</b></div><div class="crs-cta"><button class="btn btn-lg crs-buy" data-a="crsDemo">${ic('cart',18)} MUA KHÓA</button></div></div>
+  </div>
+ </article>`).join('')}</div>
  </section>`;
 }
 

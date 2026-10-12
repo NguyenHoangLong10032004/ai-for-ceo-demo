@@ -254,7 +254,8 @@ const ACT={
  acSwitch:()=>{S.loggedIn=false;T.acDraft=null;toast('Đã đăng xuất. Đăng nhập hoặc tạo tài khoản khác');go('checkout');},
  // trang bài học → quay lại danh sách bài học, cuộn tới đúng bài đang xem
  // hộp thư mô phỏng: xem email tự động đã gửi cho học viên
- mailOpen:d=>{if(!d.v||d.v==='list'){if(!d.v){ensureSampleInvoice();ensureSampleReminders();}if(!S.mails.length){toast('Hộp thư chưa có email nào. Email xác nhận được gửi khi thanh toán thành công','bad');return;}T.mailOpen='list';T.asstOpen=false;render();return;}const m=S.mails.find(x=>x.id===d.v)||S.mails[0];if(!m)return;m.read=true;T.mailOpen=m.id;T.asstOpen=false;render();const b=document.querySelector('.gm-main');if(b)b.scrollTop=0;},
+ crsDemo:()=>toast('Khóa học minh họa trong bản demo. Hiện chỉ khóa AI for CEO mở được.'),
+ mailOpen:d=>{if(!d.v||d.v==='list'){if(!d.v){ensureSampleInvoice();ensureSamplePrelaunch();ensureSampleReminders();}if(!S.mails.length){toast('Hộp thư chưa có email nào. Email xác nhận được gửi khi thanh toán thành công','bad');return;}T.mailOpen='list';T.asstOpen=false;render();return;}const m=S.mails.find(x=>x.id===d.v)||S.mails[0];if(!m)return;m.read=true;T.mailOpen=m.id;T.asstOpen=false;render();const b=document.querySelector('.gm-main');if(b)b.scrollTop=0;},
  mailResend:d=>{resendRealEmail(d.v);},
  invLookup:()=>{toast('Trang tra cứu hóa đơn điện tử thuộc nhà cung cấp hóa đơn, chưa có trong bản demo');},
  mailClose:()=>{T.mailOpen=null;render();},

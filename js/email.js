@@ -25,10 +25,17 @@ function emailFooter(opt={}){
 // o: đơn đăng ký (S.order). opt.logo: đường dẫn logo (email thật cần URL đầy đủ https://…)
 const CONFIRM_SUBJECT='Đăng ký khóa học AI for CEO thành công';
 const ACCESS_SUBJECT='Khóa học AI for CEO đã được kích hoạt · Hướng dẫn bắt đầu học';
+/* 3. part='prelaunch' — email mẫu (đề xuất mới theo yêu cầu user 10/2026): đăng ký thành công TRƯỚC ngày khai giảng.
+   Xác nhận đăng ký + thanh toán, thông tin đăng ký, 3 bước tiếp theo (chưa cần học, chờ email hướng dẫn trước khai giảng). */
+const OPEN_DATE='02/11/2026';
+const PRELAUNCH_SUBJECT=`Đăng ký khóa học AI for CEO thành công · Khai giảng ${OPEN_DATE}`;
+const PRELAUNCH_STEPS=[['Truy cập tài khoản Học viện','Anh/chị có thể đăng nhập vào hệ thống Học viện Siêu Tăng Trưởng để kiểm tra thông tin đăng ký và khóa học trong mục <b>Khóa học của tôi</b>.'],
+ ['Chuẩn bị cho hành trình học tập',`Khóa học sẽ chính thức mở nội dung từ ngày <b>${OPEN_DATE}</b>. Anh/chị chưa cần thực hiện bài học ở thời điểm hiện tại.`],
+ ['Nhận thông báo khai giảng','Vào ngày khai giảng, Học viện sẽ gửi email hướng dẫn bắt đầu học và truy cập chương trình để anh/chị chủ động sắp xếp thời gian.']];
 function confirmEmail(o,opt={}){
  const logo=opt.logo||'img/logo.png',url=opt.url||'#',part=opt.part||'confirm';
  const name=o.name||'anh/chị';
- const subject=part==='access'?ACCESS_SUBJECT:CONFIRM_SUBJECT;
+ const subject=part==='access'?ACCESS_SUBJECT:part==='prelaunch'?PRELAUNCH_SUBJECT:CONFIRM_SUBJECT;
  const row=(k,v,strong)=>`<tr><td style="padding:9px 0;color:#5B6472;font-size:14px;border-top:1px solid #E6E8EC;width:44%">${k}</td><td style="padding:9px 0;font-size:14px;border-top:1px solid #E6E8EC;text-align:right;color:#141A26;${strong?'font-weight:800;font-size:16px;':'font-weight:600;'}">${v}</td></tr>`;
  const h=t=>`<h2 style="margin:28px 0 10px;font-size:16px;line-height:1.4;color:#141A26">${t}</h2>`;
  const p=t=>`<p style="margin:0 0 12px;font-size:15px;line-height:1.65;color:#2B3240">${t}</p>`;
@@ -52,7 +59,9 @@ function confirmEmail(o,opt={}){
  ${h('Thông tin đăng ký')}
  <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
   ${row('Khóa học','AI for CEO · Trọn khóa')}${row('Mã đơn',esc(o.code))}${row('Ngày đăng ký',esc(o.paidAt||''))}${row('Phương thức thanh toán',esc(PAY_METHODS[o.method]||''))}${row('Học phí',money(COURSE.list))}${row(esc(COURSE.promo),'−'+money(SAVE))}${row('Số tiền đã thanh toán',money(COURSE.price),true)}
- </table>`;
+ </table>${part==='prelaunch'?`
+ ${h('Bước tiếp theo')}
+ <table role="presentation" width="100%" cellpadding="0" cellspacing="0">${PRELAUNCH_STEPS.map(([t,d],i)=>`<tr><td style="vertical-align:top;padding:10px 12px 6px 0;width:28px"><span style="display:inline-block;width:26px;height:26px;line-height:26px;text-align:center;border-radius:50%;background:#EEF2FC;color:#1747C9;font-weight:700;font-size:13px">${i+1}</span></td><td style="padding:12px 0 6px;font-size:15px;line-height:1.6;color:#2B3240"><b style="color:#141A26">${t}</b><br>${d}</td></tr>`).join('')}</table>`:''}`;
  const html=`<div style="background:#F3F4F6;padding:24px 12px;font-family:Roboto,Arial,Helvetica,sans-serif;color:#141A26">
 <span style="display:none;max-height:0;overflow:hidden;opacity:0">${pre}</span>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;margin:0 auto;background:#FFFFFF;border:1px solid #E6E8EC;border-radius:12px;border-collapse:separate">
@@ -77,6 +86,7 @@ ${emailFooter({logo,url:opt.url,reason:`Anh/chị nhận email này vì đã đ�
     'BƯỚC TIẾP THEO',...steps.map((s,i)=>`${i+1}. ${s.replace(/<[^>]+>/g,'')}`),'',`TRUY CẬP KHÓA HỌC: ${url}`,'']
   :[`Chào ${name},`,'',`Học viện Siêu Tăng Trưởng xác nhận anh/chị đã đăng ký và thanh toán thành công khóa học AI for CEO. Cảm ơn anh/chị đã tin tưởng đồng hành cùng Học viện.`,'',
     'THÔNG TIN ĐĂNG KÝ',`Khóa học: AI for CEO · Trọn khóa`,`Mã đơn: ${o.code}`,`Ngày đăng ký: ${o.paidAt||''}`,`Phương thức thanh toán: ${PAY_METHODS[o.method]||''}`,`Học phí: ${money(COURSE.list)}`,`${COURSE.promo}: −${money(SAVE)}`,`Số tiền đã thanh toán: ${money(COURSE.price)}`,'',
+    ...(part==='prelaunch'?['BƯỚC TIẾP THEO',...PRELAUNCH_STEPS.flatMap(([t,d],i)=>[`${i+1}. ${t}`,d.replace(/<br><br>/g,' ').replace(/<[^>]+>/g,''),''])]:[]),
     '']).concat(support).join('\n');
  return {from:`${ACADEMY.name} <${ACADEMY.sender}>`,to:o.email,subject,html,text};
 }
@@ -162,6 +172,13 @@ function ensureSampleInvoice(){
  o.inv={series:'1C26TST',no:'00000001',date:b.paidAt||today(),lookup:'STT'+o.code.replace(/\D/g,'')};
  S.mails.push({id:'m'+Date.now()+'s',kind:'invoice',sample:true,code:o.code,to:o.invEmail,at:nowStr(),read:false,order:o});
 }
+// Email mẫu "Đăng ký thành công trước ngày khai giảng" trong Hộp thư (theo yêu cầu user): lấy đơn/tài khoản nếu có, thiếu thì dữ liệu mẫu
+function ensureSamplePrelaunch(){
+ if(S.mails.some(m=>m.kind==='prelaunch'))return;
+ const b=S.order||{},ac=S.account||{};
+ const o={code:b.code||'AICEO-106707',name:b.name||ac.name||SAMPLE_PROFILE.name,email:b.email||ac.email||'long.nguyen@minhan.vn',paidAt:b.paidAt||today(),method:b.method||'bank'};
+ S.mails.push({id:mailId('p'),kind:'prelaunch',sample:true,code:o.code,to:o.email,at:nowStr(),read:false,order:o});
+}
 /* ---------- Email xác nhận đăng ký sự kiện (đề xuất mới, CEO AI Community · FR-46) ----------
    Gửi ngay khi học viên bấm "Tham gia" ở tab Sự kiện: thông tin sự kiện, thông tin tham gia (link Zoom hoặc địa điểm),
    chuẩn bị trước, lời nhắc trước 1 ngày / 1 giờ, cách hủy, hỗ trợ. ev = phần tử COMM_EVENTS, r = {code, name, email} */
@@ -225,9 +242,9 @@ function sendEventEmail(i){
 }
 // mã thư không trùng (nhiều thư tạo trong cùng 1 mili giây, vd. lúc khởi động)
 let mailSeq=0;const mailId=s=>'m'+Date.now()+'-'+(++mailSeq)+(s||'');
-const mailSubject=x=>x.kind==='event'?eventSubject(COMM_EVENTS[x.ev]):x.kind==='remind'?x.msg.title:x.kind==='invoice'?`Hóa đơn điện tử số ${(x.order.inv||{}).no||''}`:x.kind==='access'?ACCESS_SUBJECT:CONFIRM_SUBJECT;
+const mailSubject=x=>x.kind==='event'?eventSubject(COMM_EVENTS[x.ev]):x.kind==='remind'?x.msg.title:x.kind==='invoice'?`Hóa đơn điện tử số ${(x.order.inv||{}).no||''}`:x.kind==='access'?ACCESS_SUBJECT:x.kind==='prelaunch'?PRELAUNCH_SUBJECT:CONFIRM_SUBJECT;
 // nội dung 1 email trong hộp thư: xác nhận đăng ký, hóa đơn hoặc nhắc lịch học
-function mailContent(m,opt){return m.kind==='event'?eventEmail(COMM_EVENTS[m.ev],m.reg,opt):m.kind==='remind'?{...remindEmail(m.msg,opt),to:m.to}:m.kind==='invoice'?invoiceEmail(m.order,opt):confirmEmail(m.order,{...opt,part:m.kind==='access'?'access':'confirm'});}
+function mailContent(m,opt){return m.kind==='event'?eventEmail(COMM_EVENTS[m.ev],m.reg,opt):m.kind==='remind'?{...remindEmail(m.msg,opt),to:m.to}:m.kind==='invoice'?invoiceEmail(m.order,opt):confirmEmail(m.order,{...opt,part:['access','prelaunch'].includes(m.kind)?m.kind:'confirm'});}
 /* ---------- Gửi email thật qua EmailJS ---------- */
 const realMailOn=()=>!!(EMAILJS.serviceId&&EMAILJS.templateId&&EMAILJS.publicKey);
 // Nạp thư viện EmailJS khi cần (chỉ khi đã cấu hình), không làm chậm lúc mở trang
