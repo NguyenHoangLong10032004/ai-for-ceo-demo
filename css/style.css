@@ -2981,3 +2981,29 @@ main.scr-courses{background:linear-gradient(180deg,#F4F8FF 0,#F7F9FC 460px) #F7F
 .sum-item-t b{font-size:16px;color:#1C274C}
 .sum-item-t span{font-size:13.5px;color:#5B6B88}
 .sum-item-t .q{font-size:13px;color:#8A94A6}
+
+/* =========================================================
+   CẤU TRÚC KHÓA MỚI (outline 10/2026): 8 chương · 37 bài, MỖI BÀI = 1 VIDEO HOẶC 1 BÀI TẬP
+   Danh sách chương → bài (loại bài, số phút, ngày học), chi tiết bài (mục tiêu · năng lực AI · đầu ra), trang bài học 1 nội dung
+   ========================================================= */
+.cl-ty{display:inline-flex;align-items:center;gap:4px;font-weight:600;color:#004AAD}
+.cl-ty .ic{flex:none}
+.cl-ty.isx{color:#B45F00}
+.cl-l.is-ex .cl-dot{border-color:#FBD38D}
+.cl-chwhy{margin:0 18px 6px;padding:10px 12px;border-radius:10px;background:#F4F8FF;font-size:14px;color:#3A4A6B;display:flex;gap:8px;align-items:flex-start}
+.cl-chwhy .ic{color:#7C5CFC;flex:none;margin-top:3px}
+.cl-kv{display:grid;gap:8px;margin:0}
+.cl-kv>div{display:grid;grid-template-columns:110px minmax(0,1fr);gap:12px}
+.cl-kv dt{font-size:13px;font-weight:600;color:#5B6B88}
+.cl-kv dd{margin:0;font-size:14.5px;line-height:1.55;color:#1C274C}
+@media (max-width:560px){.cl-kv>div{grid-template-columns:1fr;gap:2px}}
+.cl-next-day{display:inline-flex;align-items:center;gap:6px;font-size:13.5px;color:#5B6B88;margin-top:2px}
+/* trang bài học */
+.ls-type{display:inline-flex;align-items:center;gap:5px;font-weight:600;color:#004AAD}
+.ls-type.isx{color:#B45F00}
+.ls-info{display:grid;gap:16px}
+.ls-goal{font-size:17.5px;line-height:1.7;color:#1C274C}
+.ls-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+@media (max-width:640px){.ls-2{grid-template-columns:1fr}}
+.ls-cap{display:inline-flex;align-items:center;padding:5px 12px;border-radius:999px;font-weight:600;font-size:14.5px;color:var(--c);background:color-mix(in srgb,var(--c) 10%,#fff);border:1px solid color-mix(in srgb,var(--c) 30%,#fff)}
+.ulist button.locked{opacity:.6;cursor:not-allowed}

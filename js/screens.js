@@ -75,7 +75,7 @@ function landing(){
   <p class="hero-lead">Không học tool. Không học prompt. Tận mắt thấy AI hiện tại đã làm được gì, và từ đó nhìn ra doanh nghiệp mình có thể làm gì.</p>
   <div class="hero-price">${priceTag()}</div>
   <div class="hero-cta"><button class="btn btn-primary btn-lg" data-a="go" data-to="checkout">Đăng ký với ưu đãi ${ic('arrow')}</button><button class="btn btn-line btn-lg" data-a="scrollTo" data-v="modules">Xem 12 module</button></div>
-  <ul class="hero-facts"><li>${ic('video',16)} 12 module video demo</li><li>${ic('cal',16)} Tự chọn hoàn thành trong 7–30 ngày</li><li>${ic('user',16)} Dành cho CEO, Founder, quản lý cấp cao</li></ul>
+  <ul class="hero-facts"><li>${ic('video',16)} ${ALL_BAI.length} bài học · ${LIB.length} chương</li><li>${ic('cal',16)} Tự chọn hoàn thành trong 7–30 ngày</li><li>${ic('user',16)} Dành cho CEO, Founder, quản lý cấp cao</li></ul>
  </div>
  <div class="card hero-card" aria-label="Ví dụ lộ trình cá nhân hóa">
   <div class="hc-top"><span>Trợ lý lộ trình</span><span class="src">${ic('spark',13)} Cá nhân hóa</span></div>
@@ -97,8 +97,8 @@ function landing(){
  <ul class="aha">${['"AI không còn chỉ là chatbot."','"AI có thể hiểu dữ liệu của tôi, tạo sản phẩm số, dùng công cụ và tham gia quy trình."','"AI đang trở thành một lớp trí tuệ nằm trên các hệ thống doanh nghiệp."','"Vấn đề không còn là có nên dùng AI hay không, mà là nên đưa AI vào đâu trước."'].map(x=>`<li>${x}</li>`).join('')}</ul>
 </section>
 
-<section class="band" id="modules"><div class="wrap sec">${secHead('12 module · 10 năng lực','10 năng lực AI, mỗi năng lực có demo thật','Mỗi module gồm 4 video ngắn (mở vấn đề, demo năng lực, giải thích cho CEO, CEO takeaway) và 1 bài tập áp dụng cho công ty. Các module được chia thành bài học theo lịch anh/chị chọn.')}
- <div class="grid g4">${mods.map(x=>`<article class="card mod"><span class="no">MODULE ${modNo(x)}</span><h3>${esc(x.title)}</h3><p>${esc(clip(x.demo,120))}</p></article>`).join('')}</div>
+<section class="band" id="modules"><div class="wrap sec">${secHead(`${LIB.length} chương · ${ALL_BAI.length} bài`,'10 năng lực AI, mỗi năng lực có demo thật','Mỗi bài là 1 video ngắn hoặc 1 bài tập áp dụng cho công ty. Trợ lý lộ trình chia các bài theo lịch anh/chị chọn.')}
+ <div class="grid g4">${mods.map(x=>`<article class="card mod"><span class="no">${chLabel(x).toUpperCase()}</span><h3>${esc(x.title)}</h3><p>${esc(clip(x.demo,120))}</p></article>`).join('')}</div>
 </div></section>
 
 <section class="wrap sec">${secHead('Case xuyên suốt','Một bài toán quảng cáo đi qua 6 năng lực AI','CEO hỏi: "Tại sao tuần này chi phí mỗi khách hàng (CPA) tăng 28%?"')}
@@ -112,7 +112,7 @@ function landing(){
 
 <section class="wrap sec">${secHead('Hình thức học','Video online là lõi, live giữ khóa luôn mới','CEO khó theo một lịch cố định, và demo AI live dễ gặp lỗi. Video quay sẵn giữ trải nghiệm ổn định; lớp live cập nhật khi AI thay đổi.')}
  <div class="grid g3">
-  <article class="card layer core"><span class="tag">Lớp 1 · Sản phẩm lõi</span><h3>Video online</h3><p>12 module, video ngắn 6–15 phút. Trợ lý lộ trình chia thành bài học theo số ngày anh/chị muốn hoàn thành.</p></article>
+  <article class="card layer core"><span class="tag">Lớp 1 · Sản phẩm lõi</span><h3>Video online</h3><p>${ALL_BAI.length} bài trong ${LIB.length} chương, mỗi bài 5–10 phút. Trợ lý lộ trình chia bài theo số ngày anh/chị muốn hoàn thành.</p></article>
   <article class="card layer"><span class="tag">Lớp 2 · Giữ khóa luôn mới</span><h3>Live Zoom "AI đến đâu rồi?"</h3><p>Hằng tháng, 60–90 phút: năng lực mới, demo mới, hỏi đáp CEO. Nội dung hay được cắt bổ sung vào khóa.</p></article>
   <article class="card layer"><span class="tag">Lớp 3 · Tùy chọn</span><h3>Offline Executive Briefing</h3><p>Nửa ngày hoặc một ngày, số lượng giới hạn: demo live, thảo luận use case theo doanh nghiệp, kết nối.</p></article>
  </div>
@@ -131,7 +131,7 @@ function landing(){
   <span class="promo" style="justify-self:start">${ic('tag',13)} ${COURSE.promo}</span>
   <div class="price-row"><span class="price-now tnum">${money(COURSE.price)}</span><span class="strike tnum">${money(COURSE.list)}</span></div>
   <p class="hint">Tiết kiệm ${money(SAVE)} (−${OFF}%). Hỗ trợ xuất hóa đơn công ty.</p>
-  <div class="kv" style="padding-block:10px;border-block:1px solid var(--line)"><div><span>Hình thức</span><b>Video online + Live Zoom</b></div><div><span>Nội dung</span><b>12 module, 48 video, 12 bài tập</b></div><div><span>Lịch học</span><b>Tự chọn 7–30 ngày</b></div></div>
+  <div class="kv" style="padding-block:10px;border-block:1px solid var(--line)"><div><span>Hình thức</span><b>Video online + Live Zoom</b></div><div><span>Nội dung</span><b>${LIB.length} chương, ${ALL_BAI.length} bài, ${Object.keys(TASKS).length} bài tập</b></div><div><span>Lịch học</span><b>Tự chọn 7–30 ngày</b></div></div>
   <button class="btn btn-primary btn-lg btn-block" data-a="go" data-to="checkout">Đăng ký ngay ${ic('arrow')}</button>
   <button class="btn btn-ghost btn-block" data-a="asstToggle">${ic('chat',16)} Hỏi thêm về khóa học</button>
  </div>
@@ -274,16 +274,16 @@ function eventsCard(){
 function mycourses(){
  const started=S.ob.done&&S.plan&&(S.plan.accepted||S.plan.wasActive);const st=started?planStats():null;
  const fresh=!S.ob.flow.length&&!S.ob.done;
- const status=fresh?['Chưa bắt đầu','wait']:!S.ob.done?['Đang onboarding','blue']:!started?['Chờ xác nhận lộ trình','blue']:st.lessonsDone===st.n&&subsCount()===Object.keys(TASKS).length?['Đã hoàn thành','ok']:['Đang học','blue'];
- const cta=fresh?'Bắt đầu khóa học':!S.ob.done?'Tiếp tục onboarding':!started?'Xem & xác nhận lộ trình':st.lessonsDone===0&&subsCount()===0?'Bắt đầu học':'Học tiếp'; // 0 bài học + 0 bài tập = Bắt đầu học, từ 1 bài trở đi = Học tiếp (theo yêu cầu user)
- const ni=started?nextLesson():-1;
+ const status=fresh?['Chưa bắt đầu','wait']:!S.ob.done?['Đang onboarding','blue']:!started?['Chờ xác nhận lộ trình','blue']:st.unitsDone===st.units&&subsCount()===Object.keys(TASKS).length?['Đã hoàn thành','ok']:['Đang học','blue'];
+ const cta=fresh?'Bắt đầu khóa học':!S.ob.done?'Tiếp tục onboarding':!started?'Xem & xác nhận lộ trình':st.unitsDone===0&&subsCount()===0?'Bắt đầu học':'Học tiếp'; // 0 bài học + 0 bài tập = Bắt đầu học, từ 1 bài trở đi = Học tiếp (theo yêu cầu user)
+ const cu=started?curUnit():null;
  return `<section class="wrap page">
  <div class="page-head"><span class="eyebrow">Tài khoản học viên</span><h2 class="h2">Khóa học của tôi</h2><p class="sub">Khóa học đã đăng ký.</p></div>
  <div class="grid g2" style="align-items:start">
-  <article class="card course"><button class="course-thumb" data-a="openCourse" aria-label="Mở khóa AI for CEO">${COURSE.cover?`<img class="crs-cover" src="${esc(COURSE.cover)}" alt="">`:''}<span class="k">Khóa học trọng tâm</span><span class="n">AI for <b>CEO</b></span><span class="s">12 module · 12 bài tập</span></button>
+  <article class="card course"><button class="course-thumb" data-a="openCourse" aria-label="Mở khóa AI for CEO">${COURSE.cover?`<img class="crs-cover" src="${esc(COURSE.cover)}" alt="">`:''}<span class="k">Khóa học trọng tâm</span><span class="n">AI for <b>CEO</b></span><span class="s">${LIB.length} chương · ${ALL_BAI.length} bài</span></button>
    <div class="pad" style="display:grid;gap:14px">
     <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap"><h3 class="h3">AI for CEO</h3><span class="pill ${status[1]}">${status[0]}</span></div>
-    ${started?`<div style="display:grid;gap:6px"><div class="bar"><i style="width:${st.pct}%"></i></div><span class="hint tnum">${st.lessonsDone}/${st.n} bài học · ${subsCount()}/${Object.keys(TASKS).length} bài tập${ni>=0?` · Tiếp theo: Bài ${ni+1}`:''}</span></div>`
+    ${started?`<div style="display:grid;gap:6px"><div class="bar"><i style="width:${st.upct}%"></i></div><span class="hint tnum">${st.unitsDone}/${st.units} bài học · ${subsCount()}/${Object.keys(TASKS).length} bài tập${cu?` · Tiếp theo: ${esc(unitLabel(U(cu)))}`:''}</span></div>`
      :''}
     <div class="kv"><div><span>Ngày kích hoạt</span><b>${esc((S.order&&S.order.paidAt)||today())}</b></div><div><span>Mã đơn</span><b class="tnum">${esc((S.order&&S.order.code)||'')}</b></div><div><span>Thời hạn truy cập</span><b>1 năm</b></div></div>
     <button class="btn btn-primary btn-lg btn-block" data-a="openCourse">${cta} ${ic('arrow')}</button>
@@ -320,39 +320,42 @@ function onboarding(){
 // Theo ai_for_ceo_lo_trinh_khoa_hoc_ui_redesign.md: chương thu gọn mặc định; mỗi bài chỉ hiện tên, thời lượng, năng lực, trạng thái, CTA.
 // Bấm vào bài mới mở chi tiết (nội dung video/bài tập, ngày học, vì sao phù hợp). Logic mở khóa bài giữ nguyên (lessonOpen).
 function lessonState(i){const ni=nextLesson();if(lessonDone(i))return 'done';if(i===ni)return 'doing';/* bài hiện tại luôn là "Đang học", kể cả chưa bắt đầu */return lessonOpen(i)?'next':'locked';}
-const STATE_LABEL={done:'Hoàn thành',doing:'Đang học',next:'Tiếp theo',locked:'Chưa mở'};
+const STATE_LABEL={done:'Hoàn thành',doing:'Đang học',next:'Chưa học',locked:'Chưa mở'};
 // năng lực chính của 1 bài (module đầu tiên trong bài) → tên + màu
 function lessonCap(ks){const m=ks.map(k=>L[U(k).id]).find(x=>x.type==='module')||L[U(ks[0]).id];const ci=CAP_MAP.findIndex(c=>c.id===m.id);return {name:m.cap||m.title,color:ci>=0?CAP_MAP[ci].color:PHASE_COLOR[m.phase],label:ci>=0?`Năng lực ${capNo(ci)}`:m.cap};}
+// năng lực AI của 1 bài: bỏ mã số đầu ("01 + 02 — Hiểu…" → "Hiểu…")
+const capName=c=>String(c||'').replace(/^[\d\s+–-]+—\s*/,'');
 function courseList(key,{cta=true,why=false}={}){ // cta: cho phép mở bài (lộ trình đã xác nhận)
- const ch=chapters(),ni=nextLesson(),cur=ch.find(c=>c.idx.includes(ni));
- if(!T.cx[key])T.cx[key]=key==='learn'&&cur?[cur.pi]:[];
+ const cu=curUnit(),all=planUnits();
+ const ch=LIB.map((x,pi)=>{const ks=all.filter(k=>chOf(k)===x.id),dn=ks.filter(k=>S.done[k]).length;
+  return {x,pi,ks,dn,state:ks.length&&dn===ks.length?'done':ks.includes(cu)||ks.some(k=>!S.done[k]&&unitOpen(k))?'cur':'locked'};}).filter(c=>c.ks.length);
+ if(!T.cx[key]){const c=ch.find(c=>c.ks.includes(cu));T.cx[key]=key==='learn'&&c?[c.pi]:[];}
  // vừa quay lại từ 1 bài: mở sẵn chương chứa bài đó để cuộn tới
- if(T.focusLesson!=null){const fc=ch.find(c=>c.idx.includes(T.focusLesson));if(fc&&!T.cx[key].includes(fc.pi))T.cx[key]=[...T.cx[key],fc.pi];}
+ if(T.focusLesson!=null){const fc=ch.find(c=>c.ks.includes(T.focusLesson));if(fc&&!T.cx[key].includes(fc.pi))T.cx[key]=[...T.cx[key],fc.pi];}
  const open=T.cx[key],lx=T.lx[key];
- return `<div class="cl">${ch.map(c=>{const isOpen=open.includes(c.pi),min=c.idx.reduce((s,i)=>s+lessonMin(lessons()[i]),0);
-  const st=c.state==='done'?'done':c.state==='cur'?'cur':'locked';
-  return `<section class="cl-ch ${st} ${isOpen?'open':''}" style="--c:${PHASE_COLOR[c.ph.id]}">
+ return `<div class="cl">${ch.map(c=>{const isOpen=open.includes(c.pi),min=c.ks.reduce((s,k)=>s+U(k).m,0),nEx=c.ks.filter(k=>U(k).kind==='exercise').length;
+  const st=c.state,rs=why&&S.plan?(S.plan.items.find(i=>i.id===c.x.id)||{}).reason:'';
+  return `<section class="cl-ch ${st} ${isOpen?'open':''}" style="--c:${PHASE_COLOR[c.x.id]}">
    <button class="cl-head" data-a="cxToggle" data-k="${key}" data-v="${c.pi}" aria-expanded="${isOpen}">
     <span class="cl-ico">${ic(st==='done'?'check':st==='cur'?'arrow':'lock',16)}</span>
-    <span class="cl-t"><small>Chương ${c.pi+1}</small><b>${esc(c.ph.name)}</b></span>
-    <span class="cl-meta">${c.idx.length} bài · ${min} phút</span>
-    <span class="cl-prog"><i style="width:${Math.round(c.dn/c.idx.length*100)}%"></i></span><span class="cl-n">${c.dn}/${c.idx.length}</span>
+    <span class="cl-t"><small>${chLabel(c.x)}</small><b>${esc(c.x.title)}</b></span>
+    <span class="cl-meta">${c.ks.length} bài${nEx?` · ${nEx} bài tập`:''} · ${min} phút</span>
+    <span class="cl-prog"><i style="width:${Math.round(c.dn/c.ks.length*100)}%"></i></span><span class="cl-n">${c.dn}/${c.ks.length}</span>
     <span class="chev">${ic('chev',16)}</span></button>
-   ${isOpen?`<ol class="cl-ls">${c.idx.map(i=>lessonRow(i,key,{cta,why,openDetail:T.clAll[key]||lx===i})).join('')}</ol>`:''}</section>`;}).join('')}</div>`;
+   ${isOpen?`${rs?`<p class="cl-why cl-chwhy">${ic('spark',13)}<span>${esc(rs)}</span></p>`:''}<ol class="cl-ls">${c.ks.map(k=>unitRow(k,key,{cta,openDetail:T.clAll[key]||lx===k})).join('')}</ol>`:''}</section>`;}).join('')}</div>`;
 }
 // nút "Xem chi tiết tất cả / Thu gọn tất cả" cho danh sách chương
 const clToggleBtn=key=>`<button class="btn btn-ghost btn-sm cl-all" data-a="clAll" data-k="${key}" aria-pressed="${!!T.clAll[key]}">${ic(T.clAll[key]?'x':'chev',14)} ${T.clAll[key]?'Thu gọn tất cả':'Xem chi tiết tất cả'}</button>`;
-function lessonRow(i,key,{cta,why,openDetail}){
- const ks=lessons()[i],s=lessonState(i),title=lessonTitle(ks,i,lessons());
- const right=s==='done'?`<span class="cl-st done">${ic('check',12)} Hoàn thành</span>`:false?'':`<span class="cl-st ${s}" ${s==='locked'?`title="${esc(lockMsg(i))}"`:''}>${s==='locked'?ic('lock',12)+' ':''}${STATE_LABEL[s]}</span>`;
- const firsts=ks.filter(k=>{const u=U(k);return (u.kind==='video'&&u.part===0)||u.kind==='extra';}),rs=why?reasonsFor(firsts):[];
+// 1 dòng bài: số bài · loại (Video / Bài tập) · số phút · ngày học, tên bài, trạng thái; bấm vào mở chi tiết (mục tiêu, năng lực, đầu ra, nút học)
+function unitRow(k,key,{cta,openDetail}){
+ const u=U(k),s=unitState(k),b=u.b,isEx=u.kind==='exercise',d=lessonOfUnit(k);
+ const right=`<span class="cl-st ${s}" ${s==='locked'?`title="${esc(unitLockMsg(k))}"`:''}>${s==='done'?ic('check',12)+' ':s==='locked'?ic('lock',12)+' ':''}${STATE_LABEL[s]}</span>`;
  const detail=openDetail?`<div class="cl-detail">
-   <ul>${ks.map(k=>{const u=U(k),l=unitLine(u);return `<li class="${S.done[k]?'done':''}">${ic(S.done[k]?'check':l.icon,14)}<span>${esc(l.t)}</span><span class="m">${u.m} phút</span></li>`;}).join('')}</ul>
-   ${rs.length?`<p class="cl-why">${ic('spark',13)}<span>${esc(rs.join(' · '))}</span></p>`:''}
-   ${s!=='locked'&&cta?`<div><button class="btn btn-line btn-sm" data-a="openLesson" data-v="${i}">${s==='done'?'Xem lại':ks.some(k=>S.done[k])?'Học tiếp':'Bắt đầu học'} ${ic('arrow',14)}</button></div>`:''}</div>`:'';
- return `<li class="cl-l ${s} ${openDetail?'open':''}" id="lr-${key}-${i}"><div class="cl-row">
-  <span class="cl-dot">${s==='done'?ic('check',12):s==='locked'?ic('lock',12):i+1}</span>
-  <button class="cl-name" data-a="lxToggle" data-k="${key}" data-v="${i}" aria-expanded="${!!openDetail}"><small>Bài ${i+1} · ${esc(dayLabel(i))}</small><b>${esc(title)}</b></button>
+   <dl class="cl-kv">${b?`<div><dt>Mục tiêu</dt><dd>${esc(b.goal)}</dd></div><div><dt>Năng lực AI</dt><dd>${esc(capName(b.cap))}</dd></div><div><dt>${isEx?'Bài tập':'Đầu ra'}</dt><dd>${esc(b.out)}</dd></div>`:`<div><dt>Nội dung</dt><dd>Nhìn lại các đầu ra của ${esc(chLabel(L[u.id]))} và liên hệ với công ty.</dd></div>`}</dl>
+   ${s!=='locked'&&cta?`<div><button class="btn btn-line btn-sm" data-a="openUnit" data-v="${k}">${s==='done'?'Xem lại':isEx?(S.subs[u.id]?'Xem bài tập':'Làm bài tập'):'Xem video'} ${ic('arrow',14)}</button></div>`:''}</div>`:'';
+ return `<li class="cl-l ${s} ${openDetail?'open':''} ${isEx?'is-ex':''}" id="lr-${key}-${k}"><div class="cl-row">
+  <span class="cl-dot">${s==='done'?ic('check',12):s==='locked'?ic('lock',12):b?b.i+1:'·'}</span>
+  <button class="cl-name" data-a="lxToggle" data-k="${key}" data-v="${k}" aria-expanded="${!!openDetail}"><small><span class="cl-ty ${isEx?'isx':''}">${ic(isEx?'file':u.kind==='review'?'book':'play',12)} ${unitType(u)}</span> · ${b?'Bài '+(b.i+1)+' · ':''}${u.m} phút · ${esc(dayLabel(d))}</small><b>${esc(unitTitle(u))}</b></button>
   ${right}</div>${detail}</li>`;
 }
 
@@ -363,10 +366,10 @@ function drawerView(){
  if(T.drawer==='why'){
   title='Vì sao tôi nhận lộ trình này?';
   const mods=P.items.filter(it=>L[it.id].type==='module'&&it.reason),extras=P.items.filter(it=>L[it.id].type!=='module');
-  body=`<div class="dw-sec"><h4>Dựa trên</h4><dl class="dw-kv">${[['Mục tiêu học tập',goalsText(p.goals)],['Mức độ AI hiện tại',LEVELS[p.level]],['Bối cảnh doanh nghiệp',[p.industry,p.size,p.problem].filter(Boolean).join(' · ')],['Quỹ thời gian',`${p.days} ngày · ${p.minPerSession} phút/ngày`],['Nhịp học','Mỗi ngày 1 bài']].map(([k,v])=>`<div><dt>${k}</dt><dd>${esc(v||'—')}</dd></div>`).join('')}</dl></div>
+  body=`<div class="dw-sec"><h4>Dựa trên</h4><dl class="dw-kv">${[['Mục tiêu học tập',goalsText(p.goals)],['Mức độ AI hiện tại',LEVELS[p.level]],['Bối cảnh doanh nghiệp',[p.industry,p.size,p.problem].filter(Boolean).join(' · ')],['Quỹ thời gian',`${p.days} ngày · ${p.minPerSession} phút/ngày`],['Nhịp học','Học mỗi ngày']].map(([k,v])=>`<div><dt>${k}</dt><dd>${esc(v||'—')}</dd></div>`).join('')}</dl></div>
    <div class="dw-sec"><h4>Hệ thống đã điều chỉnh</h4><p>${fmt(P.summary)}</p>
-    <ul class="dw-list"><li><b>Thứ tự bài học</b><span>Giữ đủ 12 module, đúng thứ tự năng lực</span></li><li><b>Case thực tế</b><span>${extras.length?extras.map(it=>esc(L[it.id].title)).join(' · '):'Không thêm case'}</span></li><li><b>Bài tập</b><span>${Object.keys(TASKS).length} bài áp dụng cho công ty</span></li><li><b>Thời lượng</b><span>${lessons().length} bài · khoảng ${Math.round(planStats().min/lessons().length)} phút/bài</span></li></ul></div>
-   ${mods.length?`<div class="dw-sec"><h4>Nội dung từng module</h4><ul class="dw-why">${mods.map(it=>`<li><span class="no">${modNo(L[it.id])}</span><div><b>${esc(L[it.id].cap)}</b><span>${esc(it.reason)}</span></div></li>`).join('')}</ul></div>`:''}
+    <ul class="dw-list"><li><b>Thứ tự bài học</b><span>Giữ đủ ${LIB.length} chương, ${ALL_BAI.length} bài, đúng thứ tự</span></li><li><b>Bài tập</b><span>${Object.keys(TASKS).length} bài áp dụng cho công ty</span></li><li><b>Lịch học</b><span>${lessons().length} ngày · khoảng ${Math.max(1,Math.round(planUnits().length/lessons().length))} bài, ${Math.round(planStats().min/lessons().length)} phút mỗi ngày</span></li></ul></div>
+   ${mods.length?`<div class="dw-sec"><h4>Nội dung từng chương</h4><ul class="dw-why">${mods.map(it=>`<li><span class="no">${modNo(L[it.id])}</span><div><b>${esc(chLabel(L[it.id])+': '+L[it.id].title)}</b><span>${esc(it.reason)}</span></div></li>`).join('')}</ul></div>`:''}
    ${P.skipped.length?`<details class="dw-sec skipped"><summary>Case chưa đưa vào (${P.skipped.length})</summary><ul>${P.skipped.map(s=>`<li><b>${esc(L[s.id].title)}</b>: ${esc(s.reason)}</li>`).join('')}</ul></details>`:''}
    <p class="hint">${P.source==='ai'?'Cá nhân hóa bởi AI':'Cá nhân hóa theo bộ luật'} · Phiên bản ${P.version}</p>`;
  }else{
@@ -383,36 +386,38 @@ function drawerView(){
 function syllabus(){
  const p=S.profile;
  if(T.gen)return `<section class="wrap narrow page"><div class="card gen"><div class="spin" role="status" aria-label="Đang tạo"></div><h2 class="h3">${esc(T.gen.msg)}</h2>
-  <ol><li>${ic('check',16)} Đọc hồ sơ của anh/chị</li><li>${ic('check',16)} Giữ đủ 12 module</li><li>${ic('check',16)} Chia thành ${lessonsOf(p)} bài học</li></ol></div></section>`;
+  <ol><li>${ic('check',16)} Đọc hồ sơ của anh/chị</li><li>${ic('check',16)} Giữ đủ ${LIB.length} chương, ${ALL_BAI.length} bài</li><li>${ic('check',16)} Chia bài vào ${lessonsOf(p)} ngày học</li></ol></div></section>`;
  if(!S.plan)return `<section class="wrap narrow page"><div class="card gen"><h2 class="h3">Hồ sơ đã sẵn sàng</h2>${T.err.gen?`<p class="err">${esc(T.err.gen)}</p>`:''}<button class="btn btn-primary btn-lg" data-a="genPlan">${ic('spark')} Tạo lộ trình</button></div></section>`;
- const P=S.plan,st=planStats(),ni=nextLesson(),avg=Math.round(st.min/st.n);
+ const P=S.plan,st=planStats(),ni=nextLesson(),cu=curUnit(),avg=Math.round(st.min/st.n),perDay=Math.max(1,Math.round(st.units/st.n));
  const cta=!P.accepted?`<button class="btn btn-primary btn-lg" data-a="acceptPlan" ${P.warning?'disabled':''}>${P.wasActive?'Lưu lộ trình':'Bắt đầu học'} ${ic('arrow',16)}</button>`
-  :ni>=0?`<button class="btn btn-primary btn-lg" data-a="openLesson" data-v="${ni}">${st.lessonsDone===0&&subsCount()===0?'Bắt đầu học':'Học tiếp'} ${ic('arrow',16)}</button>`:`<button class="btn btn-primary btn-lg" data-a="go" data-to="complete">Nhận chứng nhận ${ic('arrow',16)}</button>`;
+  :cu?`<button class="btn btn-primary btn-lg" data-a="openUnit" data-v="${cu}">${st.unitsDone===0&&subsCount()===0?'Bắt đầu học':'Học tiếp'} ${ic('arrow',16)}</button>`:`<button class="btn btn-primary btn-lg" data-a="go" data-to="complete">Nhận chứng nhận ${ic('arrow',16)}</button>`;
  const head=`<section class="card cl-hero"><div class="cl-hero-l">
    <h1>Lộ trình của anh/chị</h1>
-   <p class="cl-sum">${st.n} bài · ${P.profile.days} ngày · ~${avg} phút/ngày</p>
+   <p class="cl-sum">${st.units} bài · ${st.n} ngày · ~${perDay} bài, ${avg} phút mỗi ngày</p>
    <p class="cl-sub">${ic('spark',14)} <button class="btn-link" data-a="drawerOpen" data-v="why">Vì sao tôi nhận lộ trình này?</button></p>
-   <div class="cl-bar"><span><i style="width:${st.pct}%"></i></span><b>${st.pct}% hoàn thành</b></div></div>
+   <div class="cl-bar"><span><i style="width:${st.upct}%"></i></span><b>${st.upct}% hoàn thành</b></div></div>
   <div class="cl-hero-r">${cta}<button class="btn btn-line" data-a="drawerOpen" data-v="adjust">${ic('refresh',15)} Điều chỉnh lộ trình</button></div></section>`;
  const warn=P.warning?`<div class="callout warn cl-warn"><b>Mỗi bài khoảng ${P.warning.perLesson} phút, vượt ${P.profile.minPerSession} phút/ngày</b><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-primary btn-sm" data-a="fixDays" data-v="${Math.min(P.warning.needDays,MAX_DAYS)}">Học trong ${Math.min(P.warning.needDays,MAX_DAYS)} ngày</button>${P.warning.needMin?`<button class="btn btn-line btn-sm" data-a="fixPace" data-v="${P.warning.needMin}">Học ${P.warning.needMin} phút/ngày</button>`:''}</div></div>`:'';
- const cards=[[st.n,'Bài học','var(--blue)','book'],[CAP_MAP.length,'Năng lực AI','var(--teal)','spark'],[Object.keys(TASKS).length,'Bài tập','var(--purple)','file'],[`${P.profile.days} ngày`,'Lộ trình','var(--orange)','cal']];
+ const cards=[[st.units,'Bài học','var(--blue)','book'],[CAP_MAP.length,'Năng lực AI','var(--teal)','spark'],[Object.keys(TASKS).length,'Bài tập','var(--purple)','file'],[`${st.n} ngày`,'Lộ trình','var(--orange)','cal']];
  const cardHTML=`<div class="dh-kpis cl-kpis">${cards.map(([v,l,c,i])=>`<div class="dh-kpi" style="--c:${c}"><span class="ico">${ic(i,18)}</span><b>${v}</b><span>${l}</span></div>`).join('')}</div>`;
  return `<section class="wrap page cl-page"><div class="crumbs"><button data-a="go" data-to="mycourses">Khóa học của tôi</button><span>/</span><button data-a="go" data-to="${P.wasActive?'learn':'onboarding'}">AI for CEO</button><span>/</span><span>Lộ trình</span></div>
- ${head}${warn}${cardHTML}<section class="cl-sec"><div class="cl-sec-h"><h2 class="h3">Lộ trình của anh/chị</h2>${clToggleBtn('syl')}</div>${courseList('syl',{cta:!!(P.accepted||P.wasActive),why:true})}</section></section>`;
+ ${head}${warn}${cardHTML}<section class="cl-sec"><div class="cl-sec-h"><h2 class="h3">Lộ trình của anh/chị</h2><div class="cl-sec-r"><span class="hint">${LIB.length} chương · ${st.units} bài</span>${clToggleBtn('syl')}</div></div>${courseList('syl',{cta:!!(P.accepted||P.wasActive),why:true})}</section></section>`;
 }
 
 /* ---------- 6. Khóa học AI for CEO (Học) ---------- */
 function learn(){
- const P=S.plan,st=planStats(),ni=nextLesson();
- const head=`<section class="cl-top"><div><h1>AI for CEO</h1><p class="cl-sum">${st.lessonsDone}/${st.n} bài đã hoàn thành</p><div class="cl-bar"><span><i style="width:${st.pct}%"></i></span><b>${st.pct}%</b></div></div>
+ const P=S.plan,st=planStats(),ni=nextLesson(),cu=curUnit();
+ const head=`<section class="cl-top"><div><h1>AI for CEO</h1><p class="cl-sum">${st.unitsDone}/${st.units} bài đã hoàn thành</p><div class="cl-bar"><span><i style="width:${st.upct}%"></i></span><b>${st.upct}%</b></div></div>
   <div class="cl-top-r"><button class="btn btn-line btn-sm" data-a="go" data-to="dashboard">${ic('chart',15)} Dashboard</button><button class="btn btn-ghost btn-sm" data-a="go" data-to="syllabus">${ic('refresh',15)} Điều chỉnh lộ trình</button></div></section>`;
  let next;
  // khối bài đang học: chữ bên trái, nút bên phải (gọn, không để trống)
- if(ni>=0){const ks=P.lessons[ni],dn=ks.filter(k=>S.done[k]).length;
-  next=`<section class="cl-next"><div class="cl-next-b"><span class="cl-next-l">Đang học</span><h2>${esc(lessonTitle(ks,ni,P.lessons))}</h2>
-   <span class="cl-next-m">Bài ${ni+1} · ${esc(dayLabel(ni))} · ${lessonMin(ks)} phút${dn?` · ${dn}/${ks.length} phần`:''}</span></div>
-   <button class="btn btn-primary btn-lg" data-a="openLesson" data-v="${ni}">${dn?'Học tiếp':'Bắt đầu học'} ${ic('arrow',16)}</button></section>`;}
- else next=`<section class="cl-next done"><div class="cl-next-b"><span class="cl-next-l">Hoàn thành</span><h2>Anh/chị đã học hết ${st.n} bài</h2></div><button class="btn btn-primary btn-lg" data-a="go" data-to="complete">Nhận chứng nhận ${ic('arrow',16)}</button></section>`;
+ // khối bài đang học: bài đầu tiên chưa xong; kèm tiến độ của ngày học chứa bài đó
+ if(cu){const u=U(cu),d=lessonOfUnit(cu),ks=P.lessons[d],dn=ks.filter(k=>S.done[k]).length;
+  next=`<section class="cl-next"><div class="cl-next-b"><span class="cl-next-l">Đang học</span><h2>${esc(unitTitle(u))}</h2>
+   <span class="cl-next-m">${esc(unitLabel(u))} · ${unitType(u)} · ${u.m} phút</span>
+   <span class="cl-next-day">${ic('cal',14)} ${esc(dayLabel(d))}: ${dn}/${ks.length} bài</span></div>
+   <button class="btn btn-primary btn-lg" data-a="openUnit" data-v="${cu}">${st.unitsDone===0&&subsCount()===0?'Bắt đầu học':'Học tiếp'} ${ic('arrow',16)}</button></section>`;}
+ else next=`<section class="cl-next done"><div class="cl-next-b"><span class="cl-next-l">Hoàn thành</span><h2>Anh/chị đã học hết ${st.units} bài</h2></div><button class="btn btn-primary btn-lg" data-a="go" data-to="complete">Nhận chứng nhận ${ic('arrow',16)}</button></section>`;
  const side=`<aside class="sticky cl-side">${remindCard()}
   <div class="card pad cl-links"><b>Lối tắt</b>
    <button data-a="go" data-to="outputs">${ic('file',16)}<span>Bài tập của tôi</span><small>${subsCount()}/${Object.keys(TASKS).length}</small></button>
@@ -422,28 +427,27 @@ function learn(){
   ${eventsCard()}</aside>`;
  return `<section class="wrap page cl-page"><div class="crumbs"><button data-a="go" data-to="mycourses">Khóa học của tôi</button><span>/</span><span>AI for CEO</span></div>
  ${head}<div class="two"><div style="display:grid;gap:20px;align-content:start">${remindAsk()}${next}
-  <section class="cl-sec"><div class="cl-sec-h"><h2 class="h3">Lộ trình của tôi</h2><div class="cl-sec-r"><span class="hint">${chapters().length} chương · ${st.n} bài</span>${clToggleBtn('learn')}</div></div>${courseList('learn')}</section>
+  <section class="cl-sec"><div class="cl-sec-h"><h2 class="h3">Lộ trình của tôi</h2><div class="cl-sec-r"><span class="hint">${LIB.length} chương · ${st.units} bài</span>${clToggleBtn('learn')}</div></div>${courseList('learn')}</section>
   <div class="demo-box"><span class="t">Công cụ demo</span><div><button class="btn btn-line btn-sm" data-a="simulateAll">Mô phỏng: học xong toàn bộ</button></div></div></div>${side}</div></section>`;
 }
 
 /* ---------- 7. Trang bài học ---------- */
-// Nội dung hiển thị theo từng phần: video A–D, bài tập, ôn tập, case
+// Nội dung bài: video → mục tiêu, năng lực AI, đầu ra; bài tập → đề bài + nộp bài; ôn tập → đầu ra của chương
 function unitContent(u){
- const p=S.profile,x=L[u.id];
- if(u.kind==='review')return `<div class="take"><span class="t">Ôn tập Module ${modNo(x)} · ${esc(x.cap)}</span><p class="big">${esc(x.take)}</p><div><b style="font-size:15px">Mang 3 câu hỏi này vào cuộc họp tuần với đội ngũ</b><ol style="margin-top:8px">${x.qs.map(q=>`<li>${esc(q)}</li>`).join('')}</ol></div><p class="hint">Ở công ty ${esc(String(p.industry||'').toLowerCase())}, năng lực này thường được thử trước ở việc ${esc((IND[p.industry]||IND['Khác']).general)}.</p></div>`;
- if(u.kind==='extra')return `<p class="hook">${esc(x.hook)}</p><div class="block"><span class="t">Nội dung video</span><p style="font-size:17px;line-height:1.7">${esc(x.demo)}</p></div><div class="block"><span class="t">Giải thích cho CEO</span><div class="prose">${x.body.map(b=>`<p>${esc(b)}</p>`).join('')}</div></div><div class="take"><span class="t">CEO takeaway</span><p class="big">${esc(x.take)}</p></div>`;
- if(u.part===0)return `<div class="block"><span class="t">Câu hỏi mở vấn đề</span><p class="hook">${esc(x.hook)}</p></div><p class="hint">Tiếp theo: xem AI giải bài toán này.</p>`;
- if(u.part===1)return `<div class="block"><span class="t">Demo: AI làm gì</span><p style="font-size:17.5px;line-height:1.75">${esc(x.demo)}</p></div>`;
- if(u.part===2)return `<div class="block"><span class="t">Giải thích cho CEO</span><div class="prose">${x.body.map(b=>`<p>${esc(b)}</p>`).join('')}</div></div>
-  <div class="block"><span class="t">Ý nghĩa với doanh nghiệp</span><ul class="exs">${x.ex.slice().sort((a,b)=>((p.goals||[]).includes(b[0])?1:0)-((p.goals||[]).includes(a[0])?1:0)).map(([d,t])=>`<li class="${(p.goals||[]).includes(d)?'hit':''}"><span class="d">${GOALS[d]}${(p.goals||[]).includes(d)?' · anh/chị quan tâm':''}</span><span>${esc(t)}</span></li>`).join('')}</ul></div>`;
+ const p=S.profile,x=L[u.id],b=u.b;
+ if(u.kind==='review')return `<div class="take"><span class="t">Ôn tập ${esc(chLabel(x))}</span><p class="big">${esc(x.take)}</p><div><b style="font-size:15px">Nhìn lại các đầu ra của chương và liên hệ với công ty</b><ol style="margin-top:8px">${x.items.map(i=>`<li>${esc(i.out)}</li>`).join('')}</ol></div><p class="hint">Ở công ty ${esc(String(p.industry||'').toLowerCase())}, anh/chị có thể bắt đầu từ việc ${esc((IND[p.industry]||IND['Khác']).general)}.</p></div>`;
  if(u.kind==='exercise')return exerciseView(u.id);
- return `<div class="take"><span class="t">CEO takeaway</span><p class="big">${esc(x.take)}</p><div><b style="font-size:15px">3 câu hỏi mang về công ty</b><ol style="margin-top:8px">${x.qs.map(q=>`<li>${esc(q)}</li>`).join('')}</ol></div><p class="hint">Tiếp theo: bài tập cho công ty.</p></div>`;
+ return `<div class="ls-info">
+  <div class="block"><span class="t">Mục tiêu bài học</span><p class="ls-goal">${esc(b.goal)}</p></div>
+  <div class="ls-2"><div class="block"><span class="t">Năng lực AI</span><p><span class="ls-cap" style="--c:${PHASE_COLOR[b.ch]}">${esc(capName(b.cap))}</span></p></div>
+   <div class="block"><span class="t">Đầu ra</span><p>${esc(b.out)}</p></div></div>
+  <p class="hint">Loại bài: ${esc(b.lt)}</p></div>`;
 }
 // Bài tập: form nộp (lần đầu / sửa) hoặc kết quả đã nộp + nhận xét
 // Đề bài: lời dẫn + các câu cần trả lời (lấy từ TASKS)
 function exBrief(t){return t.kind==='uc'
- ?{intro:'Chọn 3 việc trong công ty anh/chị muốn thử giao cho AI trước. Không cần biết cách triển khai. Với mỗi việc, ghi:',items:['Việc muốn AI làm','Phòng ban thực hiện','Năng lực AI sẽ dùng','Vì sao đáng thử: giá trị, dữ liệu sẵn có, ai phụ trách']}
- :{intro:'Trả lời cho chính công ty của anh/chị.',items:[...t.fields.map(f=>f.label+(f.type==='select'?` (chọn 1: ${f.opts.join(' · ')})`:'')),...(t.linkTask?[t.linkTask]:[])]};}
+ ?{intro:'Đánh giá các cơ hội đã gom ở bài trước theo giá trị kinh doanh, mức độ khả thi, dữ liệu sẵn có, rủi ro và mức độ sẵn sàng của tổ chức; chọn 3 cơ hội đáng ưu tiên nhất. Với mỗi cơ hội, ghi:',items:['Việc muốn AI làm','Phòng ban thực hiện','Năng lực AI sẽ dùng','Vì sao đáng ưu tiên: giá trị, dữ liệu sẵn có, ai phụ trách']}
+ :{intro:((bai('E:'+Object.keys(TASKS).find(k=>TASKS[k]===t))||{}).goal||'')+' Trả lời cho chính công ty của anh/chị.',items:[...t.fields.map(f=>f.label+(f.type==='select'?` (chọn 1: ${f.opts.join(' · ')})`:'')),...(t.linkTask?[t.linkTask]:[])]};}
 const exFileLink=f=>`${ic('file',16)}<span class="nm">${f.data?`<a href="${f.data}" download="${esc(f.name)}">${esc(f.name)}</a>`:esc(f.name)}</span><small>${kb(f.size||0)}</small>`;
 // Kết quả AI chấm: điểm tổng + Đạt/Cần bổ sung, 3 tiêu chí, nhận xét từng câu, điểm tốt / nên bổ sung, câu hỏi cho đội ngũ
 const exScore=v=>String(v).replace('.',',');
@@ -463,7 +467,7 @@ function exerciseView(id){
  const t=TASKS[id],s0=S.subs[id],edit=!s0||T.editEx===id,b=exBrief(t),m=exMode(t),sl=submitLabel(t),req=k=>m.need.includes(k)?' <span class="req">*</span>':'';
  const brief=`<section class="ex-brief" aria-labelledby="exb-${id}"><h4 id="exb-${id}">${ic('file',17)} Đề bài</h4><p>${esc(b.intro)}</p><ol>${b.items.map(x=>`<li>${esc(x)}</li>`).join('')}</ol>
   <dl class="ex-req"><div><dt>${ic('upload',15)} Hình thức nộp</dt><dd>${sl.main}${sl.opt?`<small>${sl.opt}</small>`:''}${t.linkHint&&m.allow.includes('link')?`<small>Link: ${esc(t.linkHint)}</small>`:''}${t.fileHint&&m.allow.includes('file')?`<small>Tệp: ${esc(t.fileHint)}</small>`:''}</dd></div><div><dt>${ic('spark',15)} Cách chấm</dt><dd>AI chấm tự động, thang 10 điểm, từ ${EX_PASS} điểm là Đạt<small>Tiêu chí: ${EX_CRIT.map(c=>c[1]).join(' · ')}. Có nhận xét từng câu.</small></dd></div></dl></section>`;
- const head=`<div class="ex-h"><div><span class="t">Bài tập · Module ${modNo(L[id])} · khoảng ${t.min} phút</span><h3 class="h3">${esc(t.title)}</h3></div>${s0&&!edit?`<span class="pill ok">${ic('check',12)} Đã nộp ${esc(s0.at)}${s0.v>1?` · lần ${s0.v}`:''}</span>`:s0?'<span class="pill wait">Đang sửa bài đã nộp</span>':''}</div>`;
+ const head=`<div class="ex-h"><div><span class="t">Bài tập · ${esc(chLabel(L[id]))} · Bài ${t.i+1} · khoảng ${t.min} phút</span><h3 class="h3">${esc(t.title)}</h3></div>${s0&&!edit?`<span class="pill ok">${ic('check',12)} Đã nộp ${esc(s0.at)}${s0.v>1?` · lần ${s0.v}`:''}</span>`:s0?'<span class="pill wait">Đang sửa bài đã nộp</span>':''}</div>`;
  const fb=s0&&s0.feedback&&!edit?reviewHTML(id,s0.feedback):'';
  if(!edit)return `<div class="ex card">${head}${brief}
   <section class="ex-ans"><h4>${ic('check',17)} Bài làm của anh/chị</h4>
@@ -501,26 +505,30 @@ const vpControls=()=>{const v=T.vp,vol=v.muted?0:v.vol,fs=!!document.fullscreenE
  <button class="vp-b" data-a="vpFull" aria-label="${fs?'Thoát toàn màn hình':'Toàn màn hình'}" title="${fs?'Thoát toàn màn hình':'Toàn màn hình'}">${ic(fs?'fullx':'full',19)}</button></div>`;};
 const vpMenu=()=>`<div class="vp-menu" role="menu" aria-label="Cài đặt video" hidden>${Object.entries(VP_OPTS).map(([k,g])=>`<div class="vp-g"><small>${g.label}</small><div>${g.opts.map(([val,l])=>`<button role="menuitemradio" aria-checked="${T.vp[k]===val}" data-a="vpSet" data-k="${k}" data-v="${val}">${l}</button>`).join('')}</div></div>`).join('')}</div>`;
 function lesson(){
- const P=S.plan;if(P&&!lessonOpen(S.lesson)){S.lesson=nextLesson();S.unit=null;}
- const li=S.lesson;const ks=P&&P.lessons[li];if(!ks){S.screen='learn';return learn();}
- if(!S.unit||!ks.includes(S.unit))S.unit=ks.find(k=>!S.done[k])||ks[0];
- const u=U(S.unit),x=L[u.id],pos=ks.indexOf(S.unit),doneN=ks.filter(k=>S.done[k]).length;
- const needArt=u.kind==='exercise'&&!S.subs[u.id];
- const isLast=pos===ks.length-1,back=lessonBack();
- const vt=u.kind==='review'?'Ôn tập & liên hệ công ty':x.title;
- const player=u.kind==='exercise'?'':`<div class="player" data-title="${esc(vt)}" data-label="${esc(unitLabel(u))}"><div class="center"><button class="play" data-a="playUnit" aria-label="Phát video">${ic('play',26)}</button><span class="t">${esc(unitLabel(u))}</span><h3>${esc(vt)}</h3></div><div class="bottom"><span>${S.done[S.unit]?'Đã xem':'0:00'}</span><span class="track"><i style="width:${S.done[S.unit]?100:0}%"></i></span><span class="tnum">${u.m}:00</span><span class="vp-speed" ${T.vp.speed===1?'hidden':''}>${String(T.vp.speed).replace('.',',')}×</span>${vpControls()}</div>${vpMenu()}${T.vp.cc?`<p class="vp-cc">${esc(vt)}</p>`:''}</div>`;
- const list=`<div class="ulist">${ks.map((k,i)=>{const v=U(k);return `<button class="${k===S.unit?'on':''} ${S.done[k]?'done':''}" data-a="selUnit" data-v="${k}"><span class="st">${ic('check',12)}</span><span><small>${esc(v.kind==='video'?`Module ${modNo(L[v.id])} · Video ${'ABCD'[v.part]}`:v.kind==='exercise'?`Module ${modNo(L[v.id])} · Bài tập`:v.kind==='review'?'Ôn tập':TYPE_LABEL[L[v.id].type])}</small><b>${esc(v.kind==='video'?PARTS[v.part]:v.kind==='exercise'?TASKS[v.id].title:v.kind==='review'?'Liên hệ công ty: Module '+modNo(L[v.id]):L[v.id].title)}</b></span><span class="mn tnum">${v.m}′</span></button>`;}).join('')}</div>`;
- const nextBtn=needArt?`<p class="hint">Nộp bài tập ở trên để hoàn thành phần này.</p>`:
-  `<button class="btn btn-primary btn-lg" data-a="markNext">${S.done[S.unit]&&isLast?`${lessonDone(li)?'Bài tiếp theo':'Hoàn thành bài '+(li+1)}`:isLast?`${u.kind==='exercise'?'Tiếp tục · ':''}Hoàn thành bài ${li+1}`:`${u.kind==='exercise'?'Tiếp tục':'Hoàn thành · Video tiếp theo'}`} ${ic('arrow')}</button>`;
+ const P=S.plan;if(!P||!P.lessons.length){S.screen='learn';return learn();}
+ const all=planUnits();let k=S.unit;
+ if(!k||!all.includes(k))k=(P.lessons[S.lesson]||[]).find(x=>!S.done[x])||(P.lessons[S.lesson]||[])[0]||curUnit()||all[0];
+ if(!unitOpen(k))k=curUnit()||all[0];
+ S.unit=k;S.lesson=lessonOfUnit(k);
+ const u=U(k),b=u.b,li=S.lesson,isEx=u.kind==='exercise',ch=L[chOf(k)],pos=all.indexOf(k),prev=all[pos-1],next=all[pos+1];
+ const dks=P.lessons[li],ddn=dks.filter(x=>S.done[x]).length,needArt=isEx&&!S.subs[u.id],back=lessonBack();
+ const vt=unitTitle(u),lab=unitLabel(u);
+ const player=isEx?'':`<div class="player" data-title="${esc(vt)}" data-label="${esc(lab)}"><div class="center"><button class="play" data-a="playUnit" aria-label="Phát video">${ic('play',26)}</button><span class="t">${esc(lab)}</span><h3>${esc(vt)}</h3></div><div class="bottom"><span>${S.done[k]?'Đã xem':'0:00'}</span><span class="track"><i style="width:${S.done[k]?100:0}%"></i></span><span class="tnum">${u.m}:00</span><span class="vp-speed" ${T.vp.speed===1?'hidden':''}>${String(T.vp.speed).replace('.',',')}×</span>${vpControls()}</div>${vpMenu()}${T.vp.cc?`<p class="vp-cc">${esc(vt)}</p>`:''}</div>`;
+ // cột phải: các bài của chương đang học
+ const cks=all.filter(x=>chOf(x)===ch.id),cdn=cks.filter(x=>S.done[x]).length;
+ const list=`<div class="ulist">${cks.map(x=>{const v=U(x),st=unitState(x),lock=st==='locked';return `<button class="${x===k?'on':''} ${S.done[x]?'done':''} ${lock?'locked':''}" ${lock?`disabled title="${esc(unitLockMsg(x))}"`:`data-a="openUnit" data-v="${x}"`}><span class="st">${ic(lock?'lock':'check',12)}</span><span><small>${v.b?'Bài '+(v.b.i+1)+' · ':''}${unitType(v)} · ${esc(dayLabel(lessonOfUnit(x)))}</small><b>${esc(unitTitle(v))}</b></span><span class="mn tnum">${v.m}′</span></button>`;}).join('')}</div>`;
+ const nextOpen=next&&unitOpen(next);
+ const nextBtn=needArt?`<p class="hint">Nộp bài tập ở trên để hoàn thành bài này.</p>`:
+  `<button class="btn btn-primary btn-lg" data-a="markNext">${!next?(S.done[k]?'Xem kết quả hoàn thành':'Hoàn thành khóa học'):S.done[k]?'Bài tiếp theo':isEx?'Tiếp tục · Bài tiếp theo':'Hoàn thành · Bài tiếp theo'} ${ic('arrow')}</button>`;
  return `<section class="wrap page lesson">
  <div class="lsn-top"><button class="btn btn-line btn-sm" data-a="${back.a}">${ic('back',15)} ${back.t}</button>
-  <div class="crumbs"><button data-a="go" data-to="mycourses">Khóa học của tôi</button><span>/</span><button data-a="backToList">AI for CEO</button><span>/</span>${S.from==='outputs'?`<button data-a="backToOutputs">Bài tập của tôi</button><span>/</span>`:''}<span>Bài ${li+1}</span></div></div>
- <div style="display:grid;gap:12px;margin-bottom:24px"><div class="meta"><span class="ty">Bài ${li+1}/${P.lessons.length} · ${dayLabel(li,P.profile)}</span><span>${ic('video',14)} ${ks.filter(k=>U(k).kind!=='exercise').length} video${ks.some(k=>U(k).kind==='exercise')?` · ${ks.filter(k=>U(k).kind==='exercise').length} bài tập`:''}</span><span>${ic('clock',14)} ${lessonMin(ks)} phút</span><span class="tnum">${doneN}/${ks.length} đã hoàn thành</span></div><h1>${esc(lessonTitle(ks))}</h1><div class="bar" style="max-width:420px"><i style="width:${Math.round(doneN/ks.length*100)}%"></i></div></div>
+  <div class="crumbs"><button data-a="go" data-to="mycourses">Khóa học của tôi</button><span>/</span><button data-a="backToList">AI for CEO</button><span>/</span>${S.from==='outputs'?`<button data-a="backToOutputs">Bài tập của tôi</button><span>/</span>`:''}<span>${esc(lab)}</span></div></div>
+ <div style="display:grid;gap:12px;margin-bottom:24px"><div class="meta"><span class="ty">${esc(lab)}/${ch.items.length}</span><span class="ls-type ${isEx?'isx':''}">${ic(isEx?'file':u.kind==='review'?'book':'video',14)} ${unitType(u)}</span><span>${ic('clock',14)} ${u.m} phút</span><span>${ic('cal',14)} ${esc(dayLabel(li))} · ${ddn}/${dks.length} bài</span></div><h1>${esc(vt)}</h1></div>
  <div class="lsn">
   <div style="display:grid;gap:24px">${player}${unitContent(u)}<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">${nextBtn}<button class="btn btn-line" data-a="asstLesson">${ic('bot',16)} Hỏi Trợ lý AI</button></div></div>
-  <aside class="sticky" style="display:grid;gap:14px"><div><b style="font-size:15px">Trong bài ${li+1}</b><p class="hint">${ks.length} video · ${lessonMin(ks)} phút</p></div>${list}
-   <div style="display:flex;justify-content:space-between;gap:8px">${li>0?`<button class="btn btn-ghost btn-sm" data-a="openLesson" data-v="${li-1}">${ic('back',15)} Bài ${li}</button>`:'<span></span>'}${li<P.lessons.length-1?(lessonOpen(li+1)?`<button class="btn btn-ghost btn-sm" data-a="openLesson" data-v="${li+1}">Bài ${li+2} ${ic('arrow',15)}</button>`:`<button class="btn btn-ghost btn-sm" disabled title="${esc(lockMsg(li+1))}">${ic('lock',14)} Bài ${li+2}</button>`):''}</div>
-   ${li<P.lessons.length-1&&!lessonOpen(li+1)?`<p class="hint">${ic('lock',13)} Bài ${li+2} mở sau khi anh/chị học xong bài này.</p>`:''}</aside>
+  <aside class="sticky" style="display:grid;gap:14px"><div><small class="hint">${esc(chLabel(ch))}</small><b style="font-size:15px;display:block">${esc(ch.title)}</b><p class="hint">${cdn}/${cks.length} bài đã hoàn thành</p></div>${list}
+   <div style="display:flex;justify-content:space-between;gap:8px">${prev?`<button class="btn btn-ghost btn-sm" data-a="openUnit" data-v="${prev}">${ic('back',15)} Bài trước</button>`:'<span></span>'}${next?(nextOpen?`<button class="btn btn-ghost btn-sm" data-a="openUnit" data-v="${next}">Bài tiếp theo ${ic('arrow',15)}</button>`:`<button class="btn btn-ghost btn-sm" disabled title="${esc(unitLockMsg(next))}">${ic('lock',14)} Bài tiếp theo</button>`):''}</div>
+   ${next&&!nextOpen?`<p class="hint">${ic('lock',13)} Bài tiếp theo thuộc ${esc(dayLabel(lessonOfUnit(next)))}, mở sau khi anh/chị học xong các bài hôm nay.</p>`:''}</aside>
  </div></section>`;
 }
 
@@ -533,9 +541,9 @@ function outputs(){
  <div class="page-head" style="display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap"><div style="display:grid;gap:8px"><span class="eyebrow">Bài tập của tôi</span><h2 class="h2">${n}/${ids.length} bài tập đã nộp</h2><p class="sub">Bài làm và nhận xét của anh/chị.</p></div></div>
  <div class="bar" style="max-width:520px;margin-bottom:24px"><i style="width:${Math.round(n/ids.length*100)}%"></i></div>
  <div class="grid g2">${ids.map(id=>{const s=S.subs[id],t=TASKS[id],li=lessonOfUnit('E:'+id);const prev=s?clip(subText(id).replace(/\n+/g,' · '),170):'';
-  return `<article class="card pad out" id="out-${id}"><div class="ex-h"><div><span class="t">Module ${modNo(L[id])} · ${esc(L[id].cap)}${li>=0?` · Bài ${li+1}`:''}</span><h3 class="h3">${esc(t.title)}</h3></div>${s?`<span class="pill ok">Đã nộp</span>`:`<span class="pill wait">Chưa nộp</span>`}</div>
-  ${s?`<p class="prev">${esc(prev)}</p><p class="hint">${ic('clock',13)} ${esc(s.at)}${s.v>1?` · nộp lần ${s.v}`:''}${(s.links||[]).length?` · ${ic('link',13)} ${s.links.length} link`:''}${(s.files||[]).length?` · ${ic('clip',13)} ${s.files.length} tệp`:''}${s.feedback&&s.feedback.score!=null?` · <b class="${s.feedback.pass?'ok-t':'warn-t'}">${exScore(s.feedback.score)}/10 ${s.feedback.pass?'Đạt':'Cần bổ sung'}</b>`:''}</p>`:`<p class="prev muted">Bài tập nằm cuối Module ${modNo(L[id])}${li>=0?`, trong Bài ${li+1} của lộ trình`:''}.</p>`}
-  <div>${li<0?'':s||lessonOpen(li)?`<button class="btn ${s?'btn-line':'btn-primary'} btn-sm" data-a="openEx" data-v="${id}">${s?'Xem & sửa':'Làm bài tập'} ${ic('arrow',15)}</button>`:`<span class="hint">${ic('lock',13)} Mở khi anh/chị học tới Bài ${li+1}</span>`}</div></article>`;}).join('')}</div>
+  return `<article class="card pad out" id="out-${id}"><div class="ex-h"><div><span class="t">${esc(chLabel(L[id]))} · Bài ${t.i+1}${li>=0?` · ${esc(dayLabel(li))}`:''}</span><h3 class="h3">${esc(t.title)}</h3></div>${s?`<span class="pill ok">Đã nộp</span>`:`<span class="pill wait">Chưa nộp</span>`}</div>
+  ${s?`<p class="prev">${esc(prev)}</p><p class="hint">${ic('clock',13)} ${esc(s.at)}${s.v>1?` · nộp lần ${s.v}`:''}${(s.links||[]).length?` · ${ic('link',13)} ${s.links.length} link`:''}${(s.files||[]).length?` · ${ic('clip',13)} ${s.files.length} tệp`:''}${s.feedback&&s.feedback.score!=null?` · <b class="${s.feedback.pass?'ok-t':'warn-t'}">${exScore(s.feedback.score)}/10 ${s.feedback.pass?'Đạt':'Cần bổ sung'}</b>`:''}</p>`:`<p class="prev muted">Bài tập là Bài ${t.i+1} của ${esc(chLabel(L[id]))}${li>=0?`, học vào ${esc(dayLabel(li))}`:''}.</p>`}
+  <div>${li<0?'':s||lessonOpen(li)?`<button class="btn ${s?'btn-line':'btn-primary'} btn-sm" data-a="openEx" data-v="${id}">${s?'Xem & sửa':'Làm bài tập'} ${ic('arrow',15)}</button>`:`<span class="hint">${ic('lock',13)} Mở khi anh/chị học tới ${esc(dayLabel(li))}</span>`}</div></article>`;}).join('')}</div>
  </section>`;
 }
 
@@ -578,22 +586,22 @@ function feedbackSection(){
 /* ---------- 9. Hoàn thành ---------- */
 function complete(){
  const st=planStats();
- const checks=[[`Hoàn thành ${st.n} bài học`,`${st.lessonsDone}/${st.n}`,st.lessonsDone===st.n],[`Nộp ${Object.keys(TASKS).length} bài tập`,`${subsCount()}/${Object.keys(TASKS).length}`,subsCount()===Object.keys(TASKS).length]];
+ const checks=[[`Hoàn thành ${st.units} bài học`,`${st.unitsDone}/${st.units}`,st.unitsDone===st.units],[`Nộp ${Object.keys(TASKS).length} bài tập`,`${subsCount()}/${Object.keys(TASKS).length}`,subsCount()===Object.keys(TASKS).length]];
  const ok=checks.every(c=>c[2]);if(ok&&!S.completedAt){S.completedAt=today();save();}
- const missing=lessons().map((ks,i)=>i).filter(i=>!lessonDone(i));
+ const missing=planUnits().filter(k=>!S.done[k]);
  const head=`<div class="crumbs"><button data-a="go" data-to="mycourses">Khóa học của tôi</button><span>/</span><button data-a="go" data-to="learn">AI for CEO</button><span>/</span><span>Hoàn thành chương trình</span></div>`;
  const checkCard=`<article class="card pad"><h3 class="h3" style="margin-bottom:8px">Điều kiện hoàn thành</h3><ul class="checks">${checks.map(([l,v,d])=>`<li><span class="st ${d?'ok':'no'}">${ic(d?'check':'x',12)}</span><span>${l}</span><b class="tnum">${v}</b></li>`).join('')}</ul></article>`;
  if(!ok)return `<section class="wrap narrow page">${head}<div class="page-head"><span class="eyebrow">Hoàn thành</span><h2 class="h2">Anh/chị còn thiếu một vài bước</h2><p class="sub">Học hết các bài và nộp đủ bài tập để nhận certificate.</p></div><div style="display:grid;gap:18px">${checkCard}
-  ${missing.length?`<article class="card pad"><h3 class="h3" style="margin-bottom:12px">Bài học chưa xong</h3><ul class="promise">${missing.map(i=>lessonOpen(i)?`<li>${ic('arrow')}<button class="btn-link" style="text-align:left" data-a="openLesson" data-v="${i}">Bài ${i+1}: ${esc(lessonTitle(lessons()[i]))}</button></li>`:`<li class="muted">${ic('lock')}<span>Bài ${i+1}: ${esc(lessonTitle(lessons()[i]))}</span></li>`).join('')}</ul></article>`:''}
+  ${missing.length?`<article class="card pad"><h3 class="h3" style="margin-bottom:12px">Bài học chưa xong (${missing.length})</h3><ul class="promise">${missing.slice(0,8).map(k=>unitOpen(k)?`<li>${ic('arrow')}<button class="btn-link" style="text-align:left" data-a="openUnit" data-v="${k}">${esc(unitLabel(U(k)))}: ${esc(unitTitle(U(k)))}</button></li>`:`<li class="muted">${ic('lock')}<span>${esc(unitLabel(U(k)))}: ${esc(unitTitle(U(k)))}</span></li>`).join('')}${missing.length>8?`<li class="muted"><span>… và ${missing.length-8} bài khác</span></li>`:''}</ul></article>`:''}
   <div><button class="btn btn-primary btn-lg" data-a="go" data-to="learn">Tiếp tục học ${ic('arrow')}</button></div></div></section>`;
- const p=S.profile;const uc=S.subs.M12||{};
+ const p=S.profile;const uc=S.subs[UC_TASK]||{};
  return `<section class="wrap page">${head}
  <div class="cert-wrap"><canvas id="cert-cv" width="2000" height="1414" role="img" aria-label="Chứng nhận hoàn thành AI for CEO của ${esc(p.name||'')}, mã ${certCode()}"></canvas>
   <div class="cert-act"><button class="btn btn-primary" data-a="certDownload">${ic('download',16)} Tải chứng nhận (PNG)</button><button class="btn btn-line" data-a="certPrint">${ic('file',16)} In / Lưu PDF</button><button class="btn dh-btn-fb solid" data-a="certShare">${ic('fb',16)} Chia sẻ lên Facebook</button><span class="hint">Mã chứng nhận ${certCode()} · cấp ngày ${esc(certDate())}</span></div></div>
  <div style="margin-top:24px">${feedbackSection()}</div>
  <div class="grid g2" style="margin-top:24px;align-items:start">
-  <article class="card pad"><h3 class="h3" style="margin-bottom:12px">3 use case anh/chị chọn</h3>${uc.text?`<div class="ex-text">${fmt(uc.text)}</div>`:''}${(uc.files||[]).length?`<ul class="ex-files">${uc.files.map(f=>`<li>${exFileLink(f)}</li>`).join('')}</ul>`:''}
-   <div class="kv" style="margin-top:16px"><div><span>Bài học</span><b class="tnum">${st.lessonsDone}/${st.n}</b></div><div><span>Bài tập đã nộp</span><b class="tnum">${subsCount()}/${Object.keys(TASKS).length}</b></div><div><span>Thời gian học</span><b class="tnum">${dashStats().studyDays} ngày</b></div></div>
+  <article class="card pad"><h3 class="h3" style="margin-bottom:12px">3 cơ hội AI ưu tiên anh/chị chọn</h3>${uc.text?`<div class="ex-text">${fmt(uc.text)}</div>`:''}${(uc.files||[]).length?`<ul class="ex-files">${uc.files.map(f=>`<li>${exFileLink(f)}</li>`).join('')}</ul>`:''}
+   <div class="kv" style="margin-top:16px"><div><span>Bài học</span><b class="tnum">${st.unitsDone}/${st.units}</b></div><div><span>Bài tập đã nộp</span><b class="tnum">${subsCount()}/${Object.keys(TASKS).length}</b></div><div><span>Thời gian học</span><b class="tnum">${dashStats().studyDays} ngày</b></div></div>
    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px"><button class="btn btn-line btn-sm" data-a="go" data-to="outputs">${ic('file',15)} Xem bộ bài tập</button><button class="btn btn-line btn-sm" data-a="go" data-to="dashboard">${ic('map',15)} Xem bản đồ hành trình</button></div></article>
   <div style="display:grid;gap:16px">${checkCard}
    ${(()=>{const e=upcomingEvents().find(x=>x.k==='live');return e?`<article class="card pad event"><span class="tag">Live Zoom tiếp theo</span><h3>${esc(e.title)}</h3><p>${esc(evWhen(e))}. Học viên đã hoàn thành vẫn tham gia các buổi cập nhật hằng tháng.</p><div>${evBtn(e)}</div></article>`:'';})()}</div>
@@ -618,12 +626,12 @@ function courses(){
  return `<section class="wrap page crs">
  <div class="page-head"><span class="eyebrow">Học viện Siêu Tăng Trưởng</span><h1 class="h2">Khóa học</h1></div>
  <div class="crs-grid"><article class="card crs-feat">
-  <button class="crs-thumb" data-a="go" data-to="landing" aria-label="Xem giới thiệu khóa AI for CEO">${COURSE.cover?`<img class="crs-cover" src="${esc(COURSE.cover)}" alt="">`:''}<span class="k">Khóa học trọng tâm</span><span class="n">AI for <b>CEO</b></span><span class="s">${mods} module · ${CAP_MAP.length} năng lực</span></button>
+  <button class="crs-thumb" data-a="go" data-to="landing" aria-label="Xem giới thiệu khóa AI for CEO">${COURSE.cover?`<img class="crs-cover" src="${esc(COURSE.cover)}" alt="">`:''}<span class="k">Khóa học trọng tâm</span><span class="n">AI for <b>CEO</b></span><span class="s">${LIB.length} chương · ${CAP_MAP.length} năng lực</span></button>
   <div class="crs-body">
    
    <h2 class="crs-name">AI for CEO</h2>
    <p class="crs-desc">Khóa cập nhật năng lực AI dành cho CEO qua các ví dụ thực tế. Không học tool, không học prompt: tận mắt thấy AI đã làm được gì.</p>
-   <p class="crs-meta">${ic('bookopen',15)} ${LIB.filter(x=>x.type==='module').reduce((n,x)=>n+(x.parts||[]).length,0)} bài học</p>
+   <p class="crs-meta">${ic('bookopen',15)} ${ALL_BAI.length} bài học</p>
    <div class="crs-foot${enr?' enr':''}">
     ${enr?''
      :`<div class="crs-price" title="${esc(COURSE.promo)}"><b class="tnum">${money(COURSE.price)}</b><span class="crs-old"><span class="strike tnum">${money(COURSE.list)}</span><span class="crs-off">−${OFF}%</span></span></div>`}

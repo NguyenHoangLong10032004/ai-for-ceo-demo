@@ -62,7 +62,7 @@ function asstRules(){
 ${S.enrolled&&p.industry?`HỒ SƠ HỌC VIÊN: ngành ${p.industry}, quy mô ${p.size}, mức hiểu biết AI: ${LEVELS[p.level]}, phòng ban quan tâm: ${goalsText(p.goals)}, bài toán: ${p.problem||'chưa nêu'}.
 ĐANG XEM: ${cur?cur.id+' '+cur.title:'(không có)'}
 BÀI TIẾP THEO: ${ni>=0?`Bài ${ni+1}/${lessons().length}: ${lessonTitle(lessons()[ni])}`:'đã học hết, cần kiểm tra điều kiện hoàn thành'}`:'NGƯỜI HỎI chưa đăng ký. Tư vấn trung thực về khóa học và ưu đãi ra mắt.'}
-THÔNG TIN KHÓA: 12 module video demo (mỗi module 4 video: mở vấn đề, demo, giải thích, takeaway), chia thành số bài học đúng bằng số ngày học học viên chọn; Live Zoom "AI đến đâu rồi?" hằng tháng; Offline Executive Briefing tùy chọn. Học phí ${money(COURSE.list)}, ${COURSE.promo.toLowerCase()} còn ${money(COURSE.price)}. Mỗi module có 1 bài tập áp dụng cho công ty (Module 12: chọn 3 use case); bài làm được lưu ở mục "Bài tập của tôi". Hoàn thành khi học hết các bài và nộp đủ 12 bài tập.
+THÔNG TIN KHÓA: 8 chương, 37 bài (mỗi bài là 1 video hoặc 1 bài tập, 12 bài tập), chia vào số ngày học học viên chọn; Live Zoom "AI đến đâu rồi?" hằng tháng; Offline Executive Briefing tùy chọn. Học phí ${money(COURSE.list)}, ${COURSE.promo.toLowerCase()} còn ${money(COURSE.price)}. Mỗi module có 1 bài tập áp dụng cho công ty (Module 12: chọn 3 use case); bài làm được lưu ở mục "Bài tập của tôi". Hoàn thành khi học hết các bài và nộp đủ 12 bài tập.
 NỘI DUNG CHÍNH THỨC:
 ${kb}`;
 }
@@ -76,8 +76,8 @@ function cannedAnswer(q){
   if(/học phí|giá|chi phí|gồm|ưu đãi/.test(s))return `Học phí ${money(COURSE.list)}. ${COURSE.promo} chỉ còn **${money(COURSE.price)}** (tiết kiệm ${money(SAVE)}). Bao gồm:\n• `+COURSE.perks.join('\n• ');
  } else {
   if(/hôm nay|tiếp theo|làm gì|xem gì/.test(s))return ni>=0?`Tiếp theo là **Bài ${ni+1}/${lessons().length}: ${lessonTitle(lessons()[ni])}** (${lessonMin(lessons()[ni])} phút).`:'Anh/chị đã học hết các bài. Bước tiếp theo là kiểm tra điều kiện hoàn thành.';
-  if(/áp dụng|doanh nghiệp|công ty/.test(s)){const x=cur||L.M01;const e=(x.ex||[]).find(e=>(p.goals||[]).includes(e[0]))||(x.ex||[])[0];return `${x.take}${e?` Ví dụ cho ${GOALS[e[0]]}: ${e[1]}.`:''} Ở công ty ${String(p.industry||'').toLowerCase()}, AI thường được thử trước ở việc ${(IND[p.industry]||IND['Khác']).general}.`;}
-  if(/giải thích|chưa hiểu|nghĩa là/.test(s)){const x=cur||L.M01;return `Nói ngắn gọn về "${x.title}": ${(x.body||[''])[0]}`;}
+  if(/áp dụng|doanh nghiệp|công ty/.test(s)){const x=cur||L.C0;const e=(x.ex||[]).find(e=>(p.goals||[]).includes(e[0]))||(x.ex||[])[0];return `${x.take}${e?` Ví dụ cho ${GOALS[e[0]]}: ${e[1]}.`:''} Ở công ty ${String(p.industry||'').toLowerCase()}, AI thường được thử trước ở việc ${(IND[p.industry]||IND['Khác']).general}.`;}
+  if(/giải thích|chưa hiểu|nghĩa là/.test(s)){const x=cur||L.C0;return `Nói ngắn gọn về "${x.title}": ${(x.body||[''])[0]}`;}
  }
  return 'Câu hỏi này nằm ngoài nội dung em được cung cấp. Em có thể chuyển cho chuyên gia của Học viện để trả lời anh/chị. [CHUYEN_CHUYEN_GIA]';
 }

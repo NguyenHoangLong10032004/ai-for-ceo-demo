@@ -75,138 +75,102 @@ const IND={
  'Khác':{general:'trả lời câu hỏi lặp lại và tổng hợp báo cáo quản trị',uc:[['Trợ lý trả lời câu hỏi lặp lại của khách','cs','Kết nối hệ thống'],['Báo cáo quản trị tự động mỗi tuần','finance','Tự động hóa'],['Hỏi đáp quy trình nội bộ cho nhân viên mới','hr','Đọc & hiểu']]}
 };
 
-/* ---------- cấu trúc khóa học ---------- */
+/* ---------- cấu trúc khóa học (theo outline user gửi 10/2026) ----------
+   8 chương: Chương 0 → Chương 6 + Kết, tổng 38 bài. MỖI BÀI LÀ 1 VIDEO HOẶC 1 BÀI TẬP (không còn bài gồm nhiều video).
+   12 bài tập = các bài có Loại bài chứa "Bài tập" + Tự đánh giá, Suy ngẫm điều hành, Thiết lập trợ lý, Kế hoạch hành động.
+   Mã phần học: video = "C2:1" (chương C2, bài thứ 2); bài tập = "E:<mã bài tập>", vd. "E:C2-5". Số phút mỗi bài là minh họa. */
 const PHASES=[
- {id:'P1',name:'AI biết & hiểu'},{id:'P2',name:'AI tạo & suy luận'},{id:'P3',name:'AI xây & dùng công cụ'},{id:'P4',name:'AI hành động'},{id:'P5',name:'Áp vào doanh nghiệp'}
+ {id:'C0',name:'Điểm xuất phát: CEO đang nhìn AI như thế nào?'},{id:'C1',name:'AI bây giờ đã làm được gì?'},{id:'C2',name:'AI có thể hiểu và suy nghĩ đến đâu?'},
+ {id:'C3',name:'AI có thể tạo ra những gì?'},{id:'C4',name:'AI có thể xây dựng những gì?'},{id:'C5',name:'AI có thể tham gia vận hành doanh nghiệp như thế nào?'},
+ {id:'C6',name:'Khi AI bắt đầu hành động: CEO nên giao bao nhiêu quyền?'},{id:'CK',name:'Từ hiểu AI đến quyết định: Doanh nghiệp nên bắt đầu từ đâu?'}
 ];
-const PARTS=['Mở vấn đề','Demo năng lực','Giải thích cho CEO','CEO takeaway'];
+const PARTS=['Video','Bài tập'];
 const REVIEW_MIN=8;
-/* LIB: 12 module bắt buộc (M01–M12, mỗi module 4 video: parts = số phút video A–D)
-   + case/live tùy chọn (X1–X7) để cá nhân hóa theo phòng ban (tags) và mức AI. */
-const M=(o)=>Object.assign({type:'module',req:true,tags:[]},o);
+// số phút minh họa theo loại bài
+const LT_MIN=lt=>/Demo/.test(lt)?10:/Giải thích|Tổng quan|Tổng hợp/.test(lt)?7:/Nhận xét|Quản trị/.test(lt)?6:5;
+// B(tên bài, mục tiêu, năng lực AI, bài tập/đầu ra, loại bài, mã bài tập nếu là bài tập)
+const B=(t,goal,cap,out,lt,ex)=>({t,goal,cap,out,lt,ex:ex||null});
+const CHAP=(o)=>Object.assign({type:'module',req:true,tags:[]},o);
 const LIB=[
- M({id:'M01',no:1,phase:'P1',cap:'Toàn cảnh',title:'AI hiện tại đã đi xa đến đâu?',why:'Mở đầu: AI 2026 khác AI vài năm trước ở đâu',parts:[3,8,5,2],
-  hook:'Nếu lần cuối anh/chị thử AI là một năm trước, hình dung về AI của anh/chị có thể đã lỗi thời.',
-  demo:'Một yêu cầu đi xuyên văn bản, file Excel, hình ảnh, web và hành động: AI đọc báo cáo bán hàng, xem ảnh kệ hàng, tra giá đối thủ trên web rồi soạn email đề xuất cho trưởng vùng.',
-  body:['Từ chatbot đến agent, AI đã đi qua bốn nấc: chatbot trả lời câu hỏi; AI đa phương thức đọc được ảnh, file, giọng nói; AI suy luận biết tự chia bài toán; và AI agent biết dùng công cụ để hành động.','Khác biệt lớn nhất của "AI 2026": nó không chỉ trả lời mà có thể làm việc trên dữ liệu và hệ thống của doanh nghiệp, khi được cấp quyền.'],
-  take:'AI không còn chỉ là chatbot.',qs:['Công ty mình đang dùng AI ở nấc nào trong bốn nấc này?','Ai trong công ty đang theo sát các thay đổi của AI?','Quyết định nào của mình đang dựa trên hình dung cũ về AI?'],
-  ex:[['ceo','Ban giám đốc cập nhật lại kỳ vọng về AI trước khi duyệt ngân sách năm'],['sales','Thấy AI tự soạn đề xuất cho khách từ dữ liệu bán hàng'],['ops','Thấy AI xử lý ảnh, file và web trong cùng một yêu cầu']]}),
- {id:'X1',type:'case',phase:'P1',title:'Ôn nhanh: AI tạo sinh là gì, nói bằng ngôn ngữ kinh doanh',min:10,req:false,tags:[],skipIfLevel:2,
-  hook:'AI "biết" mọi thứ từ đâu, và vì sao đôi khi nó nói sai?',demo:'Giải thích bằng hình ảnh: AI học từ lượng văn bản khổng lồ, đoán câu trả lời hợp lý nhất, và vì sao cần cung cấp dữ liệu của công ty.',
-  body:['Không cần hiểu kỹ thuật. Chỉ cần nhớ: AI giỏi ở ngôn ngữ và nhận dạng mẫu; nó trả lời tốt hơn nhiều khi được cung cấp đúng tài liệu của doanh nghiệp.'],take:'AI giỏi đến đâu phụ thuộc nhiều vào dữ liệu anh/chị đưa cho nó.'},
- M({id:'M02',no:2,phase:'P1',cap:'Đọc & hiểu',title:'AI có thể ĐỌC & HIỂU',why:'Năng lực dùng được ngay, rủi ro thấp nhất',parts:[3,6,5,2],
-  hook:'Với 200 trang hợp đồng và báo cáo, AI có tìm ra 3 điều CEO cần biết trong 5 phút không?',
-  demo:'Đưa AI 12 hợp đồng đại lý, báo cáo quý và SOP bán hàng; hỏi "Đại lý nào đang được chiết khấu vượt chính sách?". AI trả lời kèm trích dẫn đúng trang.',
-  body:['AI đọc được hàng trăm trang tài liệu, bảng biểu, email, SOP và trả lời câu hỏi có dẫn nguồn.','Giới hạn: AI chỉ tốt khi tài liệu đủ và đúng. Câu trả lời quan trọng vẫn cần người kiểm tra lại trích dẫn.'],
-  take:'Tài liệu nội bộ là nơi đầu tiên AI tạo ra giá trị.',qs:['Tài liệu nào trong công ty ít người đọc nhưng chứa nhiều thông tin quan trọng?','Mỗi tuần quản lý mất bao nhiêu giờ để tìm thông tin?','Tài liệu nào không được phép đưa cho AI?'],
-  ex:[['sales','Tra nhanh chính sách giá, chiết khấu cho từng đại lý'],['hr','Nhân viên mới hỏi đáp nội quy thay vì hỏi quản lý'],['finance','Rà hợp đồng để tìm điều khoản phạt, công nợ bất thường']]}),
- M({id:'M03',no:3,phase:'P1',cap:'Nhìn & nghe',title:'AI có thể NHÌN & NGHE',why:'Biến họp, cuộc gọi, hình ảnh thành dữ liệu',parts:[3,7,4,1],
-  hook:'Cuộc họp 60 phút hôm qua có ai ghi lại đủ quyết định và người chịu trách nhiệm không?',
-  demo:'AI nghe bản ghi buổi giao ban, tự tạo biên bản, danh sách quyết định và việc cần làm theo từng người; sau đó xem ảnh kệ hàng và chỉ ra sản phẩm bị trưng bày sai.',
-  body:['AI hiểu ảnh, video, giọng nói và cuộc gọi: chuyển lời nói thành văn bản, tóm tắt, nhận diện vấn đề trong hình ảnh.','Giới hạn: âm thanh kém, nhiều người nói cùng lúc hoặc hình ảnh chuyên ngành làm giảm độ chính xác.'],
-  take:'Mọi cuộc họp, cuộc gọi và hình ảnh hiện trường đều có thể trở thành dữ liệu.',qs:['Cuộc họp nào đang không có biên bản và việc cần làm rõ ràng?','Cuộc gọi khách hàng có được nghe lại để cải thiện chất lượng không?','Hình ảnh nào từ hiện trường mình muốn được phân tích tự động?'],
-  ex:[['ceo','Biên bản giao ban tự động kèm việc cần làm theo từng người'],['cs','Nghe lại toàn bộ cuộc gọi CSKH để tìm khiếu nại lặp lại'],['ops','Kiểm tra ảnh trưng bày, kho bãi từ chi nhánh gửi về']]}),
- M({id:'M04',no:4,phase:'P2',cap:'Tạo nội dung',title:'AI có thể TẠO',why:'Thấy chi phí sản xuất nội dung giảm thế nào',parts:[3,9,4,2],
-  hook:'Từ một bản mô tả sản phẩm, mất bao lâu để có hình ảnh, video, bài viết và landing page?',
-  demo:'Từ brief sản phẩm 5 dòng, AI tạo concept, bộ ảnh key visual, video quảng cáo 15 giây có lồng tiếng, bài đăng và một landing page trong một buổi.',
-  body:['AI tạo được văn bản, hình ảnh, video, giọng nói, slide và trang web. Thời gian và chi phí sản xuất nội dung giảm mạnh.','Giới hạn: bản quyền, tính nhất quán thương hiệu và độ chính xác thông tin vẫn cần người duyệt.'],
-  take:'Nút thắt không còn là sản xuất nội dung mà là ý tưởng và khả năng duyệt nhanh.',qs:['Công ty đang tốn bao nhiêu cho sản xuất nội dung mỗi tháng?','Ai duyệt nội dung AI tạo ra trước khi đăng?','Hướng dẫn thương hiệu đã đủ rõ để AI làm theo chưa?'],
-  ex:[['marketing','Ra 20 phiên bản quảng cáo để thử thay vì 2'],['sales','Tạo slide đề xuất riêng cho từng khách hàng lớn'],['hr','Làm video đào tạo nhân viên mới có lồng tiếng']]}),
- M({id:'M05',no:5,phase:'P2',cap:'Nghiên cứu & phân tích',title:'AI có thể NGHIÊN CỨU & PHÂN TÍCH',why:'AI như một chuyên viên phân tích luôn sẵn sàng',parts:[3,7,4,2],
-  hook:'"Vì sao doanh thu kênh đại lý giảm quý này?" AI có tự tìm ra nguyên nhân không?',
-  demo:'Một câu hỏi kinh doanh: AI nghiên cứu đối thủ trên web, đọc dữ liệu bán hàng, so sánh phương án, tổng hợp nguồn và đưa ra 3 khuyến nghị có lý giải.',
-  body:['AI suy luận nhiều bước: đặt giả thuyết, tìm dữ liệu kiểm chứng, so sánh phương án, làm phần việc của một chuyên viên phân tích trong vài phút.','Giới hạn: AI có thể tự tin kết luận sai khi dữ liệu thiếu. CEO cần hỏi "dựa vào nguồn nào" trước khi dùng kết quả để quyết định.'],
-  take:'AI trả lời rất nhanh, nhưng CEO vẫn là người đặt câu hỏi đúng.',qs:['Câu hỏi kinh doanh nào mình muốn có câu trả lời mỗi tuần?','Dữ liệu để trả lời câu hỏi đó đang nằm ở đâu?','Ai sẽ kiểm chứng kết luận của AI?'],
-  ex:[['ceo','Nghiên cứu nhanh thị trường mới trước khi quyết định mở rộng'],['marketing','Theo dõi và so sánh chiến dịch của đối thủ'],['finance','Giải thích biến động chi phí so với cùng kỳ']]}),
- M({id:'M06',no:6,phase:'P3',cap:'Xây phần mềm',title:'AI có thể XÂY',why:'Thấy AI xây phần mềm từ mô tả nghiệp vụ',parts:[3,10,5,2],
-  hook:'Nếu CEO chỉ mô tả bằng lời, AI có xây được một dashboard dùng được không?',
-  demo:'CEO nói: "Tôi cần một trang theo dõi doanh số theo chi nhánh". Một công cụ AI lập trình (ví dụ Claude Code hoặc Codex) xây prototype, CEO góp ý, AI sửa và chạy thử ngay.',
-  body:['AI không chỉ trả lời, nó tạo được website, app, dashboard, phần mềm nội bộ từ mô tả nghiệp vụ. Từ ý tưởng đến bản chạy thử rút từ vài tháng xuống vài giờ.','Giới hạn: prototype khác sản phẩm vận hành thật. Bảo mật, dữ liệu thật và bảo trì vẫn cần đội kỹ thuật.'],
-  take:'Ý tưởng phần mềm của CEO có thể được thử nghiệm trong một buổi chiều.',qs:['Công cụ nội bộ nào công ty muốn có từ lâu nhưng chưa làm?','Ai chịu trách nhiệm khi prototype thành hệ thống thật?','Mình có đang trả tiền cho phần mềm mà AI có thể xây riêng không?'],
-  ex:[['ceo','Dashboard doanh số theo chi nhánh trong một buổi chiều'],['ops','Ứng dụng check-list kiểm tra cửa hàng'],['sales','Công cụ tính báo giá nhanh cho nhân viên kinh doanh']]}),
- M({id:'M07',no:7,phase:'P3',cap:'Kết nối hệ thống',title:'AI có thể KẾT NỐI & DÙNG CÔNG CỤ',why:'Bước AI chuyển từ "nói" sang "làm"',parts:[3,7,4,2],
-  hook:'AI có tự vào CRM, Google Ads hay Drive để lấy đúng số liệu CEO cần không?',
-  demo:'Kết nối AI với Meta Ads, CRM và Google Drive qua connector/MCP; CEO hỏi "Tuần này kênh nào mang về khách hàng rẻ nhất?", AI tự lấy số liệu từ ba hệ thống và trả lời.',
-  body:['Khi được cấp quyền qua API, connector hoặc MCP, AI dùng được hệ thống bên ngoài: CRM, quảng cáo, lịch, cơ sở dữ liệu.','Giới hạn: cấp quyền là quyết định quản trị. Cần nguyên tắc rõ: AI được đọc gì, được sửa gì, ai phê duyệt.'],
-  take:'AI đang trở thành một lớp trí tuệ nằm trên các hệ thống doanh nghiệp.',qs:['Dữ liệu công ty đang nằm rải rác ở những hệ thống nào?','Mình muốn AI chỉ đọc, hay được phép thay đổi dữ liệu?','Ai trong công ty quản lý quyền truy cập?'],
-  ex:[['marketing','Hỏi số liệu quảng cáo nhiều kênh bằng một câu'],['sales','AI đọc CRM để nhắc khách lâu chưa được chăm sóc'],['ceo','Báo cáo tổng hợp từ nhiều hệ thống, không chờ tổng hợp tay']]}),
- M({id:'M08',no:8,phase:'P4',cap:'Tự động hóa',title:'AI có thể TỰ ĐỘNG HÓA CÔNG VIỆC',why:'Quy trình nhiều bước chạy tự động, có kiểm soát',parts:[3,7,4,2],
-  hook:'Khi có khách hàng tiềm năng mới lúc 11 giờ đêm, ai xử lý?',
-  demo:'Lead mới vào → AI tra cứu thông tin công ty → chấm điểm → cập nhật CRM → gửi email cá nhân hóa → tạo việc cho nhân viên sales. Không ai phải bấm nút.',
-  body:['Nhiều bước AI được ghép thành quy trình có điểm kích hoạt, logic, dữ liệu và hành động, chạy cả ngày lẫn đêm.','Giới hạn: tự động hóa một quy trình lộn xộn chỉ làm nó lộn xộn nhanh hơn. Cần chuẩn hóa quy trình và giữ điểm con người kiểm tra.'],
-  take:'Quy trình nào có quy tắc rõ ràng đều có thể giao cho AI chạy.',qs:['Quy trình nào đang phụ thuộc vào việc một người nhớ làm?','Bước nào cần con người phê duyệt?','Nếu tự động hóa sai, thiệt hại lớn nhất là gì?'],
-  ex:[['sales','Lead mới được chấm điểm và chuyển đúng người trong 1 phút'],['cs','Tự phân loại và trả lời yêu cầu hỗ trợ đơn giản'],['finance','Tự đối chiếu hóa đơn với đơn hàng và báo sai lệch']]}),
- {id:'X3',type:'case',phase:'P4',title:'Case: Trợ lý CSKH trả lời khách 24/7',min:12,req:false,tags:['cs','sales'],
-  hook:'Bao nhiêu đơn hàng đang mất vì tin nhắn được trả lời quá chậm?',demo:'Trợ lý AI được nối với tồn kho và chính sách: trả lời giá, tình trạng đơn, giao hàng; chuyển cho nhân viên khi khách phàn nàn.',
-  body:['Kết hợp năng lực Đọc & hiểu, Kết nối và Tự động hóa. Giá trị đo được: thời gian phản hồi, tỷ lệ chốt ngoài giờ, số tin nhắn nhân viên phải xử lý.'],take:'CSKH thường là nơi AI tạo giá trị nhanh và dễ đo nhất.'},
- {id:'X4',type:'case',phase:'P4',title:'Case: Báo cáo quản trị tự động mỗi sáng',min:12,req:false,tags:['finance','ops','ceo'],
-  hook:'CEO có cần chờ đến thứ Hai mới biết tuần trước kinh doanh thế nào?',demo:'Mỗi 7 giờ sáng, AI lấy số liệu bán hàng, chi phí, tồn kho, viết báo cáo 1 trang kèm giải thích biến động và gửi vào nhóm ban giám đốc.',
-  body:['Kết hợp Kết nối hệ thống, Phân tích và Tự động hóa. Giá trị: quyết định nhanh hơn, bớt giờ tổng hợp tay của kế toán và vận hành.'],take:'Báo cáo tốt nhất là báo cáo tự đến trước khi CEO hỏi.'},
- M({id:'M09',no:9,phase:'P4',cap:'AI Agent',title:'AI có thể trở thành AGENT',why:'Nấc cao nhất của AI hiện tại',parts:[3,9,4,2],
-  hook:'Nếu giao một mục tiêu thay vì một câu lệnh, AI có tự hoàn thành không?',
-  demo:'Giao cho agent: "Chuẩn bị báo cáo hiệu quả marketing tuần và đề xuất điều chỉnh". Agent tự lấy dữ liệu quảng cáo, phân tích, viết báo cáo, tạo task cho team và xin CEO duyệt trước khi đổi ngân sách.',
-  body:['Agent nhận mục tiêu, tự chia bước, dùng công cụ, tự kiểm tra rồi trả kết quả hoặc hành động.','Giới hạn: agent cần phạm vi rõ, quyền hạn giới hạn và điểm phê duyệt. Mục tiêu mơ hồ thì kết quả cũng mơ hồ.'],
-  take:'Giao việc cho agent như giao cho một nhân sự mới: rõ mục tiêu, rõ quyền, rõ điểm báo cáo.',qs:['Nhiệm vụ đầu-cuối nào có thể giao cho một agent thử?','Agent cần những quyền gì, và không được có quyền gì?','Điểm nào agent bắt buộc phải xin phê duyệt?'],
-  ex:[['marketing','Agent theo dõi quảng cáo và đề xuất điều chỉnh ngân sách mỗi sáng'],['ceo','Agent chuẩn bị tài liệu trước mỗi cuộc họp ban giám đốc'],['hr','Agent sàng lọc hồ sơ và đặt lịch phỏng vấn']]}),
- {id:'X2',type:'case',phase:'P4',title:'Case xuyên suốt: AI + Quảng cáo, từ kết nối đến agent',min:20,req:false,tags:['marketing','ceo'],
-  hook:'Tại sao tuần này chi phí mỗi khách hàng (CPA) tăng 28%?',demo:'Kết nối AI với Meta Ads, Google Ads → đọc Spend, Revenue, CPL, CPA, ROAS → tìm nguyên nhân CPA tăng → xây dashboard theo dõi → mỗi sáng tự cảnh báo khi vượt ngưỡng → agent tự tạo task cho team Marketing.',
-  body:['Một bài toán đi qua 6 năng lực: Kết nối, Hiểu dữ liệu, Suy luận, Xây, Tự động hóa, Agent. Đây là cách AI trở thành lớp trí tuệ nằm trên hệ thống quảng cáo.'],take:'Cùng một bài toán, AI có thể tham gia từ trả lời câu hỏi đến tự hành động.'},
- M({id:'M10',no:10,phase:'P5',cap:'Theo phòng ban',title:'AI trong TỪNG PHÒNG BAN',why:'Ghép các năng lực vào từng phòng ban',parts:[2,7,5,2],
-  hook:'Mỗi phòng ban trong công ty anh/chị có thể dùng những năng lực vừa xem như thế nào?',
-  demo:'Bản đồ năng lực × phòng ban: Sales, Marketing, CSKH, Nhân sự, Tài chính, Vận hành, Văn phòng CEO; mỗi ô là một ví dụ đã chạy được.',
-  body:['AI không giới hạn ở nội dung marketing. Mỗi phòng ban có việc đọc, phân tích, tạo, kết nối và tự động hóa riêng.','Cách nhìn đúng: bắt đầu từ bài toán của từng phòng ban, không bắt đầu từ công cụ.'],
-  take:'Mỗi trưởng phòng nên được hỏi: "Việc nào của phòng mình AI làm được?"',qs:['Phòng ban nào đang quá tải nhất?','Trưởng phòng nào sẵn sàng thử AI trước?','Phòng ban nào có dữ liệu tốt nhất để bắt đầu?'],
-  ex:[['cs','CSKH: trả lời, phân loại, phân tích khiếu nại'],['finance','Tài chính: đối chiếu, báo cáo, dự báo dòng tiền'],['hr','Nhân sự: tuyển dụng, đào tạo, hỏi đáp chính sách']]}),
- {id:'X5',type:'case',phase:'P5',title:'Case: AI trong tuyển dụng & đào tạo',min:12,req:false,tags:['hr'],
-  hook:'Mất bao lâu để một nhân viên mới làm việc được?',demo:'AI viết mô tả công việc, sàng lọc hồ sơ theo tiêu chí, soạn tài liệu đào tạo và làm trợ lý hỏi đáp chính sách cho nhân viên mới.',
-  body:['AI chỉ nên xếp hạng gợi ý khi sàng lọc; người tuyển dụng vẫn là người quyết định để tránh thiên kiến.'],take:'AI rút ngắn thời gian tuyển và đào tạo, để quản lý tập trung vào giữ người giỏi.'},
- M({id:'M11',no:11,phase:'P5',cap:'Giới hạn & quản trị',title:'AI CHƯA LÀM ĐƯỢC GÌ?',why:'Phân biệt hype với năng lực thật',parts:[3,6,4,1],
-  hook:'Điều gì xảy ra khi AI trả lời sai một cách rất tự tin?',
-  demo:'Cho AI trả lời khi thiếu dữ liệu: nó đưa ra một con số doanh thu nghe rất hợp lý nhưng sai. Sau đó xem cách thiết lập nguồn dữ liệu, quyền truy cập và bước phê duyệt để ngăn lỗi này.',
-  body:['Các giới hạn thật: ảo giác (hallucination), độ ổn định chưa tuyệt đối, rủi ro bảo mật, quyền truy cập, và câu hỏi ai chịu trách nhiệm khi AI sai.','Quản trị AI không phải để cấm, mà để dùng mạnh tay hơn một cách an toàn.'],
-  take:'Phân biệt hype và năng lực thật là trách nhiệm của CEO.',qs:['Quyết định nào tuyệt đối không giao cho AI?','Công ty đã có chính sách dùng AI chưa?','Nếu AI gây lỗi với khách hàng, ai chịu trách nhiệm?'],
-  ex:[['ceo','Chính sách dùng AI một trang cho toàn công ty'],['finance','Bắt buộc người duyệt mọi số liệu AI đưa ra ngoài'],['cs','AI chỉ trả lời trong phạm vi chính sách đã duyệt']]}),
- {id:'X7',type:'case',phase:'P5',title:'Quyền truy cập & phê duyệt khi AI chạm vào hệ thống',min:12,req:false,tags:[],bigOrg:true,
-  hook:'Ai được quyết định AI được đọc và sửa dữ liệu nào?',demo:'Một ma trận quyền đơn giản: dữ liệu nào AI được đọc, được ghi, hành động nào cần người duyệt, và ai là người duyệt.',
-  body:['Với công ty nhiều phòng ban, quyền truy cập là rào cản lớn nhất khi đưa AI vào hệ thống. Chuẩn bị từ đầu giúp triển khai nhanh hơn.'],take:'Quản trị quyền là điều kiện để AI được phép làm nhiều hơn.'},
- M({id:'M12',no:12,phase:'P5',cap:'Bắt đầu từ đâu',title:'CEO NÊN BẮT ĐẦU TỪ ĐÂU?',why:'Chọn 3 use case đáng thử nhất cho công ty',parts:[3,8,6,3],art:true,
-  hook:'Sau khi thấy AI làm được tất cả những điều này, việc đầu tiên nên làm là gì?',
-  demo:'Một CEO đi qua khung lựa chọn: liệt kê cơ hội, chấm theo giá trị, khả thi và dữ liệu, chọn 3 use case đáng thử, xác định quyền truy cập và người phụ trách.',
-  body:['Bắt đầu nhỏ, có đo lường: chọn use case có giá trị rõ, dữ liệu sẵn có và làm được trong vài tuần.','Trước khi triển khai, xác định dữ liệu nào cần, quyền truy cập nào cần cấp, ai phụ trách và khi nào đánh giá lại.'],
-  take:'Vấn đề không còn là có nên dùng AI hay không, mà là nên đưa AI vào đâu trước.',qs:['3 use case nào đáng thử nhất trong quý này?','Ai là người phụ trách từng use case?','Khi nào mình sẽ đánh giá lại kết quả?'],
-  ex:[['ceo','Chọn 3 use case cho quý tới và giao người phụ trách'],['ops','Ưu tiên quy trình có dữ liệu sẵn, làm được trong 4 tuần'],['sales','Bắt đầu từ việc lặp lại nhiều nhất của đội kinh doanh']]}),
- {id:'X6',type:'live',phase:'P5',title:'Replay Live Zoom "AI đến đâu rồi?" tháng 9/2026',min:30,req:false,tags:[],adv:true,
-  hook:'Tháng này AI có năng lực gì mới mà CEO cần biết?',demo:'Bản ghi buổi live gần nhất: demo năng lực mới, phân tích xu hướng và hỏi đáp trực tiếp với CEO.',
-  body:['Live Zoom hằng tháng giữ cho khóa học luôn mới. Nội dung đáng chú ý được cắt bổ sung vào các module liên quan.'],take:'Cập nhật đều đặn quan trọng hơn học một lần thật nhiều.'}
+ CHAP({id:'C0',no:0,cap:'Khởi động',why:'Định hướng chương trình và ghi lại điểm xuất phát của anh/chị',take:'Hiểu rõ mình đang ở đâu với AI là bước đầu để học đúng thứ cần thiết.',items:[
+  B('Bạn đang bước vào chương trình gì?','Giúp CEO hiểu mục tiêu, hành trình, cách tiếp cận và kết quả kỳ vọng của toàn bộ chương trình.','Khởi động','Bức tranh tổng quan về hành trình học và kết quả cần đạt','Giới thiệu / Định hướng'),
+  B('Chương trình này giúp gì — và không giúp gì?','Làm rõ phạm vi chương trình: giúp CEO hiểu, đánh giá và ra quyết định về AI; không tập trung dạy thao tác công cụ hay câu lệnh.','Khởi động','Kỳ vọng đúng về phạm vi và giá trị của chương trình','Định hướng'),
+  B('CEO đang nhìn AI như thế nào?','Xác định hiện trạng sử dụng AI và cách CEO đang nhìn nhận AI trước khi bắt đầu chương trình.','Khởi động','Bản tự đánh giá cách CEO đang nhìn và sử dụng AI','Tự đánh giá','C0-3'),
+  B('Sau 30 ngày, bạn muốn ra quyết định tốt hơn về điều gì?','Xác định kỳ vọng, vấn đề ưu tiên và những quyết định liên quan đến AI mà CEO muốn cải thiện sau chương trình.','Khởi động','Một quyết định hoặc vấn đề CEO muốn cải thiện trong 30 ngày','Suy ngẫm điều hành','C0-4'),
+  B('Thiết lập trợ lý AI đồng hành của bạn','Tạo hồ sơ bối cảnh doanh nghiệp và thiết lập trợ lý AI đồng hành để cá nhân hóa trải nghiệm trong suốt chương trình.','Khởi động','Hồ sơ bối cảnh doanh nghiệp cho trợ lý AI đồng hành','Thiết lập trợ lý','C0-5')]}),
+ CHAP({id:'C1',no:1,cap:'Toàn cảnh 10 năng lực AI',why:'Cập nhật bức tranh AI hiện tại trước khi đi vào từng năng lực',take:'AI không còn chỉ là chatbot: đó là một hệ năng lực mới.',items:[
+  B('AI không còn chỉ là công cụ hỏi đáp','Phá cách hiểu cũ rằng AI chỉ là chatbot; giúp CEO nhận ra AI đã mở rộng từ hỏi đáp sang đọc, nhìn, nghe, nghiên cứu, tạo, phân tích, xây dựng, vận hành và hành động.','Toàn cảnh 10 năng lực AI','Nhận diện bước chuyển: từ công cụ hỏi đáp sang một hệ năng lực mới','Định hướng'),
+  B('Bản đồ những năng lực AI CEO cần biết','Giúp CEO nhìn toàn cảnh các nhóm năng lực AI theo hành trình từ hiểu và suy nghĩ đến tạo ra, xây dựng, vận hành và hành động.','Toàn cảnh 10 năng lực AI','Bản đồ các năng lực AI CEO cần biết','Tổng quan năng lực'),
+  B('Từ hiểu đến hành động: AI có thể đi xa đến đâu?','Cho CEO thấy trong một tình huống xuyên suốt, nhiều năng lực AI có thể nối tiếp nhau để tạo thành một chuỗi giá trị hoàn chỉnh thay vì các công cụ rời rạc.','Toàn cảnh 10 năng lực AI','Chuỗi năng lực mẫu: hiểu → suy nghĩ → tạo → xây → vận hành → hành động','Minh họa / Demo'),
+  B('CEO cần nhìn AI khác đi như thế nào?','Chốt các thay đổi quan trọng trong cách nhìn: từ công cụ sang năng lực, từ cá nhân sang tổ chức, từ tạo nội dung sang tạo giá trị và từ hỗ trợ sang hành động; đồng thời chọn 3 năng lực đáng chú ý nhất với doanh nghiệp.','Toàn cảnh 10 năng lực AI','Top 3 năng lực AI đáng quan tâm nhất với doanh nghiệp','Góc nhìn CEO / Bài tập','C1-4')]}),
+ CHAP({id:'C2',no:2,cap:'Hiểu, nghiên cứu & phân tích',why:'Nhóm năng lực dùng được ngay để hỗ trợ ra quyết định',take:'AI hỗ trợ quyết định tốt khi CEO biết lúc nào nên tin và lúc nào cần kiểm chứng.',items:[
+  B('AI có thể hiểu những gì trong doanh nghiệp?','Giúp CEO hiểu AI có thể tiếp nhận nhiều dạng dữ liệu trong doanh nghiệp như tài liệu, bảng tính, hình ảnh, âm thanh, video và ảnh chụp màn hình.','01 — Hiểu đa phương thức','Danh mục các loại dữ liệu trong doanh nghiệp AI có thể tiếp nhận','Giải thích'),
+  B('Từ dữ liệu rời rạc đến một bức tranh chung','Cho CEO thấy AI có thể kết hợp nhiều nguồn thông tin khác nhau thành một bối cảnh chung để hỗ trợ phân tích và ra quyết định.','01 — Hiểu đa phương thức','Bức tranh tổng hợp từ nhiều nguồn dữ liệu rời rạc','Minh họa / Demo'),
+  B('Từ một câu hỏi đến một bản nghiên cứu hỗ trợ quyết định','Cho CEO thấy AI có thể hỗ trợ nghiên cứu bằng cách chia nhỏ vấn đề, thu thập thông tin, so sánh nguồn, phân biệt dữ kiện với giả định và tạo bản tóm tắt phục vụ quyết định.','02 — Tìm kiếm, nghiên cứu & suy luận','Bản nghiên cứu ngắn phục vụ một quyết định kinh doanh','Minh họa / Demo'),
+  B('Từ dữ liệu thô đến thông tin quản trị','Cho CEO thấy AI có thể phân tích dữ liệu, phát hiện điểm đáng chú ý, tạo biểu đồ cần thiết và chuyển dữ liệu thành thông tin quản trị dễ sử dụng.','07 — Dữ liệu & phân tích','Báo cáo quản trị được tạo từ dữ liệu thô','Minh họa / Demo'),
+  B('Khi nào nên tin AI, khi nào cần nghi ngờ?','Giúp CEO hiểu các giới hạn trong suy luận và phân tích của AI, đồng thời xác định 3 quyết định trong doanh nghiệp đang có cơ hội được AI hỗ trợ tốt hơn.','01 + 02 + 07 — Hiểu, nghiên cứu & phân tích','3 cơ hội dùng AI để hỗ trợ ra quyết định','Góc nhìn CEO / Bài tập','C2-5')]}),
+ CHAP({id:'C3',no:3,cap:'Tạo tài liệu, hình ảnh, video & giọng nói',why:'Thấy chi phí sản xuất tài liệu và nội dung thay đổi thế nào',take:'Nút thắt không còn là sản xuất mà là ý tưởng và khả năng duyệt nhanh.',items:[
+  B('Từ một ý tưởng đến nhiều sản phẩm đầu ra','Giúp CEO hiểu AI có thể biến một ý tưởng ban đầu thành nhiều loại sản phẩm đầu ra khác nhau như tài liệu, bản trình bày, hình ảnh, video và giọng nói.','03 + 04 + 05 + 06 — Tạo tài liệu, hình ảnh, video & giọng nói','Bản đồ các loại đầu ra AI có thể tạo cho doanh nghiệp','Giải thích'),
+  B('Từ yêu cầu ngắn đến một bộ tài liệu hoàn chỉnh','Cho CEO thấy AI có thể biến một yêu cầu ngắn thành các tài liệu phục vụ công việc như bản tóm tắt điều hành, đề xuất, bài trình bày và danh sách việc cần làm.','03 — Tài liệu & công việc tri thức','Bộ tài liệu hoàn chỉnh từ một yêu cầu ngắn','Minh họa / Demo'),
+  B('Từ ý tưởng đến hình ảnh','Cho CEO thấy AI có thể tạo nhiều hướng hình ảnh, chỉnh sửa theo phản hồi và tạo các phiên bản khác nhau để giảm chi phí thử nghiệm ý tưởng trực quan.','04 — Hình ảnh','Bộ phương án hình ảnh có thể chỉnh sửa và tạo biến thể','Minh họa / Demo'),
+  B('Từ hình ảnh đến video và giọng nói','Cho CEO thấy một ý tưởng hoặc hình ảnh có thể tiếp tục được chuyển thành video ngắn và giọng nói, từ đó mở rộng khả năng thử nghiệm và sản xuất nội dung.','05 + 06 — Video & giọng nói','Một nội dung video ngắn hoàn chỉnh từ hình ảnh và giọng nói','Minh họa / Demo'),
+  B('AI tạo nhanh, nhưng chất lượng đến đâu?','Giúp CEO hiểu điểm mạnh, giới hạn và rủi ro của AI tạo sinh; đồng thời xác định các đầu ra trong doanh nghiệp có thể được tạo nhanh hơn, rẻ hơn hoặc với nhiều phiên bản hơn.','03 + 04 + 05 + 06 — Nhóm năng lực tạo sinh','3 cơ hội ứng dụng AI trong sáng tạo và công việc tri thức','Góc nhìn CEO / Bài tập','C3-5')]}),
+ CHAP({id:'C4',no:4,cap:'Lập trình & xây dựng ứng dụng',why:'Thấy khoảng cách từ ý tưởng đến phần mềm đang rút ngắn thế nào',take:'Ý tưởng phần mềm của CEO có thể được thử nghiệm trong một buổi chiều.',items:[
+  B('Từ ý tưởng đến phần mềm đang trở nên nhanh đến mức nào?','Giúp CEO hiểu AI đang rút ngắn đáng kể khoảng cách từ một ý tưởng kinh doanh đến một bản mẫu phần mềm có thể nhìn thấy và thử nghiệm.','08 — Lập trình & xây dựng ứng dụng','Danh sách các ý tưởng phần mềm có thể thử nghiệm nhanh hơn nhờ AI','Giải thích'),
+  B('Từ mô tả bằng lời đến một ứng dụng chạy được','Cho CEO thấy AI có thể biến một yêu cầu mô tả bằng ngôn ngữ tự nhiên thành một ứng dụng hoặc công cụ mẫu có giao diện, chức năng cơ bản và có thể chỉnh sửa trực tiếp.','08 — Lập trình & xây dựng ứng dụng','Một bản mẫu ứng dụng có thể chạy và chỉnh sửa được','Minh họa / Demo'),
+  B('Bản mẫu nhanh khác gì phần mềm vận hành thực tế?','Giúp CEO phân biệt rõ giữa bản mẫu nhanh và phần mềm có thể vận hành thật, đặc biệt về bảo mật, dữ liệu, kiểm thử, khả năng mở rộng và bảo trì.','08 — Lập trình & xây dựng ứng dụng','Bảng kiểm phân biệt bản mẫu nhanh và phần mềm sẵn sàng vận hành','Nhận xét'),
+  B('Khi chi phí thử nghiệm phần mềm giảm mạnh, CEO nên làm gì khác?','Giúp CEO nhìn lại các công cụ nội bộ, quy trình đang phụ thuộc bảng tính và các ý tưởng sản phẩm từng quá tốn kém để thử; từ đó xác định 3 cơ hội xây dựng bằng AI.','08 — Lập trình & xây dựng ứng dụng','3 cơ hội xây dựng hoặc thử nghiệm phần mềm bằng AI','Góc nhìn CEO / Bài tập','C4-4')]}),
+ CHAP({id:'C5',no:5,cap:'Tự động hóa & kết nối',why:'Đưa AI từ hộp chat vào quy trình vận hành, có kiểm soát',take:'Tự động hóa đúng quy trình trước, tự động hóa sai còn nguy hiểm hơn làm thủ công.',items:[
+  B('Khi AI rời khỏi hộp chat và đi vào quy trình','Giúp CEO hiểu sự khác biệt giữa dùng AI thủ công trong hộp chat và đưa AI trở thành một bước nằm trong quy trình vận hành của doanh nghiệp.','09 — Tự động hóa & kết nối','Sơ đồ trước – sau khi AI được đưa vào một quy trình','Giải thích'),
+  B('Một công việc có thể tự chạy xuyên qua nhiều bước như thế nào?','Cho CEO thấy một công việc có thể đi qua nhiều bước tự động như tiếp nhận dữ liệu, AI xử lý, cập nhật hệ thống, tạo phản hồi và giao việc mà không cần thao tác thủ công ở từng bước.','09 — Tự động hóa & kết nối','Một quy trình mẫu chạy tự động qua nhiều bước','Minh họa / Demo'),
+  B('AI kết nối các hệ thống trong doanh nghiệp như thế nào?','Giúp CEO hiểu ở mức tổng quan cách AI có thể nhận dữ liệu từ một hệ thống, xử lý rồi chuyển kết quả hoặc hành động sang các hệ thống khác mà không cần đi sâu vào kỹ thuật tích hợp.','09 — Tự động hóa & kết nối','Sơ đồ hệ thống và luồng dữ liệu có thể kết nối','Giải thích / Minh họa'),
+  B('Tự động hóa sai còn nguy hiểm hơn làm thủ công','Giúp CEO hiểu các điều kiện cần trước khi tự động hóa, bao gồm quy trình rõ, dữ liệu đủ tốt, xử lý ngoại lệ, theo dõi và kiểm soát quyền truy cập.','09 — Tự động hóa & kết nối','Bảng kiểm điều kiện cần trước khi tự động hóa','Nhận xét'),
+  B('Quy trình nào đáng để tự động hóa trước?','Giúp CEO nhận diện các quy trình có tiềm năng tự động hóa cao và chọn 3 quy trình ưu tiên dựa trên mức độ lặp lại, khối lượng công việc, mức độ rõ của quy tắc, rủi ro và nhu cầu phán đoán của con người.','09 — Tự động hóa & kết nối','3 quy trình có tiềm năng tự động hóa cao nhất','Góc nhìn CEO / Bài tập','C5-5')]}),
+ CHAP({id:'C6',no:6,cap:'Agent & hành động',why:'Hiểu AI tự hành động và mức quyền nên giao',take:'Giao việc cho Agent như giao cho nhân sự mới: rõ mục tiêu, rõ quyền, rõ điểm phê duyệt.',items:[
+  B('Từ giao từng bước đến giao mục tiêu','Giúp CEO phân biệt rõ tự động hóa theo quy trình với Agent theo đuổi mục tiêu, từ đó hiểu bước chuyển từ làm theo chuỗi bước cố định sang tự xác định bước cần làm.','09 + 10 — Tự động hóa & Agent','Bảng so sánh: quy trình tự động hóa và Agent theo đuổi mục tiêu','Giải thích'),
+  B('Một Agent AI có thể tự làm được những gì?','Cho CEO thấy một Agent có thể nhận mục tiêu, tự chia nhỏ công việc, lấy dữ liệu, phân tích, xếp ưu tiên và đề xuất hành động mà không cần con người giao từng bước.','10 — Agent & hành động','Một tình huống Agent tự hoàn thành mục tiêu qua nhiều bước','Minh họa / Demo'),
+  B('AI sử dụng công cụ và hệ thống như thế nào?','Giúp CEO hiểu Agent có thể sử dụng trình duyệt, email, lịch, CRM, cơ sở dữ liệu và các hệ thống được cấp quyền để thực hiện mục tiêu, nhưng không đồng nghĩa với việc nên cấp mọi quyền.','10 — Agent & hành động','Bản đồ công cụ, hệ thống và quyền Agent cần để làm việc','Giải thích / Minh họa'),
+  B('AI càng có nhiều quyền, doanh nghiệp càng phải kiểm soát điều gì?','Giúp CEO hiểu các yếu tố kiểm soát cần có khi AI có khả năng hành động thật, gồm quyền truy cập, giới hạn hành động, bước phê duyệt, nhật ký hoạt động, điều kiện dừng và trách nhiệm cuối cùng.','10 — Agent & hành động','Khung kiểm soát quyền, phê duyệt, nhật ký và điều kiện dừng','Quản trị / Nhận xét'),
+  B('CEO nên giao AI bao nhiêu quyền?','Giúp CEO xác định mức tự chủ phù hợp cho AI theo ba mức: AI đề xuất, AI thực hiện sau khi được duyệt và AI tự thực hiện; từ đó xây dựng bản đồ mức tự chủ phù hợp cho doanh nghiệp.','10 — Agent & hành động','Bản đồ mức tự chủ của AI trong doanh nghiệp','Góc nhìn CEO / Bài tập','C6-5')]}),
+ CHAP({id:'CK',no:7,cap:'Tổng hợp 10 năng lực AI',why:'Biến những gì đã học thành quyết định và thử nghiệm đầu tiên',take:'Vấn đề không còn là có nên dùng AI hay không, mà là nên đưa AI vào đâu trước.',items:[
+  B('Nhìn lại toàn cảnh: AI có thể tạo giá trị ở đâu?','Giúp CEO kết nối lại toàn bộ hành trình từ hiểu, suy nghĩ, tạo ra, xây dựng, vận hành đến hành động; từ đó nhìn AI như một hệ năng lực có thể tạo giá trị ở nhiều điểm khác nhau trong doanh nghiệp.','01–10 — Tổng hợp toàn bộ Bản đồ năng lực AI','Bản đồ tổng hợp các năng lực AI và những vùng tạo giá trị tiềm năng','Tổng hợp / Góc nhìn CEO'),
+  B('Gom các cơ hội AI của doanh nghiệp thành một danh mục','Giúp CEO tập hợp các cơ hội đã phát hiện xuyên suốt chương trình thành một danh mục chung, tránh nhìn từng ý tưởng rời rạc và tạo nền tảng để so sánh, ưu tiên.','01–10 — Tổng hợp toàn bộ Bản đồ năng lực AI','Danh mục cơ hội AI của doanh nghiệp','Tổng hợp / Bài tập','CK-2'),
+  B('Cơ hội nào thực sự đáng ưu tiên?','Giúp CEO đánh giá các cơ hội dựa trên giá trị kinh doanh, mức độ khả thi, dữ liệu sẵn có, rủi ro và mức độ sẵn sàng của tổ chức; từ đó chọn 3 cơ hội đáng ưu tiên nhất.','01–10 — Tổng hợp toàn bộ Bản đồ năng lực AI','Top 3 cơ hội AI ưu tiên của doanh nghiệp','Ra quyết định / Bài tập','CK-3'),
+  B('Chốt bước đi đầu tiên: Từ cơ hội đến thử nghiệm thực tế','Giúp CEO chuyển từ nhận thức sang hành động bằng cách chọn 1 cơ hội để thử nghiệm trước, xác định kết quả kỳ vọng, người chịu trách nhiệm, chỉ số theo dõi và giới hạn cần kiểm soát.','01–10 — Tổng hợp toàn bộ Bản đồ năng lực AI','1 thử nghiệm AI ưu tiên với mục tiêu, người phụ trách, chỉ số và nguyên tắc kiểm soát rõ ràng','Quyết định / Kế hoạch hành động','CK-4')]})
 ];
+// mỗi chương: phase = chính chương đó; title = tên chương; số phút từng bài; mã phần học của từng bài
+LIB.forEach(x=>{x.phase=x.id;x.title=PHASES.find(p=>p.id===x.id).name;x.items.forEach((b,i)=>{b.ch=x.id;b.i=i;b.m=b.ex?null:LT_MIN(b.lt);b.key=b.ex?'E:'+b.ex:x.id+':'+i;});});
+const UC_TASK='CK-3'; // bài tập chọn 3 cơ hội ưu tiên (thay bài tập Module 12 "chọn 3 use case" cũ)
+const chLabel=x=>x.id==='CK'?'Kết':`Chương ${x.no}`;
 
-/* ---------- bài tập: mỗi module 1 bài, nằm ngay sau video D của module ---------- */
+/* ---------- 12 bài tập (mỗi bài tập là 1 bài trong chương, theo outline) ---------- */
 const G=p=>(IND[p.industry]||IND['Khác']);
 const TASKS={
- M01:{title:'Công ty mình đang ở nấc nào?',min:3,submit:['text'],fields:[{k:'level',label:'Công ty anh/chị đang dùng AI ở nấc nào?',type:'select',opts:['Chưa dùng AI','Chatbot trả lời câu hỏi','AI đa phương thức (đọc file, ảnh, giọng nói)','AI suy luận, phân tích nhiều bước','AI agent tự thực hiện công việc']},{k:'note',label:'Một việc cụ thể công ty đang dùng AI, hoặc nên dùng nhưng chưa dùng',type:'textarea'}],
-  sample:p=>({level:'Chatbot trả lời câu hỏi',note:`Một vài nhân viên dùng chatbot để viết nội dung, nhưng chưa ai dùng AI cho việc ${G(p).general}.`})},
- M02:{title:'Tài liệu nào AI nên đọc trước?',min:3,fields:[{k:'docs',label:'3 bộ tài liệu nội bộ anh/chị muốn AI đọc và trả lời câu hỏi trước',type:'textarea'},{k:'never',label:'Tài liệu nào tuyệt đối không đưa cho AI?',type:'text'}],
-  sample:()=>({docs:'1. Chính sách giá và chiết khấu đại lý\n2. SOP bán hàng và CSKH\n3. Hợp đồng với 20 khách hàng lớn nhất',never:'Bảng lương, hồ sơ nhân sự, dữ liệu cá nhân khách hàng'})},
- M03:{title:'Họp, cuộc gọi, hình ảnh nào nên thành dữ liệu?',min:3,fields:[{k:'what',label:'Cuộc họp, cuộc gọi hoặc hình ảnh hiện trường nào nên được AI ghi lại và phân tích?',type:'textarea'},{k:'owner',label:'Ai sẽ theo dõi việc cần làm sau mỗi cuộc họp?',type:'text'}],
-  sample:()=>({what:'Giao ban sáng thứ Hai của ban giám đốc; cuộc gọi khiếu nại của CSKH; ảnh trưng bày cửa hàng gửi về mỗi tuần.',owner:'Trợ lý giám đốc'})},
- M04:{title:'Nội dung nào đang tốn nhiều nhất?',min:3,fields:[{k:'cost',label:'Loại nội dung nào công ty đang tốn nhiều thời gian hoặc chi phí sản xuất nhất?',type:'textarea'},{k:'review',label:'Ai sẽ duyệt nội dung AI tạo ra trước khi đăng?',type:'text'}],
-  sample:()=>({cost:'Ảnh và bài đăng cho sản phẩm mới mỗi tháng, video ngắn cho quảng cáo; hiện thuê ngoài khoảng 30 triệu mỗi tháng.',review:'Trưởng phòng Marketing'})},
- M05:{title:'Câu hỏi kinh doanh hằng tuần',min:3,fields:[{k:'q',label:'Câu hỏi kinh doanh anh/chị muốn có câu trả lời mỗi tuần',type:'text'},{k:'data',label:'Dữ liệu để trả lời câu hỏi đó đang nằm ở đâu? Ai kiểm chứng kết luận?',type:'textarea'}],
-  sample:()=>({q:'Vì sao doanh thu tuần này tăng hoặc giảm so với tuần trước, theo từng kênh?',data:'Dữ liệu bán hàng trên phần mềm POS, chi phí quảng cáo trên Meta Ads. Kế toán trưởng kiểm chứng.'})},
- M06:{title:'Công cụ nội bộ muốn AI xây thử',min:3,submit:['text','link'],linkTask:'Dùng một công cụ AI dựng thử bản nháp của công cụ này (trang web, ứng dụng hoặc dashboard) và nộp link xem được',linkHint:'Bản dựng thử, ví dụ trang web hoặc dashboard',fileHint:'Ảnh chụp màn hình hoặc bản phác thảo (nếu có)',fields:[{k:'tool',label:'Mô tả bằng lời một công cụ nội bộ anh/chị muốn AI xây thử: ai dùng, để làm gì, hiển thị gì',type:'textarea'}],
-  sample:()=>({tool:'Trang dashboard cho ban giám đốc xem doanh số theo chi nhánh mỗi sáng: doanh thu hôm qua, so với cùng kỳ, 5 sản phẩm bán chạy, chi nhánh cần chú ý.'})},
- M07:{title:'Hệ thống nào AI được kết nối?',min:3,fields:[{k:'systems',label:'Liệt kê các hệ thống đang chứa dữ liệu công ty (CRM, quảng cáo, Drive, phần mềm kế toán…)',type:'textarea'},{k:'perm',label:'Anh/chị cho phép AI làm gì với các hệ thống này?',type:'select',opts:['Chỉ đọc dữ liệu','Đọc và tạo bản nháp, người duyệt mới gửi','Đọc và được phép cập nhật dữ liệu']}],
-  sample:()=>({systems:'CRM (khách hàng, đơn hàng), Meta Ads và Google Ads, Google Drive (tài liệu), phần mềm kế toán.',perm:'Đọc và tạo bản nháp, người duyệt mới gửi'})},
- M08:{title:'Một quy trình có thể tự động hóa',min:3,fields:[{k:'flow',label:'Một quy trình lặp lại có quy tắc rõ ràng trong công ty, mô tả các bước',type:'textarea'},{k:'approve',label:'Bước nào bắt buộc phải có người duyệt?',type:'text'}],
-  sample:()=>({flow:'Khách để lại số điện thoại trên website → phân loại theo nhu cầu → nhập CRM → gửi tin nhắn cảm ơn → giao cho nhân viên sales gọi lại trong 2 giờ.',approve:'Trước khi gửi báo giá cho khách'})},
- M09:{title:'Viết bản giao việc cho một agent',min:3,fields:[{k:'goal',label:'Mục tiêu giao cho agent',type:'text'},{k:'scope',label:'Agent được dùng hệ thống nào, không được làm gì, và phải xin duyệt ở điểm nào?',type:'textarea'}],
-  sample:()=>({goal:'Mỗi thứ Hai, chuẩn bị báo cáo hiệu quả quảng cáo tuần trước và đề xuất điều chỉnh ngân sách',scope:'Được đọc Meta Ads, Google Ads, CRM. Không được tự đổi ngân sách. Phải xin Giám đốc Marketing duyệt trước khi tạo task cho team.'})},
- M10:{title:'Mỗi phòng ban một việc cho AI',min:3,fields:[{k:'map',label:'Với mỗi phòng ban anh/chị quan tâm, ghi 1 việc AI có thể làm',type:'textarea'}],
-  sample:p=>({map:(p.goals&&p.goals.length?p.goals:['sales','marketing']).map(g=>`${GOALS[g]}: ${({sales:'soạn báo giá và đề xuất cho từng khách',marketing:'tìm nguyên nhân khi chi phí quảng cáo tăng',cs:'trả lời tin nhắn lặp lại ngoài giờ',hr:'sàng lọc hồ sơ và hỏi đáp nội quy',finance:'báo cáo doanh thu tự động mỗi sáng',ops:'biên bản giao ban và việc cần làm',ceo:'tóm tắt báo cáo trước họp ban giám đốc'})[g]}`).join('\n')})},
- M11:{title:'Ranh giới dùng AI của công ty',min:3,fields:[{k:'never',label:'3 quyết định tuyệt đối không giao cho AI',type:'textarea'},{k:'rule',label:'1 nguyên tắc đầu tiên cho chính sách dùng AI của công ty',type:'text'}],
-  sample:()=>({never:'1. Tuyển hoặc cho nghỉ việc nhân sự\n2. Duyệt chi và ký hợp đồng\n3. Trả lời khiếu nại nghiêm trọng của khách',rule:'Mọi số liệu AI tạo ra phải có người kiểm tra trước khi gửi ra ngoài công ty.'})},
- M12:{title:'Chọn 3 use case đáng thử nhất',min:5,kind:'uc'}
+ 'C0-3':{title:'CEO đang nhìn AI như thế nào?',min:5,submit:['text'],fields:[{k:'level',label:'Hiện trạng sử dụng AI của anh/chị và công ty',type:'select',opts:['Chủ yếu nghe qua tin tức','Đã thử chatbot AI vài lần','Dùng AI thường xuyên trong công việc','Công ty đã đưa AI vào quy trình']},{k:'view',label:'Anh/chị đang nhìn AI như thế nào: công cụ hỗ trợ cá nhân, cơ hội cho doanh nghiệp, hay rủi ro cần kiểm soát? Vì sao?',type:'textarea'}],
+  sample:p=>({level:LEVELS[p.level]||'Đã thử chatbot AI vài lần',view:`Tôi đang xem AI chủ yếu là công cụ hỗ trợ viết nội dung. Tôi muốn hiểu AI có thể giúp công ty ở việc ${G(p).general} không.`})},
+ 'C0-4':{title:'Sau 30 ngày, bạn muốn ra quyết định tốt hơn về điều gì?',min:5,submit:['text'],fields:[{k:'decision',label:'Một quyết định hoặc vấn đề anh/chị muốn cải thiện trong 30 ngày tới',type:'textarea'},{k:'why',label:'Vì sao quyết định này quan trọng với doanh nghiệp lúc này?',type:'text'}],
+  sample:()=>({decision:'Quyết định nên đầu tư AI vào phòng ban nào trước và với ngân sách bao nhiêu.',why:'Đội ngũ đang đề xuất nhiều công cụ AI rời rạc, tôi cần một tiêu chí rõ để duyệt.'})},
+ 'C0-5':{title:'Thiết lập trợ lý AI đồng hành của bạn',min:6,submit:['text'],fields:[{k:'biz',label:'Mô tả ngắn doanh nghiệp: ngành, quy mô, sản phẩm chính, khách hàng',type:'textarea'},{k:'focus',label:'Phòng ban hoặc vấn đề anh/chị muốn trợ lý ưu tiên',type:'text'}],
+  sample:p=>({biz:`${p.company||'Công ty'} · ${p.industry||'Bán lẻ & phân phối'} · ${p.size||'50–200 người'}. Khách hàng chính là đại lý và người tiêu dùng.`,focus:(p.goals||[]).map(g=>GOALS[g]).join(', ')||'Sales, Vận hành'})},
+ 'C1-4':{title:'Top 3 năng lực AI đáng quan tâm nhất',min:8,fields:[{k:'top',label:'3 năng lực AI đáng quan tâm nhất với doanh nghiệp của anh/chị',type:'textarea'},{k:'why',label:'Vì sao chọn 3 năng lực này?',type:'textarea'}],
+  sample:()=>({top:'1. Dữ liệu & phân tích\n2. Tự động hóa & kết nối\n3. Tài liệu & công việc tri thức',why:'Đây là 3 chỗ công ty đang tốn nhiều giờ làm tay nhất: tổng hợp báo cáo, nhập liệu giữa các hệ thống và soạn tài liệu.'})},
+ 'C2-5':{title:'3 cơ hội dùng AI để hỗ trợ ra quyết định',min:10,fields:[{k:'ops',label:'3 quyết định trong doanh nghiệp đang có cơ hội được AI hỗ trợ tốt hơn',type:'textarea'},{k:'check',label:'Ở quyết định nào anh/chị cần kiểm chứng kỹ kết quả AI? Ai kiểm chứng?',type:'text'}],
+  sample:()=>({ops:'1. Nhập hàng tháng tới dựa trên tồn kho và tốc độ bán\n2. Phân bổ ngân sách quảng cáo giữa các kênh\n3. Chọn đại lý để mở rộng chính sách chiết khấu',check:'Quyết định nhập hàng, kế toán trưởng kiểm chứng số liệu trước khi duyệt.'})},
+ 'C3-5':{title:'3 cơ hội ứng dụng AI trong sáng tạo và công việc tri thức',min:10,fields:[{k:'ops',label:'3 đầu ra trong doanh nghiệp có thể được tạo nhanh hơn, rẻ hơn hoặc nhiều phiên bản hơn nhờ AI',type:'textarea'},{k:'review',label:'Ai sẽ duyệt đầu ra AI tạo trước khi sử dụng?',type:'text'}],
+  sample:()=>({ops:'1. Ảnh và bài đăng cho sản phẩm mới mỗi tháng\n2. Slide đề xuất riêng cho khách hàng lớn\n3. Video đào tạo nhân viên mới có lồng tiếng',review:'Trưởng phòng Marketing'})},
+ 'C4-4':{title:'3 cơ hội xây dựng phần mềm bằng AI',min:10,fields:[{k:'ops',label:'3 công cụ nội bộ, quy trình đang dùng bảng tính hoặc ý tưởng sản phẩm muốn thử xây bằng AI',type:'textarea'},{k:'owner',label:'Ai chịu trách nhiệm khi bản mẫu cần thành hệ thống thật?',type:'text'}],
+  sample:()=>({ops:'1. Dashboard doanh số theo chi nhánh mỗi sáng\n2. Ứng dụng check-list kiểm tra cửa hàng\n3. Công cụ tính báo giá nhanh cho nhân viên kinh doanh',owner:'Trưởng phòng IT'})},
+ 'C5-5':{title:'3 quy trình có tiềm năng tự động hóa cao nhất',min:10,fields:[{k:'flows',label:'3 quy trình anh/chị chọn ưu tiên tự động hóa, kèm lý do (lặp lại, khối lượng, quy tắc rõ, rủi ro)',type:'textarea'},{k:'approve',label:'Bước nào bắt buộc phải có người duyệt?',type:'text'}],
+  sample:()=>({flows:'1. Tiếp nhận lead từ website và giao cho sales: lặp lại hằng ngày, quy tắc rõ\n2. Đối chiếu hóa đơn với đơn hàng: khối lượng lớn\n3. Báo cáo doanh thu sáng thứ Hai: tốn 3 giờ làm tay',approve:'Trước khi gửi báo giá hoặc thanh toán cho đối tác'})},
+ 'C6-5':{title:'Bản đồ mức tự chủ của AI trong doanh nghiệp',min:10,fields:[{k:'suggest',label:'Việc AI chỉ được đề xuất',type:'text'},{k:'approve',label:'Việc AI thực hiện sau khi được duyệt',type:'text'},{k:'auto',label:'Việc AI được tự thực hiện',type:'text'}],
+  sample:()=>({suggest:'Điều chỉnh ngân sách quảng cáo, chính sách giá',approve:'Gửi báo giá cho khách, tạo việc cho nhân viên',auto:'Tổng hợp báo cáo, phân loại tin nhắn khách hàng'})},
+ 'CK-2':{title:'Danh mục cơ hội AI của doanh nghiệp',min:10,fields:[{k:'list',label:'Liệt kê các cơ hội AI đã phát hiện xuyên suốt chương trình (mỗi dòng 1 cơ hội, ghi phòng ban)',type:'textarea'}],
+  sample:()=>({list:'Sales: soạn báo giá và đề xuất cho từng khách\nMarketing: tìm nguyên nhân khi chi phí quảng cáo tăng\nCSKH: trả lời tin nhắn lặp lại ngoài giờ\nTài chính: báo cáo doanh thu tự động mỗi sáng\nVận hành: biên bản giao ban và việc cần làm'})},
+ 'CK-3':{title:'Top 3 cơ hội AI ưu tiên của doanh nghiệp',min:10,kind:'uc'},
+ 'CK-4':{title:'Chốt 1 thử nghiệm AI ưu tiên',min:10,fields:[{k:'pick',label:'Cơ hội chọn thử nghiệm trước',type:'text'},{k:'goal',label:'Kết quả kỳ vọng và chỉ số theo dõi',type:'textarea'},{k:'owner',label:'Người chịu trách nhiệm',type:'text'},{k:'guard',label:'Giới hạn và nguyên tắc kiểm soát',type:'text'}],
+  sample:()=>({pick:'Báo cáo doanh thu từng cửa hàng tự động mỗi sáng',goal:'Báo cáo có trước 8 giờ sáng, giảm 3 giờ tổng hợp tay mỗi tuần; theo dõi số lần báo cáo đúng hạn và số lỗi số liệu',owner:'Kế toán trưởng',guard:'AI chỉ đọc dữ liệu, không sửa; số liệu gửi ra ngoài phải có người duyệt'})}
 };
+Object.entries(TASKS).forEach(([id,t])=>{t.ch=id.split('-')[0];t.i=+id.split('-')[1]-1;});
 /* Hình thức nộp bài: do Admin quy định cho từng bài tập (đề bài ghi rõ). Mọi phần có trong hình thức nộp đều BẮT BUỘC.
    submit = mảng các phần: 'text' (nhập văn bản) · 'file' (đính kèm tệp) · 'link' (dán link), vd. ['text','file'] = phải nộp cả văn bản và tệp.
    Chưa đặt thì mặc định ['text','file']. linkTask = câu yêu cầu nộp link (thêm vào đề bài), linkHint / fileHint = gợi ý dưới ô link / tệp
@@ -221,17 +185,21 @@ function submitLabel(t){const m=exMode(t);return {main:capVi(joinVi(m.need.map(k
 const EX_LINKS=3;
 const EX_CRIT=[['full','Trả lời đủ yêu cầu'],['spec','Cụ thể cho công ty'],['act','Áp dụng được']];
 const EX_PASS=6;
-// Thời lượng module = 4 video + bài tập
-LIB.forEach(x=>{if(x.type==='module')x.min=x.parts.reduce((a,b)=>a+b,0)+TASKS[x.id].min;});
+// thời lượng: bài tập lấy theo TASKS; parts = số phút từng bài (đúng thứ tự bài trong chương)
+LIB.forEach(x=>{x.items.forEach(b=>{if(b.ex)b.m=TASKS[b.ex].min;});x.parts=x.items.map(b=>b.m);x.min=x.parts.reduce((s,m)=>s+m,0);x.demo=x.items[0].goal;x.hook=x.items[0].goal;x.body=x.items.map(b=>b.goal);});
 const L=Object.fromEntries(LIB.map(x=>[x.id,x]));
-const TYPE_LABEL={module:'Module',case:'Case',live:'Live replay'};
-const modNo=x=>String(x.no).padStart(2,'0');
-const itemTitle=x=>x.type==='module'?`Module ${modNo(x)}: ${x.title}`:x.title;
+Object.keys(TASKS).forEach(id=>{L[id]=L[TASKS[id].ch];}); // bài tập / ôn tập dùng thông tin của chương chứa nó
+const TYPE_LABEL={module:'Chương',case:'Case',live:'Live replay'};
+const modNo=x=>x.id==='CK'?'Kết':String(x.no);
+const itemTitle=x=>`${chLabel(x)}: ${x.title}`;
+// bài (theo outline) của 1 mã phần học: "C2:1" → bài 2 chương 2 · "E:C2-5" → bài tập 5 chương 2
+function bai(key){if(!key||key.startsWith('R:'))return null;if(key.startsWith('E:')){const t=TASKS[key.slice(2)];return t?L[t.ch].items[t.i]:null;}const [c,i]=key.split(':');return L[c]&&L[c].items[+i]||null;}
+const ALL_BAI=LIB.flatMap(x=>x.items); // 38 bài theo thứ tự
 
 /* ---------- học phí & thông tin bán hàng ---------- */
 // cover: ảnh bìa khóa học tỉ lệ 16:9 (vd. "img/aiceo-cover.jpg", gợi ý 1280×720), để trống thì dùng nền xanh có chữ
 const COURSE={cover:"",list:12000000,price:8800000,promo:'Ưu đãi ra mắt tháng đầu',
- perks:['12 module video demo quay sẵn, chia thành bài học theo lịch của anh/chị','12 bài tập áp dụng cho chính công ty, lưu thành bộ output mang về','Lộ trình cá nhân hóa theo số ngày muốn hoàn thành và phòng ban quan tâm','Live Zoom hằng tháng "AI đến đâu rồi?": năng lực mới, demo mới, hỏi đáp','AI Learning Assistant hỏi đáp 24/7 theo nội dung khóa học','Ưu tiên đăng ký Offline Executive Briefing','Certificate và cộng đồng CEO AI Community']};
+ perks:['37 bài học trong 8 chương (mỗi bài 1 video hoặc 1 bài tập), chia theo lịch của anh/chị','12 bài tập áp dụng cho chính công ty, lưu thành bộ output mang về','Lộ trình cá nhân hóa theo số ngày muốn hoàn thành và phòng ban quan tâm','Live Zoom hằng tháng "AI đến đâu rồi?": năng lực mới, demo mới, hỏi đáp','AI Learning Assistant hỏi đáp 24/7 theo nội dung khóa học','Ưu tiên đăng ký Offline Executive Briefing','Certificate và cộng đồng CEO AI Community']};
 const SAVE=COURSE.list-COURSE.price, OFF=Math.round(SAVE/COURSE.list*100);
 const TOTAL_MIN=LIB.filter(x=>x.req).reduce((a,x)=>a+x.min,0);
 // Phương thức thanh toán (dùng ở form đăng ký và email xác nhận)
@@ -252,9 +220,11 @@ const EMAILJS={serviceId:"",templateId:"",publicKey:""};
 const ACADEMY={name:"Học viện Siêu Tăng Trưởng",sender:"no-reply@sieutangtruong.vn",support:"info@sieutangtruong.com",hotline:"0936 038 739",zalo:"Zalo OA Siêu Tăng Trưởng",hours:"9:00–18:00, thứ Hai đến thứ Sáu",workDays:"Thứ 2 – Thứ 6",workTime:"9:00 – 18:00",web:"sieutangtruong.vn",address:"100 Nguyễn Văn Lượng, Phường Gò Vấp, Hồ Chí Minh",billing:"ketoan@sieutangtruong.vn",footerWeb:"sieutangtruong.com",tagline:"Nền tảng cộng đồng & học tập, giúp bạn áp dụng AI để tăng trưởng kinh doanh nhanh chóng."};
 // Dashboard: Capacity Map 10 năng lực AI = Module 02–11 (màu theo brief ai_for_ceo_ui_redesign.md) (Module 01 là khởi động, Module 12 là đích đến)
 // out = output của năng lực (sản phẩm CEO làm ra ở bài tập của module đó), hiện trên Bản đồ hành trình
-const CAP_MAP=[{id:"M02",out:"3 bộ tài liệu cho AI đọc trước",icon:"book",color:"#1D4ED8"},{id:"M03",out:"Cuộc họp, hình ảnh cần số hóa",icon:"eye",color:"#0E7490"},{id:"M04",out:"Nội dung tốn công nhất để AI tạo",icon:"pen",color:"#DB2777"},{id:"M05",out:"Bộ câu hỏi kinh doanh hằng tuần",icon:"search",color:"#9333EA"},{id:"M06",out:"Công cụ nội bộ + bản dựng thử",icon:"code",color:"#4F46E5"},{id:"M07",out:"Bản đồ hệ thống cho AI kết nối",icon:"link",color:"#0F766E"},{id:"M08",out:"1 quy trình sẵn sàng tự động hóa",icon:"zap",color:"#EA580C"},{id:"M09",out:"Bản giao việc cho AI Agent",icon:"bot",color:"#B45309"},{id:"M10",out:"Mỗi phòng ban 1 việc cho AI",icon:"users",color:"#15803D"},{id:"M11",out:"Ranh giới dùng AI của công ty",icon:"shield",color:"#DC2626"}];
+// 10 năng lực AI theo outline (01–10). units = các bài thể hiện năng lực đó (bài tổng hợp "01–10" ở Kết không tính)
+const CAP_MAP=[{id:"K01",name:"Hiểu đa phương thức",out:"Danh mục dữ liệu AI có thể tiếp nhận",icon:"eye",color:"#1D4ED8"},{id:"K02",name:"Tìm kiếm, nghiên cứu & suy luận",out:"Bản nghiên cứu hỗ trợ một quyết định",icon:"search",color:"#9333EA"},{id:"K03",name:"Tài liệu & công việc tri thức",out:"Bộ tài liệu từ một yêu cầu ngắn",icon:"file",color:"#0E7490"},{id:"K04",name:"Hình ảnh",out:"Bộ phương án hình ảnh",icon:"pen",color:"#DB2777"},{id:"K05",name:"Video",out:"Video ngắn hoàn chỉnh",icon:"video",color:"#B45309"},{id:"K06",name:"Giọng nói",out:"Giọng nói cho nội dung",icon:"vol",color:"#0F766E"},{id:"K07",name:"Dữ liệu & phân tích",out:"Báo cáo quản trị từ dữ liệu thô",icon:"chart",color:"#4F46E5"},{id:"K08",name:"Lập trình & xây dựng ứng dụng",out:"3 cơ hội xây phần mềm bằng AI",icon:"code",color:"#15803D"},{id:"K09",name:"Tự động hóa & kết nối",out:"3 quy trình nên tự động hóa",icon:"zap",color:"#EA580C"},{id:"K10",name:"Agent & hành động",out:"Bản đồ mức tự chủ của AI",icon:"bot",color:"#DC2626"}];
+CAP_MAP.forEach((c,ci)=>{const code=String(ci+1).padStart(2,'0');c.units=ALL_BAI.filter(b=>{const m=b.cap.match(/^([\d\s+]+)—/);return m&&m[1].split('+').map(s=>s.trim()).includes(code);}).map(b=>b.key);L[c.id]={id:c.id,type:'cap',cap:c.name,title:c.name,phase:bai(c.units[0]).ch,units:c.units};});
 // màu từng chương trên bản đồ hành trình
-const PHASE_COLOR={P1:"#3874FF",P2:"#7C5CFC",P3:"#18A999",P4:"#EF8426",P5:"#E66AAD"};
+const PHASE_COLOR={C0:"#64748B",C1:"#3874FF",C2:"#7C5CFC",C3:"#DB2777",C4:"#18A999",C5:"#EF8426",C6:"#E66AAD",CK:"#B45309"};
 // Góp ý sau khi hoàn thành khóa (đề xuất mới): 5 khía cạnh chấm 1–5 sao + gợi ý nhanh, điểm giới thiệu 0–10, nhận xét mở
 const FEEDBACK_ASPECTS=[
  {k:"course",label:"Khóa học nói chung",hint:"Mức độ hài lòng của anh/chị về khóa học",tags:["Đúng nhu cầu của CEO","Đáng thời gian bỏ ra","Mở ra góc nhìn mới","Chưa đủ sâu"]},

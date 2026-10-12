@@ -12,29 +12,31 @@ const fmtShort=t=>new Date(t).toLocaleDateString('vi-VN',{day:'2-digit',month:'2
 const planDay=i=>dayStart((S.plan&&S.plan.start)||Date.now())+i*DAY;
 // ngày hoàn thành một bài = ngày xong phần cuối cùng của bài (null nếu chưa xong / dữ liệu cũ không có ngày)
 function lessonDoneAt(i){const ks=lessons()[i];if(!ks.every(k=>S.done[k]))return null;const ts=ks.map(k=>S.doneAt[k]).filter(Boolean);return ts.length?Math.max(...ts):null;}
-function moduleDoneAt(id){if(!itemDone(id))return null;const ts=[...L[id].parts.map((_,i)=>S.doneAt[id+':'+i]),S.doneAt['E:'+id]].filter(Boolean);return ts.length?Math.max(...ts):null;}
+function moduleDoneAt(id){if(!itemDone(id))return null;const ts=modUnits(id).map(k=>S.doneAt[k]).filter(Boolean);return ts.length?Math.max(...ts):null;}
 // số thứ tự năng lực trên bản đồ: 01 → 10 (khác số module, vì năng lực 1 = Module 02)
 const capNo=i=>String(i+1).padStart(2,'0');
-const modUnits=id=>[...L[id].parts.map((_,i)=>id+':'+i),'E:'+id];
+// các bài thuộc 1 năng lực (CAP_MAP.units) hoặc 1 chương
+const modUnits=id=>L[id].units||chUnits(id);
 const modPct=id=>{const u=modUnits(id);return Math.round(u.filter(k=>S.done[k]).length/u.length*100);};
 // trạng thái 1 năng lực: done (đã chinh phục) / doing (đang học) / open (đã mở, chưa học) / locked (chưa tới)
 function capState(id){
  if(itemDone(id))return 'done';
  if(modUnits(id).some(k=>S.done[k]))return 'doing';
- const li=lessonOfUnit(id+':0');return li>=0&&lessonOpen(li)?'open':'locked';
+ const li=lessonOfUnit(modUnits(id)[0]);return li>=0&&lessonOpen(li)?'open':'locked';
 }
 function dashStats(){
- const ls=lessons(),N=ls.length,st=planStats(),all=ls.flat();
+ // Bài hoàn thành / biểu đồ đếm theo BÀI (mỗi bài 1 video hoặc 1 bài tập), đồng bộ với "Thời gian học từng bài"; ngày học chỉ dùng cho lịch
+ const ls=lessons(),days=ls.length,st0=planStats(),all=ls.flat(),N=all.length,st={...st0,lessonsDone:st0.unitsDone,pct:st0.upct};
  const minDone=all.filter(k=>S.done[k]).reduce((s,k)=>s+U(k).m,0),minAll=lessonMin(all);
  const caps=CAP_MAP.filter(c=>itemDone(c.id)).length;
- const start=planDay(0),end=planDay(N-1),today=dayStart(Date.now());
- const elapsed=Math.max(1,Math.min(N,Math.round((today-start)/DAY)+1));
- const ahead=st.lessonsDone-elapsed; // >0: nhanh hơn kế hoạch
+ const start=planDay(0),end=planDay(days-1),today=dayStart(Date.now());
+ const elapsed=Math.max(1,Math.min(days,Math.round((today-start)/DAY)+1));
+ const ahead=st.lessonsDone-ls.slice(0,elapsed).flat().length; // >0: nhanh hơn kế hoạch (số bài)
  const allDone=st.lessonsDone===N;const lastAt=allDone?Math.max(...ls.map((_,i)=>lessonDoneAt(i)||0)):0;
  const took=allDone&&lastAt?Math.round((dayStart(lastAt)-start)/DAY)+1:null;
  // số ngày thực học: số ngày khác nhau có học ít nhất 1 phần, tính từ lúc bắt đầu đến khi hoàn thành
  const studyDays=new Set(Object.values(S.doneAt||{}).map(dayStart)).size;
- return {...st,N,minDone,minAll,caps,subs:subsCount(),start,end,ahead,allDone,took,studyDays};
+ return {...st,N,days,minDone,minAll,caps,subs:subsCount(),start,end,ahead,allDone,took,studyDays};
 }
 const hm=m=>m>=60?`${Math.floor(m/60)} giờ${m%60?` ${m%60} phút`:''}`:`${m} phút`;
 // lời động viên theo tiến độ
@@ -73,7 +75,7 @@ function dashboard(){
  const d=dashStats(),ni=nextLesson(),p=d.pct,C=2*Math.PI*46,s=streakInfo();
  const head=`<div class="lsn-top"><button class="btn btn-line btn-sm" data-a="outputsBack">${ic('back',15)} Bài học</button>
   <div class="crumbs"><button data-a="go" data-to="mycourses">Khóa học của tôi</button><span>/</span><button data-a="outputsBack">AI for CEO</button><span>/</span><span>Dashboard</span></div></div>`;
- const pace=d.allDone?`${ic('award',14)} Hoàn thành sau ${d.took||d.N} ngày`:d.ahead>0?`${ic('zap',14)} Nhanh hơn ${d.ahead} bài`:d.ahead===0?`${ic('check',14)} Đúng tiến độ`:`${ic('clock',14)} Còn ${-d.ahead} bài để bắt kịp`;
+ const pace=d.allDone?`${ic('award',14)} Hoàn thành sau ${d.took||d.days} ngày`:d.ahead>0?`${ic('zap',14)} Nhanh hơn ${d.ahead} bài`:d.ahead===0?`${ic('check',14)} Đúng tiến độ`:`${ic('clock',14)} Còn ${-d.ahead} bài để bắt kịp`;
  // 1. hero
  const hero=`<section class="dh-hero">
   <div class="dh-ring"><svg width="116" height="116" viewBox="0 0 116 116" aria-hidden="true"><defs><linearGradient id="dh-rg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3874FF"/><stop offset="1" stop-color="#7C5CFC"/></linearGradient></defs><circle cx="58" cy="58" r="46" fill="none" stroke="var(--blue-soft)" stroke-width="12"/><circle cx="58" cy="58" r="46" fill="none" stroke="url(#dh-rg)" stroke-width="12" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C*(1-p/100)}" transform="rotate(-90 58 58)"/></svg><div><b>${p}%</b><span>hành trình</span></div></div>
@@ -112,11 +114,11 @@ function radar(){
   ${CAP_MAP.map((c,i)=>{const [x,y]=pt(i,R+22);return `<text x="${x}" y="${y+4}" text-anchor="middle" class="rd-lbl">${capNo(i)}</text>`;}).join('')}
  </svg><figcaption class="hint">Số trên biểu đồ ứng với số của thẻ năng lực.</figcaption></figure>`;
 }
-const PHASE_ICON={P1:'eye',P2:'pen',P3:'code',P4:'zap',P5:'flag'};
+const PHASE_ICON={C0:'flag',C1:'spark',C2:'eye',C3:'pen',C4:'code',C5:'zap',C6:'bot',CK:'flag'};
 function chapters(){
  const ls=lessons(),ni=nextLesson();
- return PHASES.map((ph,pi)=>{const idx=ls.map((ks,i)=>i).filter(i=>L[U(ls[i][0]).id].phase===ph.id),dn=idx.filter(i=>lessonDone(i)).length;
-  return {ph,pi,idx,dn,state:idx.length&&dn===idx.length?'done':idx.includes(ni)?'cur':'todo'};}).filter(c=>c.idx.length);
+ return PHASES.map((ph,pi)=>{const ks=ls.flat().filter(k=>chOf(k)===ph.id),idx=ls.map((d,i)=>i).filter(i=>ls[i].some(k=>ks.includes(k))),dn=idx.filter(i=>lessonDone(i)).length;
+  return {ph,pi,idx,ks,dn,state:idx.length&&dn===idx.length?'done':idx.includes(ni)?'cur':'todo'};}).filter(c=>c.idx.length);
 }
 // danh sách bài học + bài tập (bài tập nằm ngay sau bài học chứa nó)
 function workList(){
@@ -147,7 +149,7 @@ function donut(parts,total,center,sub){
 const legend=items=>`<div class="ch-legend">${items.map(([c,l,line])=>`<span><i class="${line?'ln':''}" style="background:${c}"></i>${esc(l)}</span>`).join('')}</div>`;
 // 1. Vòng: bài học (hoàn thành / đang học / chưa học) và bài tập (đã nộp / chưa nộp)
 function chartDonuts(d){
- const ni=nextLesson(),doing=ni>=0&&lessons()[ni].some(k=>S.done[k])?1:0,todo=d.N-d.lessonsDone-doing,nt=Object.keys(TASKS).length;
+ const cu=curUnit(),doing=cu&&(S.spent||{})[cu]>0?1:0,todo=d.N-d.lessonsDone-doing,nt=Object.keys(TASKS).length;
  return `<div class="ch-card"><h3 class="ch-t">Bài học</h3><p class="ch-s">${d.lessonsDone}/${d.N} bài đã hoàn thành</p>
    ${donut([{v:d.lessonsDone,c:CH.lesson,l:'Hoàn thành'},{v:doing,c:CH.doing,l:'Đang học'},{v:todo,c:'transparent',l:'Chưa học'}],d.N,Math.round(d.lessonsDone/d.N*100)+'%','hoàn thành')}
    ${legend([[CH.lesson,`Hoàn thành · ${d.lessonsDone}`],[CH.doing,`Đang học · ${doing}`],['var(--bg-2)',`Chưa học · ${todo}`]])}</div>
@@ -157,13 +159,13 @@ function chartDonuts(d){
 }
 // 3. Cột: thời gian thực học (phút) của từng bài; bài chưa học hiện thời lượng dự kiến (xám)
 function chartLessonTime(){
- const ls=lessons(),N=ls.length,ni=nextLesson(),W=1000,H=200,m={l:44,r:6,t:14,b:28},iw=W-m.l-m.r,ih=H-m.t-m.b;
- const act=ls.map(ks=>spentOf(ks)),val=act;
+ const us=planUnits(),N=us.length,cu=curUnit(),W=1000,H=200,m={l:44,r:6,t:14,b:28},iw=W-m.l-m.r,ih=H-m.t-m.b;
+ const act=us.map(k=>spentOf([k])),val=act;
  const max=Math.max(10,Math.ceil(Math.max(...val)/10)*10),band=iw/N,bw=Math.max(8,Math.min(100,band*.72));
- const Y=v=>m.t+ih-(v/max)*ih,every=N<=30?1:2; // hiện đủ số thứ tự từng bài (theo yêu cầu user); lộ trình > 30 bài thì cách 1 số cho khỏi chồng chữ
- const bars=ls.map((ks,i)=>{const done=lessonDone(i),cur=i===ni,at=lessonDoneAt(i);
+ const Y=v=>m.t+ih-(v/max)*ih,every=N<=40?1:2; // hiện đủ số thứ tự từng bài (theo yêu cầu user); > 40 bài thì cách 1 số cho khỏi chồng chữ
+ const bars=us.map((k,i)=>{const done=!!S.done[k],cur=k===cu,at=(S.doneAt||{})[k];
   const x=m.l+i*band+(band-bw)/2,y=Math.min(Y(val[i]),m.t+ih-(val[i]>0?6:0)),c=done?CH.lesson:cur?CH.doing:'var(--line-2)';
-  const t=tip(`Bài ${i+1} · ${lessonTitle(ks,i,ls)}`,done||act[i]>0?`Thực học ${fmtMin(act[i])}`:'Chưa học',done?`Hoàn thành ${at?fmtShort(at):''}`:cur?'Đang học':'');
+  const t=tip(`Bài ${i+1} · ${unitLabel(U(k))} · ${unitTitle(U(k))}`,done||act[i]>0?`Thực học ${fmtMin(act[i])}`:'Chưa học',done?`Hoàn thành ${at?fmtShort(at):''}`:cur?'Đang học':'');
   return `${val[i]>0?`<path d="M${x},${m.t+ih}V${y+4}a4,4 0 0 1 4,-4h${bw-8}a4,4 0 0 1 4,4V${m.t+ih}Z" fill="${c}"/>`:''}<rect class="ch-hit" x="${m.l+i*band}" y="${m.t}" width="${band}" height="${ih}" fill="transparent" tabindex="0" data-tip="${t}"/>${i%every===0||i===N-1?`<text x="${x+bw/2}" y="${H-8}" text-anchor="middle" class="ch-ax">${i+1}</text>`:''}`;}).join('');
  return `<div class="ch-card wide"><h3 class="ch-t">Thời gian học từng bài</h3><p class="ch-s">Số phút thực học mỗi bài.</p>
   <div class="ch-wrap"><svg viewBox="0 0 ${W} ${H}" class="ch-svg" role="img" aria-label="Thời gian thực học từng bài">
@@ -172,10 +174,10 @@ function chartLessonTime(){
 }
 // 4. Thanh ngang: số ngày thực học của từng chương = số ngày khác nhau có học ít nhất 1 phần trong chương
 function chartChapterTime(){
- const ls=lessons(),rows=chapters().map(c=>{const ks=c.idx.flatMap(i=>ls[i]);return {ph:c.ph,done:new Set(ks.map(k=>(S.doneAt||{})[k]).filter(Boolean).map(dayStart)).size};});
+ const ls=lessons(),rows=chapters().map(c=>{const ks=c.ks;return {ph:c.ph,done:new Set(ks.map(k=>(S.doneAt||{})[k]).filter(Boolean).map(dayStart)).size};});
  const max=Math.max(1,...rows.map(r=>r.done));
  return `<div class="ch-card"><h3 class="ch-t">Thời gian học theo chương</h3><p class="ch-s">Số ngày thực học của từng chương.</p>
-  <div class="ch-bars">${rows.map(r=>{return `<div class="ch-bar ch-hit" tabindex="0" data-tip="${tip(`Chương ${PHASES.indexOf(r.ph)+1} · ${r.ph.name}`,r.done?`Thực học ${r.done} ngày`:'Chưa học')}"><span class="l">Chương ${PHASES.indexOf(r.ph)+1}<small>${esc(r.ph.name)}</small></span>
+  <div class="ch-bars">${rows.map(r=>{return `<div class="ch-bar ch-hit" tabindex="0" data-tip="${tip(`${chLabel(L[r.ph.id])} · ${r.ph.name}`,r.done?`Thực học ${r.done} ngày`:'Chưa học')}"><span class="l">${chLabel(L[r.ph.id])}<small>${esc(r.ph.name)}</small></span>
    <span class="t" style="width:100%"><i style="width:${r.done/max*100}%;background:${CH.time}"></i></span><b class="v">${r.done} ngày</b></div>`;}).join('')}</div>
 </div>`;
 }
@@ -255,7 +257,7 @@ async function drawDashCard(g){
  g.textAlign='center';g.fillStyle='#172033';g.font=F(800,46);g.fillText(d.pct+'%',cx,cy+12);g.fillStyle='#667085';g.font=F(500,16);g.fillText('hoàn thành',cx,cy+40);g.textAlign='left';
  [[`${d.studyDays} ngày`,'Thời gian học','#EF8426'],[`${d.lessonsDone}/${d.N}`,'Bài hoàn thành','#22A06B'],[`${d.caps}/${CAP_MAP.length}`,'Năng lực AI','#18A999']].forEach(([v,l,c],i)=>{const y=290+i*88;g.fillStyle=c;rr(g,310,y-32,8,54,4);g.fill();g.fillStyle='#172033';g.font=F(800,34);g.fillText(v,334,y);g.fillStyle='#667085';g.font=F(500,16);g.fillText(l,334,y+24);});
  // cột trái dưới: 2 vòng
- const ni=nextLesson(),doing=ni>=0&&ls[ni]&&ls[ni].some(k=>S.done[k])?1:0,todo=d.N-d.lessonsDone-doing;
+ const cu=curUnit(),doing=cu&&(S.spent||{})[cu]>0?1:0,todo=d.N-d.lessonsDone-doing;
  const donut=(x,y,w,title,sub,parts,total,big,legend)=>{card(x,y,w,380);g.fillStyle='#172033';g.font=F(700,19);g.fillText(title,x+24,y+40);g.fillStyle='#667085';g.font=F(500,15);g.fillText(sub,x+24,y+64);
   const ox=x+w/2,oy=y+170,r=66;g.lineCap='butt';g.lineWidth=22;g.strokeStyle='#EEF1F6';g.beginPath();g.arc(ox,oy,r,0,7);g.stroke();let a0=-Math.PI/2;
   parts.forEach(([v,c])=>{if(!v)return;const a1=a0+Math.PI*2*v/total;g.strokeStyle=c;g.beginPath();g.arc(ox,oy,r,a0,a1);g.stroke();a0=a1;});
@@ -266,14 +268,14 @@ async function drawDashCard(g){
  // cột phải: tiêu đề biểu đồ + thời gian học theo chương + từng bài
  const X=640,RW=W-48-X;
  g.fillStyle='#3874FF';g.font=F(800,14);g.fillText('BIỂU ĐỒ TIẾN ĐỘ',X,226);g.fillStyle='#172033';g.font=F(800,24);g.fillText('Đã hoàn thành bao nhiêu, mất bao lâu',X,258);
- const rows=chapters().map(c=>{const ks=c.idx.flatMap(i=>ls[i]);return {pi:PHASES.indexOf(c.ph),name:c.ph.name,v:new Set(ks.map(k=>(S.doneAt||{})[k]).filter(Boolean).map(dayStart)).size};}),mx=Math.max(1,...rows.map(r=>r.v));
+ const rows=chapters().map(c=>{const ks=c.ks;return {pi:PHASES.indexOf(c.ph),name:c.ph.name,v:new Set(ks.map(k=>(S.doneAt||{})[k]).filter(Boolean).map(dayStart)).size};}),mx=Math.max(1,...rows.map(r=>r.v));
  card(X,280,RW,280);g.fillStyle='#172033';g.font=F(700,19);g.fillText('Thời gian học theo chương',X+24,318);g.fillStyle='#667085';g.font=F(500,15);g.fillText('Số ngày thực học của từng chương',X+24,342);
- rows.forEach((r,k)=>{const y=384+k*36;g.fillStyle='#344054';g.font=F(600,16);g.fillText(fitText(g,`Chương ${r.pi+1} · ${r.name}`,320),X+24,y+5);if(r.v){g.fillStyle=CH.time;rr(g,X+360,y-9,(RW-480)*r.v/mx,16,4);g.fill();}g.fillStyle='#172033';g.font=F(700,16);g.textAlign='right';g.fillText(r.v+' ngày',X+RW-24,y+5);g.textAlign='left';});
+ rows.forEach((r,k)=>{const y=384+k*36;g.fillStyle='#344054';g.font=F(600,16);g.fillText(fitText(g,`${chLabel(LIB[r.pi])} · ${r.name}`,320),X+24,y+5);if(r.v){g.fillStyle=CH.time;rr(g,X+360,y-9,(RW-480)*r.v/mx,16,4);g.fill();}g.fillStyle='#172033';g.font=F(700,16);g.textAlign='right';g.fillText(r.v+' ngày',X+RW-24,y+5);g.textAlign='left';});
  card(X,580,RW,360);g.fillStyle='#172033';g.font=F(700,19);g.fillText('Thời gian học từng bài',X+24,618);g.fillStyle='#667085';g.font=F(500,15);g.fillText('Số phút thực học mỗi bài',X+24,642);
- const mins=ls.map(ks=>spentOf(ks)),mm=Math.max(10,Math.ceil(Math.max(...mins)/10)*10),N=ls.length,x0=X+64,x1=X+RW-24,y0=900,hh=220,band=(x1-x0)/N,bw=Math.max(4,Math.min(56,band*.72));
+ const us=ls.flat(),mins=us.map(k=>spentOf([k])),mm=Math.max(10,Math.ceil(Math.max(...mins)/10)*10),N=us.length,x0=X+64,x1=X+RW-24,y0=900,hh=220,band=(x1-x0)/N,bw=Math.max(4,Math.min(56,band*.72));
  g.strokeStyle='#EEF1F6';g.lineWidth=1;[0,.5,1].forEach(f=>{const y=y0-hh*f;g.beginPath();g.moveTo(x0,y);g.lineTo(x1,y);g.stroke();g.fillStyle='#98A2B3';g.font=F(500,13);g.textAlign='right';g.fillText(Math.round(mm*f)+'′',x0-8,y+4);});
- const every=N<=30?1:2;
- mins.forEach((m,i)=>{const x=x0+i*band+(band-bw)/2;if(m>0){g.fillStyle=lessonDone(i)?CH.lesson:CH.doing;const h=Math.max(3,hh*m/mm);rr(g,x,y0-h,bw,h,Math.min(4,bw/2));g.fill();}
+ const every=N<=40?1:2;
+ mins.forEach((m,i)=>{const x=x0+i*band+(band-bw)/2;if(m>0){g.fillStyle=S.done[us[i]]?CH.lesson:CH.doing;const h=Math.max(3,hh*m/mm);rr(g,x,y0-h,bw,h,Math.min(4,bw/2));g.fill();}
   if(i%every===0||i===N-1){g.fillStyle='#667085';g.font=F(500,13);g.textAlign='center';g.fillText(i+1,x+bw/2,y0+20);}});
  g.textAlign='center';g.fillStyle='#667085';g.font=F(500,16);g.fillText('sieutangtruong.vn · #AIforCEO',W/2,978);g.textAlign='left';
 }
@@ -406,7 +408,7 @@ function jData(){
  const J=CAP_MAP.map((c,i)=>{const m=L[c.id];return {i,id:c.id,title:m.cap,out:c.out||'',s:capState(c.id),pi:PHASES.findIndex(p=>p.id===m.phase),color:c.color};});
  const ci=J.findIndex(j=>j.s!=='done');
  J.forEach((j,k)=>{j.st=j.s==='done'?'done':k===ci?'cur':'locked';});
- J.fin=ci<0&&itemDone('M12');
+ J.fin=ci<0&&itemDone('CK');
  return J;
 }
 function journeyHTML(){
@@ -420,7 +422,7 @@ const jAria=J=>`Bản đồ hành trình: ${jDone(J)}/${J.length} năng lực AI
 function jGroups(J){const g=[];J.forEach((j,k)=>{let x=g.find(y=>y.pi===j.pi);if(!x)g.push(x={pi:j.pi,idx:[]});x.idx.push(k);});
  g.forEach(x=>{x.dn=x.idx.filter(k=>J[k].st==='done').length;x.state=x.dn===x.idx.length?'done':x.idx.some(k=>J[k].st!=='locked')?'doing':'todo';});return g;}
 // Về đích: tên 3 use case học viên đã nộp ở bài tập Module 12 (theo yêu cầu user); chưa nộp thì trả [] và hiện "Chọn 3 use case cho doanh nghiệp"
-function jUseCases(){const s=S.subs&&S.subs.M12;if(!s||!s.text)return [];const p=exSplit(s.text,3,true)||[];
+function jUseCases(){const s=S.subs&&S.subs[UC_TASK];if(!s||!s.text)return [];const p=exSplit(s.text,3,true)||[];
  return p.map(t=>String(t||'').split('\n')[0].replace(/^[\s:.\-–]+/,'').trim()).filter(Boolean).slice(0,3);}
 const jCut=(t,n)=>t.length>n?t.slice(0,Math.max(1,n-1)).trim()+'…':t;
 // đường cong mượt qua các điểm (tiếp tuyến đứng ở mỗi điểm)
@@ -439,7 +441,7 @@ function jRoad(J,opt={}){
  const P=J.map((_,i)=>[xs[i],Y(i)]),start=[xs[0],H-40],goal=[CX,TOP-118];
  const curve=pts=>jCurve(pts);
  const bands=chs.map(c=>{const f=c.idx[0],l=c.idx[c.idx.length-1],y0=Y(f)+72,y1=Y(l)-52,col=PHASE_COLOR[PHASES[c.pi].id]||'#3874FF',lock=c.state==='todo';
-  const txt=`CHƯƠNG ${c.pi+1} · ${PHASES[c.pi].name.toUpperCase()}`,cnt=`${c.dn}/${c.idx.length}`;
+  const txt=`${chLabel(LIB[c.pi]).toUpperCase()} · ${PHASES[c.pi].name.toUpperCase()}`,cnt=`${c.dn}/${c.idx.length}`;
   const right=xs[f]<CX,tw=Math.min(W-48,txt.length*(narrow?10:9)+cnt.length*(narrow?10:9)+50),cx0=right?W-24-tw:24,cy=y0-38;
   return [`<rect x="0" y="${y1}" width="${W}" height="${y0-y1}" rx="22" fill="${lock?'#98A2B3':col}" fill-opacity="${lock?.04:.06}"/>`,`<g class="jr3-band"><rect x="${cx0}" y="${cy}" width="${tw}" height="32" rx="16" fill="#fff"/><rect x="${cx0}" y="${cy}" width="${tw}" height="32" rx="16" fill="${lock?'#EEF1F6':col}" fill-opacity="${lock?1:.14}"/>
    <text x="${cx0+16}" y="${cy+21}" class="jr3-chip" fill="${lock?'#8A94A6':col}">${esc(txt)}</text><text x="${cx0+tw-16}" y="${cy+21}" text-anchor="end" class="jr3-cnt" fill="${lock?'#8A94A6':col}">${cnt}</text></g>`];});

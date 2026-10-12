@@ -127,7 +127,7 @@ function exRuleReview(id){
  if(act<7)fix.push('Ghi rõ ai phụ trách và kết quả muốn đạt sau 1 tháng.');
  if(!text&&(files.length||links.length))fix.push('Thêm vài dòng tóm tắt ý chính để đội ngũ đọc nhanh.');
  if(!parts&&n>1&&text)fix.push('Tách câu trả lời theo từng câu ("Câu 1: …") để dễ theo dõi.');
- return {score,pass:score>=EX_PASS,crit,qs:qr,good:good.slice(0,2),fix:fix.slice(0,3),ask:x.qs[1],by:'rule',at:nowStr()};}
+ return {score,pass:score>=EX_PASS,crit,qs:qr,good:good.slice(0,2),fix:fix.slice(0,3),ask:(x.qs||[])[1]||'Ai trong đội ngũ sẽ phụ trách thử việc này, và khi nào đánh giá lại?',by:'rule',at:nowStr()};}
 async function feedbackFor(id){
  const s=S.subs[id];s.feedback={pending:true};render();
  const sample=await SAMPLE_P;let r=null;
@@ -136,7 +136,7 @@ async function feedbackFor(id){
 Chấm 3 tiêu chí thang 10 (bước 0,5): full = Trả lời đủ yêu cầu; spec = Cụ thể cho công ty (số liệu, bộ phận, hệ thống); act = Áp dụng được (ai phụ trách, mốc thời gian, kết quả).
 Chỉ trả JSON: {"crit":[{"k":"full","score":0,"note":""},{"k":"spec","score":0,"note":""},{"k":"act","score":0,"note":""}],"qs":[{"st":"ok|short|miss","note":""}],"good":[""],"fix":[""],"ask":""}
 qs có đúng ${qs.length} phần tử theo thứ tự câu hỏi; note tối đa 15 từ; good 1–2 ý, fix 1–3 ý; ask = 1 câu hỏi CEO nên hỏi đội ngũ.
-Module: ${L[id].title}
+Chương: ${L[id].title}
 Bài tập: ${TASKS[id].title}
 Câu hỏi: ${qs.map((q,i)=>(i+1)+'. '+q).join(' | ')}
 Bài làm:
@@ -198,8 +198,8 @@ function simulateUpTo(h){
 function go(to){if(to==='checkout'&&!S.loggedIn&&S.pay.status!=='success'){T.after='checkout';T.acTab=S.account?'login':'register';to='account';}S.screen=to;T.err={};T.draft=null;T.exFiles=null;render();hist();landScroll();}
 // Lịch sử trình duyệt: nút Back của trình duyệt / vuốt quay lại trên điện thoại cũng quay về màn trước
 function hist(replace){
- const cm=S.screen==='community',st={screen:S.screen,lesson:S.lesson,from:S.from||null,ci:cm?T.commId||null:null,ct:cm?T.commTab:null,cp:cm?T.commPost:null},cur=history.state;
- if(!replace&&cur&&cur.screen===st.screen&&cur.lesson===st.lesson&&cur.from===st.from&&cur.ct===st.ct&&cur.cp===st.cp&&cur.ci===st.ci)return;
+ const cm=S.screen==='community',st={screen:S.screen,lesson:S.lesson,unit:S.screen==='lesson'?S.unit:null,from:S.from||null,ci:cm?T.commId||null:null,ct:cm?T.commTab:null,cp:cm?T.commPost:null},cur=history.state;
+ if(!replace&&cur&&cur.screen===st.screen&&cur.lesson===st.lesson&&cur.unit===st.unit&&cur.from===st.from&&cur.ct===st.ct&&cur.cp===st.cp&&cur.ci===st.ci)return;
  // tab cộng đồng giữ #community trên đường dẫn; rời cộng đồng thì bỏ, để tải lại trang không quay về cộng đồng
  const url=cm?'#community'+(T.commId?'-'+T.commId:''):location.pathname+location.search;
  try{history[replace?'replaceState':'pushState'](st,'',url);}catch(e){}
@@ -233,11 +233,11 @@ function ensureFor(to){
 }
 // Sang phần tiếp theo trong bài; hết bài thì sang bài kế tiếp
 function advance(){
- const ks=S.plan.lessons[S.lesson];const pos=ks.indexOf(S.unit);
- if(pos<ks.length-1){S.unit=ks[pos+1];render();window.scrollTo(0,0);return;}
- if(lessonDone(S.lesson))toast(`Hoàn thành Bài ${S.lesson+1}/${S.plan.lessons.length}`);
- const n=nextLesson();if(n<0){go('complete');return;}
- S.lesson=n;S.unit=null;S.from=null;render();hist();window.scrollTo(0,0);
+ const all=planUnits(),pos=all.indexOf(S.unit),d=S.lesson,nx=all[pos+1];
+ if(lessonDone(d)&&(!nx||lessonOfUnit(nx)!==d))toast(`Hoàn thành ${dayLabel(d)}: ${lessons()[d].length} bài`);
+ if(!nx){go('complete');return;}
+ const k=unitOpen(nx)?nx:curUnit();if(!k){go('complete');return;}
+ S.unit=k;S.lesson=lessonOfUnit(k);S.from=null;T.editEx=null;render();hist();window.scrollTo(0,0);
 }
 
 /* ---------- xử lý nút bấm (data-a="…") ---------- */
@@ -260,10 +260,10 @@ const ACT={
  invLookup:()=>{toast('Trang tra cứu hóa đơn điện tử thuộc nhà cung cấp hóa đơn, chưa có trong bản demo');},
  mailClose:()=>{T.mailOpen=null;render();},
  mailCta:()=>{T.mailOpen=null;ensureFor('mycourses');go('mycourses');toast('Đã mở khóa học từ email xác nhận');},
- backToList:()=>{T.focusLesson=S.lesson;S.from=null;T.editEx=null;go('learn');},
+ backToList:()=>{T.focusLesson=S.unit;S.from=null;T.editEx=null;go('learn');},
  // bài tập mở từ "Bài tập của tôi" → quay lại đó, cuộn tới đúng thẻ bài tập
  // Bài tập của tôi → danh sách bài học, cuộn tới bài đang học
- outputsBack:()=>{const n=nextLesson();T.focusLesson=n>=0?n:null;T.editEx=null;go('learn');},
+ outputsBack:()=>{T.focusLesson=curUnit();T.editEx=null;go('learn');},
  backToOutputs:()=>{T.focusEl='out-'+S.fromEx;S.from=null;T.editEx=null;go('outputs');},
  reset:()=>{S=DEFAULT();PREVIEW=null;Object.assign(T,{gen:null,asstOpen:false,tab:"ai",expertDraft:"",expertTyping:false,asstBusy:false,obTyping:false,err:{}});go('landing');toast('Đã làm lại demo từ đầu');},
  scrollTo:d=>{const el=document.getElementById(d.v);if(el)el.scrollIntoView({behavior:'smooth'});},
@@ -308,6 +308,7 @@ const ACT={
  fixPace:d=>{const p0={...S.profile},was=!!(S.plan&&S.plan.wasActive);S.profile.minPerSession=+d.v;S.plan=rulePlan(S.profile);S.plan.wasActive=was;S.adjustLog.push({role:'bot',text:describeChanges(p0,S.profile)});render();},
  acceptPlan:()=>{if(!S.plan||S.plan.warning)return;T.drawer=null;const was=S.plan.wasActive;S.plan.accepted=true;S.plan.wasActive=true;go('learn');toast(was?'Đã lưu lộ trình mới':'Đã xác nhận lộ trình. Bắt đầu Bài 1 nhé!');},
  // học
+ openUnit:d=>{const k=d.v;if(!unitOpen(k)){toast(unitLockMsg(k),'bad');return;}S.unit=k;S.lesson=lessonOfUnit(k);S.from=null;T.editEx=null;go('lesson');},
  openLesson:d=>{if(!lessonOpen(+d.v)){toast(lockMsg(+d.v),'bad');return;}S.lesson=+d.v;S.unit=null;S.from=null;go('lesson');},
  selUnit:d=>{S.unit=d.v;render();},
  playUnit:()=>{if(U(S.unit).kind==='exercise')return;if(!S.done[S.unit])S.spent[S.unit]=(S.spent[S.unit]||0)+U(S.unit).m;markDone(S.unit);render();},
@@ -377,9 +378,9 @@ const ACT={
  jmVer:d=>{T.jmVer=+d.v;render();},
  // danh sách bài theo chương: mở/thu chương, mở chi tiết 1 bài; ngăn trượt Vì sao / Điều chỉnh
  cxToggle:d=>{const a=T.cx[d.k]||[],v=+d.v;T.cx[d.k]=a.includes(v)?a.filter(x=>x!==v):[...a,v];render();},
- lxToggle:d=>{if(T.clAll[d.k]){T.clAll[d.k]=false;T.lx[d.k]=null;}else T.lx[d.k]=T.lx[d.k]===+d.v?null:+d.v;render();},
+ lxToggle:d=>{if(T.clAll[d.k]){T.clAll[d.k]=false;T.lx[d.k]=null;}else T.lx[d.k]=T.lx[d.k]===d.v?null:d.v;render();},
  // mở hết chương + chi tiết mọi bài, hoặc thu gọn tất cả
- clAll:d=>{const on=!T.clAll[d.k];T.clAll[d.k]=on;T.lx[d.k]=null;T.cx[d.k]=on?chapters().map(c=>c.pi):[];render();},
+ clAll:d=>{const on=!T.clAll[d.k];T.clAll[d.k]=on;T.lx[d.k]=null;T.cx[d.k]=on?LIB.map((_,i)=>i):[];render();},
  drawerOpen:d=>{T.drawer=d.v;T.asstOpen=false;render();if(d.v==='adjust'){const el=document.getElementById('adj-in');if(el)el.focus();}},
  drawerClose:()=>{T.drawer=null;render();},
  shareOpen:d=>{T.share=d.v;T.shareCap=null;T.asstOpen=false;render();},
@@ -489,10 +490,10 @@ window.addEventListener('scroll',()=>{const t=document.getElementById('ch-tip');
 window.addEventListener('popstate',e=>{
  const st=e.state;if(!st||!SCREENS[st.screen])return;
  if(st.screen==='lesson'&&!(S.plan&&S.plan.lessons[st.lesson]&&lessonOpen(st.lesson)))return;
- if(S.screen==='lesson'&&st.screen==='learn')T.focusLesson=S.lesson;
+ if(S.screen==='lesson'&&st.screen==='learn')T.focusLesson=S.unit;
  if(S.screen==='lesson'&&st.screen==='outputs'&&S.from==='outputs')T.focusEl='out-'+S.fromEx;
  if(st.screen==='community'){T.commId=st.ci||null;T.commTab=st.ct||'feed';T.commPost=st.cp||null;}
- S.from=st.from||null;S.screen=st.screen;if(st.screen==='lesson'&&st.lesson!==S.lesson){S.lesson=st.lesson;S.unit=null;}
+ S.from=st.from||null;S.screen=st.screen;if(st.screen==='lesson'&&(st.lesson!==S.lesson||st.unit!==S.unit)){S.lesson=st.lesson;S.unit=st.unit||null;}
  T.err={};T.draft=null;T.editEx=null;render();landScroll();
 });
 // video: kéo âm lượng, đóng menu cài đặt khi bấm ra ngoài, cập nhật nút khi vào/thoát toàn màn hình
@@ -520,6 +521,11 @@ document.addEventListener('keydown',e=>{if(T.mediaView){if(e.key==='Escape'){T.m
 /* ---------- khởi động ---------- */
 // dọn dữ liệu cũ còn lưu trong trình duyệt từ các phiên bản demo trước
 if(S.pay.status==='processing')S.pay.status=null;
+// khóa đổi sang 8 chương · 37 bài (mỗi bài 1 video / 1 bài tập, 10/2026): mã bài cũ (M01:0, E:M01…) không còn → bỏ tiến độ cũ, chia lại lộ trình theo hồ sơ
+{const okKey=k=>{try{return !!U(k);}catch(e){return false;}};
+ Object.keys(S.done||{}).forEach(k=>{if(!okKey(k)){delete S.done[k];if(S.doneAt)delete S.doneAt[k];if(S.spent)delete S.spent[k];}});
+ Object.keys(S.subs||{}).forEach(id=>{if(!TASKS[id])delete S.subs[id];});
+ if(S.plan&&!S.plan.lessons.flat().every(okKey)){const keep={accepted:S.plan.accepted,wasActive:S.plan.wasActive,start:S.plan.start};try{S.plan=Object.assign(rulePlan(S.profile),keep);}catch(e){S.plan=null;}S.lesson=0;S.unit=null;if(S.screen==='lesson')S.screen='learn';}}
 if(!S.spent)S.spent={};
 // đã bỏ chọn ngày trong tuần ở Nhắc lịch học (theo yêu cầu user): luôn nhắc mỗi ngày
 if(S.remind)S.remind.days=[1,2,3,4,5,6,0];

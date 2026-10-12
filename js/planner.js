@@ -1,7 +1,8 @@
 /* =========================================================
    PLANNER — chia bài học & cá nhân hóa lộ trình
-   - Số bài học = số ngày muốn hoàn thành (học mỗi ngày 1 bài)
-   - Guardrail: luôn giữ đủ 12 module theo thứ tự, không vượt quỹ thời gian
+   - Khóa có 8 chương, 37 bài; MỖI BÀI LÀ 1 VIDEO HOẶC 1 BÀI TẬP (theo outline user 10/2026)
+   - Lộ trình cá nhân hóa = chia 37 bài vào số ngày muốn hoàn thành (mỗi ngày vài bài), giữ đúng thứ tự chương
+   - plan.lessons = danh sách NGÀY HỌC, mỗi ngày là mảng mã bài; "lesson" trong code = 1 ngày học
    - Có AI thì AI chọn nội dung + lý do; không có AI thì dùng bộ luật (rulePlan)
    ========================================================= */
 
@@ -12,23 +13,21 @@ function dayLabel(i){return `Ngày ${i+1}`;}
 function weekOf(i){return Math.floor(i/7);}
 function profileComplete(p){return !!(p.industry&&p.size&&p.level&&p.goals&&p.goals.length&&p.days&&p.minPerSession);}
 
-/* ---------- đơn vị nội dung (video / bài tập / ôn tập / case) ---------- */
-// key: "M05:2" = Module 05 video C; "E:M05" = bài tập Module 05; "R:M05" = bài ôn tập Module 05; "X2" = case/live
+/* ---------- đơn vị nội dung = 1 bài (video hoặc bài tập) ---------- */
+// key: "C2:1" = bài video (chương C2, bài thứ 2); "E:C2-5" = bài tập (Bài 5 Chương 2); "R:C2-5" = bài ôn tập chèn thêm khi số ngày > số bài
 function U(key){
- if(key.startsWith('R:')){const id=key.slice(2);return {key,id,kind:'review',m:REVIEW_MIN};}
- if(key.startsWith('E:')){const id=key.slice(2);return {key,id,kind:'exercise',m:TASKS[id].min};}
- const [id,p]=key.split(':');const x=L[id];
- if(p!==undefined)return {key,id,kind:'video',part:+p,m:x.parts[+p]};
- return {key,id,kind:'extra',m:x.min};
+ if(key.startsWith('R:')){const id=key.slice(2);return {key,id,kind:'review',m:REVIEW_MIN,b:null};}
+ if(key.startsWith('E:')){const id=key.slice(2);return {key,id,kind:'exercise',m:TASKS[id].min,b:bai(key)};}
+ const [id,p]=key.split(':');const b=L[id].items[+p];if(!b||b.ex)throw new Error('Mã bài không hợp lệ: '+key);
+ return {key,id,kind:'video',part:+p,m:b.m,b};
 }
-function unitLabel(u){return u.kind==='video'?`Video ${'ABCD'[u.part]} · ${PARTS[u.part]}`:u.kind==='exercise'?'Bài tập':u.kind==='review'?'Ôn tập & liên hệ công ty':TYPE_LABEL[L[u.id].type];}
-function unitTitle(u){const x=L[u.id];return u.kind==='video'?`Module ${modNo(x)} · ${PARTS[u.part]}`:u.kind==='exercise'?`Bài tập: ${TASKS[u.id].title}`:u.kind==='review'?`Ôn tập Module ${modNo(x)}`:x.title;}
-function unitLine(u){const x=L[u.id];
- if(u.kind==='video')return {icon:'video',t:`Video: ${PARTS[u.part]}`};
- if(u.kind==='exercise')return {icon:'file',t:`Bài tập: ${TASKS[u.id].title}`};
- if(u.kind==='review')return {icon:'book',t:'Ôn tập & liên hệ với công ty'};
- return {icon:'video',t:x.title.startsWith(TYPE_LABEL[x.type])?x.title:`${TYPE_LABEL[x.type]}: ${x.title}`};} // tránh lặp "Case: Case:"
-function unitsOf(items){const u=[];items.forEach(it=>{const x=L[it.id];if(x.type==='module'){x.parts.forEach((m,i)=>u.push(U(x.id+':'+i)));u.push(U('E:'+x.id));}else u.push(U(x.id));});return u;}
+const chOf=k=>{const u=U(k);return u.b?u.b.ch:L[u.id].id;}; // mã chương chứa bài
+const unitType=u=>u.kind==='exercise'?'Bài tập':u.kind==='review'?'Ôn tập':'Video';
+function unitLabel(u){return u.b?`${chLabel(L[u.b.ch])} · Bài ${u.b.i+1}`:`Ôn tập ${chLabel(L[u.id])}`;}
+function unitTitle(u){return u.b?u.b.t:`Ôn tập: ${L[u.id].title}`;}
+function unitLine(u){return {icon:u.kind==='exercise'?'file':u.kind==='review'?'book':'video',t:unitTitle(u)};}
+const chUnits=id=>L[id].items.map(b=>b.key);
+function unitsOf(items){return items.flatMap(it=>chUnits(it.id).map(U));}
 // Số ngày nhiều hơn số phần nội dung: chèn bài "Ôn tập & liên hệ công ty" để mỗi ngày vẫn có 1 bài
 function addReviews(units,N){
  const need=N-units.length;if(need<=0)return units;
@@ -52,21 +51,16 @@ function partition(units,N){
  if(cur.length)groups.push(cur);
  return groups;
 }
-// Một module có thể trải qua nhiều bài: trả về "phần k trên n"
-function modSplit(id,li,all){const idx=[];all.forEach((ks,i)=>{if(ks.some(k=>U(k).id===id&&U(k).kind!=='review'))idx.push(i);});return {k:idx.indexOf(li)+1,n:idx.length};}
-function lessonTitle(keys,li,all){
- all=all||(S.plan&&S.plan.lessons)||[keys];if(li==null)li=all.indexOf(keys);
- const us=keys.map(U);const ids=[...new Set(us.map(u=>u.id))];
- if(us.length===1&&us[0].kind==='review')return `Ôn tập: ${L[us[0].id].title}`;
- return ids.map(id=>{const x=L[id];if(x.type!=='module'||li<0)return x.title;const sp=modSplit(id,li,all);return x.title+(sp.n>1?` · Phần ${sp.k}/${sp.n}`:'');}).join(' + ');
-}
+// tên 1 ngày học = tên bài đầu tiên chưa học (hoặc bài đầu) + số bài còn lại trong ngày
+function lessonTitle(keys){const k=keys.find(x=>!S.done[x])||keys[0],n=keys.length;return unitTitle(U(k))+(n>1?` (+${n-1} bài)`:'');}
 function dayDate(i){const d=new Date((S.plan&&S.plan.start)||Date.now());d.setDate(d.getDate()+i);return d.toLocaleDateString('vi-VN',{weekday:'short',day:'2-digit',month:'2-digit'});}
 const lessonMin=keys=>keys.reduce((a,k)=>a+U(k).m,0);
 
 /* ---------- bộ luật cá nhân hóa (guardrail) ---------- */
 function dedupe(a){const s=new Set();return a.filter(x=>!s.has(x.id)&&s.add(x.id));}
-function modReason(x,p){const m=(x.ex||[]).find(e=>(p.goals||[]).includes(e[0]));return x.why+(m?` · có ví dụ cho ${GOALS[m[0]]}`:'');}
-function itemDone(id){const x=L[id];return x.type==='module'?x.parts.every((_,i)=>S.done[id+':'+i])&&!!S.done['E:'+id]:!!S.done[id];}
+function modReason(x,p){return x.why;}
+// xong 1 chương / 1 năng lực = xong mọi bài thuộc chương / năng lực đó
+function itemDone(id){const x=L[id];if(!x)return false;const ks=x.units||(x.items?chUnits(x.id):[id]);return ks.every(k=>S.done[k]);}
 function rulePlan(p){
  const items=[],skipped=[];
  LIB.filter(x=>x.req).forEach(x=>items.push({id:x.id,reason:modReason(x,p)}));
@@ -85,7 +79,7 @@ function rulePlan(p){
  return finalize(p,items,skipped,'','rule','');
 }
 function summaryRule(p,N,total){
- return `Em chia khóa thành ${N} bài học, mỗi ngày một bài, mỗi bài khoảng ${Math.round(total/N)} phút. Lộ trình đi đủ 12 module (10 năng lực AI) theo thứ tự, ví dụ được ưu tiên cho ${goalsText(p.goals)}.${p.problem?` Bài toán anh/chị nêu ("${p.problem}") sẽ được nhắc lại ở các bài liên quan.`:''} Bài cuối cùng anh/chị chọn 3 use case đáng thử cho công ty.`;
+ return `Em chia ${ALL_BAI.length} bài của khóa vào ${N} ngày học, mỗi ngày khoảng ${Math.max(1,Math.round(ALL_BAI.length/N))} bài (~${Math.round(total/N)} phút). Lộ trình đi đủ ${LIB.length} chương theo đúng thứ tự, ví dụ được ưu tiên cho ${goalsText(p.goals)}.${p.problem?` Bài toán anh/chị nêu ("${p.problem}") sẽ được nhắc lại ở các bài liên quan.`:''} Chương cuối anh/chị chọn 3 cơ hội AI ưu tiên và chốt 1 thử nghiệm cho công ty.`;
 }
 // Áp guardrail, chia bài, cảnh báo nếu thời gian mỗi ngày không đủ
 function finalize(p,items,skipped,summary,source,reply){
@@ -126,31 +120,31 @@ function describeChanges(a,b){const out=[];
  if(a.days!==b.days)out.push(`thời gian ${a.days} → ${b.days} ngày`);
  if(a.minPerSession!==b.minPerSession)out.push(`${a.minPerSession} → ${b.minPerSession} phút mỗi ngày học`);
  if(goalsText(a.goals)!==goalsText(b.goals))out.push(`phòng ban quan tâm: ${goalsText(b.goals)}`);
- return out.length?`Em đã cập nhật ${out.join('; ')}. Khóa giờ gồm ${lessonsOf(b)} bài học. Các video anh/chị đã xem được giữ nguyên.`:'Em đã sắp xếp lại lộ trình theo yêu cầu.';}
+ return out.length?`Em đã cập nhật ${out.join('; ')}. Lộ trình giờ chia thành ${lessonsOf(b)} ngày học. Các bài anh/chị đã học được giữ nguyên.`:'Em đã sắp xếp lại lộ trình theo yêu cầu.';}
 
 /* ---------- AI (chạy trên claude.ai thì có AI; chạy local thì dùng bộ luật) ---------- */
 const SAMPLE_P=(async()=>{try{if(!window.claude||!window.claude.use)return null;return await window.claude.use('sample');}catch(e){return null;}})();
 function aiDot(){return `<span class="ai-dot ${T.ai?'on':''}" data-ai><i></i><span>${T.ai===null?'Đang kiểm tra AI…':T.ai?'AI đang bật':'Chạy local · bộ luật'}</span></span>`;}
 function buildPrompt(p,request){
  const lib=LIB.map(x=>`${x.id} | ${TYPE_LABEL[x.type]} | ${x.title} | ${x.min} phút | ${x.req?'BẮT BUỘC':'tùy chọn'} | tags: ${(x.tags||[]).join(',')||'-'}${x.skipIfLevel?` | ôn nền tảng, bỏ được nếu mức AI >= ${x.skipIfLevel}`:''}${x.adv?' | nâng cao':''}`).join('\n');
- return `Bạn là "Trợ lý lộ trình" của khóa AI for CEO (Học viện Siêu Tăng Trưởng). Khóa demo-first, 12 module: Module 01 khởi động, Module 02–11 là 10 năng lực AI, Module 12 chọn use case; không dạy tool, không dạy prompt. Hãy chọn nội dung cho CEO dưới đây; hệ thống sẽ tự chia thành ${lessonsOf(p)} bài học.
+ return `Bạn là "Trợ lý lộ trình" của khóa AI for CEO (Học viện Siêu Tăng Trưởng). Khóa demo-first gồm ${LIB.length} chương, ${ALL_BAI.length} bài (mỗi bài là 1 video hoặc 1 bài tập), đi qua 10 năng lực AI; không dạy tool, không dạy prompt. Mọi chương đều bắt buộc; hãy viết lý do cho từng chương theo hồ sơ CEO dưới đây; hệ thống sẽ tự chia bài vào ${lessonsOf(p)} ngày học.
 
 HỒ SƠ
 - Ngành: ${p.industry}; quy mô: ${p.size}
 - Hiện trạng sử dụng AI (1-4): ${p.level} = ${LEVELS[p.level]}
 - Phòng ban quan tâm: ${(p.goals||[]).map(g=>g+' ('+GOALS[g]+')').join(', ')}
 - Bài toán: ${p.problem||'(chưa nêu)'}
-- Muốn hoàn thành trong ${p.days} ngày, học mỗi ngày, ${p.minPerSession} phút mỗi ngày → ${lessonsOf(p)} bài, tổng ${lessonsOf(p)*p.minPerSession} phút.
+- Muốn hoàn thành trong ${p.days} ngày, học mỗi ngày, ${p.minPerSession} phút mỗi ngày → ${lessonsOf(p)} ngày học, tổng ${lessonsOf(p)*p.minPerSession} phút.
 
 THƯ VIỆN:
 ${lib}
 
-GUARDRAIL: chỉ dùng id có trong thư viện; luôn giữ đủ 12 module bắt buộc; tổng phút không vượt quỹ thời gian; chọn case/live khớp phòng ban, bài toán và mức AI.
+GUARDRAIL: chỉ dùng id có trong thư viện; luôn giữ đủ ${LIB.length} chương bắt buộc; tổng phút không vượt quỹ thời gian; chọn case/live khớp phòng ban, bài toán và mức AI.
 ${request?`
 YÊU CẦU ĐIỀU CHỈNH: "${request}". Nếu yêu cầu đổi thời gian, nhịp học hoặc phòng ban thì ghi vào "changes".`:''}
 
 Trả lời CHỈ bằng một JSON:
-{"summary":"2-3 câu tiếng Việt, xưng em, gọi anh/chị, nói khóa được chia thành bao nhiêu bài và trọng tâm, nhắc tới ngành hoặc bài toán",
+{"summary":"2-3 câu tiếng Việt, xưng em, gọi anh/chị, nói khóa được chia vào bao nhiêu ngày và trọng tâm, nhắc tới ngành hoặc bài toán",
  "items":[{"id":"M01","reason":"lý do, tối đa 18 từ"}],
  "skipped":[{"id":"X1","reason":"lý do, tối đa 12 từ"}],
  "changes":{"days":null,"minPerSession":null,"goals":null},
@@ -168,7 +162,7 @@ function fromAI(p,r){
 }
 async function generate(request){
  if(T.gen)return;const p0={...S.profile};let p=p0,plan=null,note='';
- T.gen={msg:request?'Đang điều chỉnh lộ trình theo yêu cầu…':'Đang chia khóa thành bài học theo lịch của anh/chị…'};
+ T.gen={msg:request?'Đang điều chỉnh lộ trình theo yêu cầu…':'Đang chia bài học theo lịch của anh/chị…'};
  if(request)S.adjustLog.push({role:'user',text:request});
  render();
  try{
@@ -181,7 +175,7 @@ async function generate(request){
   plan.note=note;plan.wasActive=!!(S.plan&&(S.plan.accepted||S.plan.wasActive));
   S.profile=p;S.plan=plan;
   if(request)S.adjustLog.push({role:'bot',text:plan.reply||describeChanges(p0,p)});
-  toast(request?`Đã cập nhật lộ trình: ${plan.lessons.length} bài học`:`Đã tạo lộ trình ${plan.lessons.length} bài học`);
+  toast(request?`Đã cập nhật lộ trình: ${plan.lessons.length} ngày học`:`Đã tạo lộ trình ${plan.lessons.length} ngày học`);
  }catch(e){
   console.error('Tạo lộ trình lỗi:',e);
   if(request)S.adjustLog.push({role:'bot',text:'Em chưa điều chỉnh được lộ trình. Anh/chị thử lại với yêu cầu khác nhé.'});
@@ -195,8 +189,14 @@ const lessonDone=i=>lessons()[i].every(k=>S.done[k]);
 function nextLesson(){const i=lessons().findIndex((_,j)=>!lessonDone(j));return i;}
 // Học tuần tự: chỉ mở các bài đã học và bài đang học; bài sau mở khi học xong bài trước
 function lessonOpen(i){const n=nextLesson();return n<0||i<=n;}
-const lockMsg=i=>`Bài ${i+1} sẽ mở sau khi anh/chị học xong Bài ${nextLesson()+1}.`;
+const lockMsg=i=>`Ngày ${i+1} sẽ mở sau khi anh/chị học xong các bài của Ngày ${nextLesson()+1}.`;
+// theo từng bài: bài đang học = bài đầu tiên chưa xong theo thứ tự lộ trình; bài mở khi ngày học chứa nó đã mở
+const planUnits=()=>lessons().flat();
+const curUnit=()=>planUnits().find(k=>!S.done[k])||null;
+const unitOpen=k=>{const d=lessonOfUnit(k);return d>=0&&lessonOpen(d);};
+function unitState(k){if(S.done[k])return 'done';if(k===curUnit())return 'doing';return unitOpen(k)?'next':'locked';}
+const unitLockMsg=k=>`Bài này thuộc ${dayLabel(lessonOfUnit(k))}, mở sau khi anh/chị học xong các bài của ${dayLabel(nextLesson())}.`;
 function lessonOfUnit(key){return lessons().findIndex(ks=>ks.includes(key));}
 function reasonsFor(keys){const ids=[...new Set(keys.map(k=>U(k).id))];return ids.map(id=>{const it=S.plan.items.find(i=>i.id===id);return it?it.reason:'';}).filter(Boolean);}
-function planStats(){const ls=lessons();const all=ls.flat();const mods=LIB.filter(x=>x.type==='module');
- return {n:ls.length,lessonsDone:ls.filter((_,i)=>lessonDone(i)).length,units:all.length,unitsDone:all.filter(k=>S.done[k]).length,mods:mods.length,modsDone:mods.filter(x=>itemDone(x.id)).length,min:lessonMin(all),pct:ls.length?Math.round(ls.filter((_,i)=>lessonDone(i)).length/ls.length*100):0};}
+function planStats(){const ls=lessons();const all=ls.flat();const mods=LIB.filter(x=>x.type==='module');const ud=all.filter(k=>S.done[k]).length;
+ return {upct:all.length?Math.round(ud/all.length*100):0,n:ls.length,lessonsDone:ls.filter((_,i)=>lessonDone(i)).length,units:all.length,unitsDone:all.filter(k=>S.done[k]).length,mods:mods.length,modsDone:mods.filter(x=>itemDone(x.id)).length,min:lessonMin(all),pct:ls.length?Math.round(ls.filter((_,i)=>lessonDone(i)).length/ls.length*100):0};}
