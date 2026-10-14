@@ -87,7 +87,6 @@ function commHub(){
    <div class="cmh-body"><h3 class="cmh-name" title="${esc(x.name)}">${esc(x.name)}</h3>
     <div class="cmh-foot"><span class="cmh-mem">${x.live?`${x.members+(joined?1:0)} thành viên`:'Đang chuẩn bị'}</span>${x.live?'<span class="cmh-go">Vào học ngay</span>':'<span class="cmh-go off">Sắp ra mắt</span>'}</div></div></article>`;}).join('');
  return `<section class="wrap page cmh"><div class="page-head hub-head"><span class="crs-tagline">${ic('users',15)} Cộng đồng</span><h1 class="h2">Tham gia ngay các cộng đồng</h1><p class="sub">Cập nhật kiến thức AI theo từng lĩnh vực — từ Marketing, Sales, HR đến Website, Quản lý dự án.</p></div>
-  ${login?'':`<div class="callout info cmh-login"><span>${ic('users',18)}</span><div><b>Đăng nhập để tham gia cộng đồng</b><span>Dùng tài khoản Học viện. Chưa có tài khoản thì đăng ký miễn phí.</span></div><div class="cmh-login-b"><button class="btn btn-primary" data-a="commAuth" data-v="login">Đăng nhập</button><button class="btn btn-line" data-a="commAuth" data-v="register">Đăng ký</button></div></div>`}
   <div class="cmh-grid">${cards}</div></section>`;
 }
 /* ---------- Thanh đầu trang khi đang ở trong 1 cộng đồng (theo giao diện cộng đồng của website cũ user gửi, màu theo Brand Guidelines; 10/2026) ----------
