@@ -157,11 +157,12 @@ ${emailFooter({logo,reason:`Quý công ty nhận email này vì là đơn vị m
  return {from:`${ACADEMY.name} <${ACADEMY.sender}>`,to:o.invEmail||o.email,subject,html,text};
 }
 // Gọi sau khi thanh toán thành công (nếu có yêu cầu xuất hóa đơn): xuất hóa đơn và gửi tới email công ty
+// tạo bản hóa đơn chờ xác nhận (có số) ngay khi thanh toán thành công; chưa gửi email
+function prepInvoice(o){if(!o||!o.invoice||o.inv)return;const n=String(Math.floor(100+Math.random()*900)).padStart(8,'0');o.inv={series:SELLER.series,no:n,date:today(),lookup:'STT'+o.code.replace(/\D/g,'')};}
 function sendInvoiceEmail(){
  const o=S.order;if(!o||!o.invoice||!o.invEmail)return;
  if(S.mails.some(m=>m.kind==='invoice'&&!m.sample&&m.code===o.code))return; // mỗi đơn 1 hóa đơn
- const n=String(Math.floor(100+Math.random()*900)).padStart(8,'0');
- o.inv={series:SELLER.series,no:n,date:today(),lookup:'STT'+o.code.replace(/\D/g,'')};
+ prepInvoice(o);
  const m={id:'m'+Date.now()+'i',kind:'invoice',code:o.code,to:o.invEmail,at:nowStr(),read:false,order:{...o}};
  S.mails.unshift(m);
  if(realMailOn())sendRealEmail(m);else toast(`Đã xuất hóa đơn điện tử và gửi tới ${o.invEmail}`);

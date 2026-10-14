@@ -5,7 +5,7 @@
 
 /* ---------- trạng thái ---------- */
 // S: trạng thái lưu vào trình duyệt (localStorage). T: trạng thái tạm, mất khi tải lại trang.
-const LS='aiceo-demo-v6';
+const LS='aiceo-demo-v6'+(V2?'-v2':''); // Version 2 lưu riêng để 2 bản không đè dữ liệu của nhau
 const DEFAULT=()=>({screen:'landing',spent:{},account:null,loggedIn:false,eval:null,fit:null,nurture:false,order:null,pay:{status:null,method:'bank',sim:'success',support:false},enrolled:false,
  profile:{},ob:{flow:[],i:0,msgs:[],multi:[],done:false},plan:null,adjustLog:[],done:{},doneAt:{},subs:{},lesson:0,unit:null,
  expert:{id:null,msgs:[],unread:0,pending:false},mails:[],zalo:[],comm:{joined:false,posts:[],comments:{},likes:{},gotLikes:{},events:{}},remind:{...REMIND_DEFAULT},feedback:null,asst:[],completedAt:null,liveRemind:false,offline:false});
@@ -168,6 +168,10 @@ function brandBand(){
 }
 let bandT=0;addEventListener('resize',()=>{clearTimeout(bandT);bandT=setTimeout(brandBand,120);});
 function render(){
+ if(HIDE_LANDING&&S.screen==='landing'){if(V2){S.screen='community';T.commId=null;T.commTab='feed';T.commPost=null;}else S.screen='courses';} // trang giới thiệu đang tạm ẩn; Version 2: trang chủ = trang Cộng đồng (danh sách cộng đồng)
+ // vào cộng đồng là tham gia luôn (đã bỏ màn quy tắc cộng đồng theo yêu cầu user 10/2026)
+ if(S.screen==='community'&&T.commId&&S.loggedIn&&S.account&&S.comm&&!S.comm.joined){S.comm.joined=true;setTimeout(()=>toast(`Chào mừng anh/chị đến ${COMM.name}!`),0);}
+ if(V2&&S.screen==='courses'){S.screen='community';T.commId='aiceo';T.commTab='courses';T.commPost=null;} // Version 2: khóa học nằm trong Cộng đồng
  const scr=SCREENS[S.screen]||landing;
  // giữ chữ đang gõ dở trong ô chat chuyên gia khi màn hình vẽ lại (vd. chuyên gia vừa trả lời)
  const cmT=document.getElementById('cm-title'),cmB=document.getElementById('cm-body'),cmC=document.getElementById('cm-cat');if(cmT&&cmB&&T.commWrite)T.commDraft={title:cmT.value,body:cmB.value,cat:cmC?cmC.value:'ask'};
@@ -289,7 +293,7 @@ const ACT={
   }catch(e){say('Không kết nối được dịch vụ tra cứu. Anh/chị kiểm tra mạng hoặc nhập tay tên và địa chỉ doanh nghiệp.','bad');}
   if(btn)btn.disabled=false;},
  payDone:()=>{S.pay.status='processing';render();window.scrollTo(0,0);
-  setTimeout(()=>{if(S.pay.sim==='fail'){S.pay.status='failed';toast('Chưa nhận được thanh toán','bad');}else{S.pay.status='success';S.enrolled=true;S.order.paidAt=today();toast('Đã nhận thanh toán, khóa học đã được kích hoạt');setTimeout(()=>{sendConfirmEmail();render();setTimeout(()=>{sendInvoiceEmail();render();},2600);},1800);}render();},1400);},
+  setTimeout(()=>{if(S.pay.sim==='fail'){S.pay.status='failed';toast('Chưa nhận được thanh toán','bad');}else{S.pay.status='success';S.enrolled=true;S.order.paidAt=today();toast('Đã nhận thanh toán, khóa học đã được kích hoạt');prepInvoice(S.order);setTimeout(()=>{sendConfirmEmail();render();},1800);}render();},1400);},
  payCopy:(d,el)=>{const v=el&&el.dataset.c||'',lb={acc:'số tài khoản',amt:'số tiền',note:'mã đơn'}[d.v]||'';
   const ok=()=>{toast('Đã sao chép '+lb+': '+v);if(el){el.innerHTML=ic('check',16);el.classList.add('ok');setTimeout(()=>{el.innerHTML=ic('copy',16);el.classList.remove('ok');},1800);}};
   if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(v).then(ok,()=>{fallbackCopy(v);ok();});else{fallbackCopy(v);ok();}},
@@ -309,6 +313,7 @@ const ACT={
  acceptPlan:()=>{if(!S.plan||S.plan.warning)return;T.drawer=null;const was=S.plan.wasActive;S.plan.accepted=true;S.plan.wasActive=true;go('learn');toast(was?'Đã lưu lộ trình mới':'Đã xác nhận lộ trình. Bắt đầu Bài 1 nhé!');},
  // học
  invView:()=>{T.invView=true;render();},
+ invConfirm:()=>{const o=S.order;if(!o||!o.invoice)return;o.invConfirmed=true;T.invView=false;sendInvoiceEmail();render();},
  invClose:()=>{T.invView=false;render();},
  invPrint:()=>{const p=document.querySelector('.iv-paper');if(!p)return;let box=document.getElementById('inv-print');if(!box){box=document.createElement('div');box.id='inv-print';document.body.appendChild(box);}
   box.innerHTML=p.outerHTML;document.body.classList.add('printing-inv');const done=()=>{document.body.classList.remove('printing-inv');window.removeEventListener('afterprint',done);};window.addEventListener('afterprint',done);setTimeout(()=>window.print(),150);},
@@ -340,12 +345,12 @@ const ACT={
  simulateHalf:()=>{simulateUpTo(Math.ceil(lessons().length/2));render();toast('Đã mô phỏng học xong một nửa khóa');},
  policy:()=>{toast('Trang Điều khoản & Bảo mật chưa có trong bản demo');},
  // cộng đồng: luôn mở ở tab trình duyệt riêng (index.html#community)
- openCommunity:d=>{const id=(d&&d.v)||null;if(S.screen==='community'){T.commId=id;T.commTab='feed';T.commPost=null;render();hist();window.scrollTo(0,0);return;}
-  T.commId=id;const w=window.open(location.href.split('#')[0]+'#community'+(id?'-'+id:''),'_blank');if(!w){go('community');toast('Trình duyệt chặn mở tab mới, cộng đồng được mở ngay tại đây');}},
+ openCommunity:d=>{T.commId=(d&&d.v)||null;T.commTab='feed';T.commPost=null;if(S.screen==='community'){render();hist();window.scrollTo(0,0);return;}go('community');}, // mở cộng đồng ngay trong tab hiện tại (theo yêu cầu user 10/2026; trước đây mở tab mới)
  commJoin:()=>{const c=document.getElementById('cm-agree');if(!c||!c.checked){T.err={cm:'Anh/chị đánh dấu ô "Tôi đồng ý với quy tắc cộng đồng" để tham gia.',field:'cm-agree'};render();return;}S.comm.joined=true;T.err={};T.commTab='feed';render();window.scrollTo(0,0);toast(`Chào mừng anh/chị đến ${COMM.name}!`);},
  commHub:()=>{T.commId=null;T.commPost=null;T.err={};render();hist();window.scrollTo(0,0);},
  commEnter:d=>{T.commId=d.v;T.commTab='feed';T.commPost=null;T.err={};render();hist();window.scrollTo(0,0);},
  commAuth:d=>{T.acTab=d.v;T.after='community';T.acDraft=null;T.err={};S.screen='account';render();hist();window.scrollTo(0,0);},
+ commNotif:()=>toast('Thông báo cộng đồng (mô phỏng): 3 bài viết mới trong CEO AI Community'),
  commTab:d=>{T.commTab=d.v;T.commPost=null;T.commMod=null;T.commVid=0;render();hist();window.scrollTo(0,0);},
  commMod:d=>{T.commMod=d.v||null;T.commVid=0;render();window.scrollTo(0,0);},
  commVid:d=>{T.commVid=+d.v||0;render();const p=document.querySelector('.cl-player');if(p)p.scrollIntoView({block:'nearest'});},
@@ -525,6 +530,7 @@ document.addEventListener('keydown',e=>{if(T.mediaView){if(e.key==='Escape'){T.m
 /* ---------- khởi động ---------- */
 // dọn dữ liệu cũ còn lưu trong trình duyệt từ các phiên bản demo trước
 if(S.pay.status==='processing')S.pay.status=null;
+if(S.order&&S.order.invoice&&!S.order.invConfirmed&&(S.mails||[]).some(m=>m.kind==='invoice'&&!m.sample&&m.code===S.order.code))S.order.invConfirmed=true;
 // khóa đổi sang 8 chương · 37 bài (mỗi bài 1 video / 1 bài tập, 10/2026): mã bài cũ (M01:0, E:M01…) không còn → bỏ tiến độ cũ, chia lại lộ trình theo hồ sơ
 {const okKey=k=>{try{return !!U(k);}catch(e){return false;}};
  Object.keys(S.done||{}).forEach(k=>{if(!okKey(k)){delete S.done[k];if(S.doneAt)delete S.doneAt[k];if(S.spent)delete S.spent[k];}});

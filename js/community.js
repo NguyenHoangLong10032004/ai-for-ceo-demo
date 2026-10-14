@@ -75,23 +75,37 @@ const avatar=(id,size=40)=>{const p=person(id);const ini=p.name.trim().split(/\s
 /* ---------- Trang chủ Cộng đồng (đề xuất mới): Học viện có nhiều cộng đồng, CEO AI Community là một trong số đó ----------
    Demo chỉ có CEO AI Community hoạt động đầy đủ; các cộng đồng khác là minh họa "Sắp ra mắt" (tên, số liệu chưa có thật). */
 const COMMUNITIES=[
- {id:'aiceo',cover:COMM.cover,name:'CEO AI Community',desc:'Nơi các CEO chia sẻ use case, hỏi đáp và cập nhật AI mỗi tháng.',topic:'AI cho lãnh đạo',members:COMM.members,from:'#1747C9',to:'#DB2777',icon:'users',live:true},
- {id:'growth',name:'Cộng đồng Siêu Tăng Trưởng',desc:'Chủ doanh nghiệp trao đổi chiến lược tăng trưởng, bán hàng và vận hành.',topic:'Tăng trưởng doanh nghiệp',from:'#0E7490',to:'#22A06B',icon:'chart'},
- {id:'mkt',name:'Marketing & Bán hàng',desc:'Chia sẻ chiến dịch, kênh bán hàng và cách đo hiệu quả.',topic:'Marketing',from:'#EA580C',to:'#F5B942',icon:'pen'},
- {id:'challenge',name:'Thử thách 30 ngày',desc:'Cùng nhau hoàn thành thử thách, báo cáo tiến độ mỗi ngày.',topic:'Thử thách',from:'#7C3AED',to:'#3874FF',icon:'flag'}];
+ {id:'aiceo',cover:COMM.cover,name:'CEO AI Community',desc:'Nơi các CEO chia sẻ use case, hỏi đáp và cập nhật AI mỗi tháng.',topic:'AI cho lãnh đạo',members:COMM.members,from:'#1747C9',to:'#DB2777',icon:'users',live:true}];
+// đã bỏ các cộng đồng minh họa "Sắp ra mắt" (Cộng đồng Siêu Tăng Trưởng, Marketing & Bán hàng, Thử thách 30 ngày) theo yêu cầu user 10/2026; thêm cộng đồng mới thì thêm phần tử vào mảng này
 const commOf=id=>COMMUNITIES.find(x=>x.id===id);
 const commBack=()=>`<button class="cm-back" data-a="commHub">${ic('back',16)} Tất cả cộng đồng</button>`;
 function commHub(){
  const login=S.loggedIn&&S.account;
- const cards=COMMUNITIES.map(x=>{const joined=x.id==='aiceo'&&login&&S.comm.joined,ico=ic(x.icon,26)||ic('users',26);
-  const badge=!x.live?'<span class="pill wait">Sắp ra mắt</span>':joined?`<span class="pill ok">${ic('check',12)} Đã tham gia</span>`:'<span class="pill">Đang mở</span>';
-  
-  return `<article class="card cmh-card${x.live?'':' soon'}"${x.live?` data-a="commEnter" data-v="${x.id}" role="button" tabindex="0" aria-label="${joined?'Vào':'Xem và tham gia'} ${esc(x.name)}"`:''}><div class="cmh-cover" style="background:${x.cover?`center/cover no-repeat url(${x.cover}),`:''}linear-gradient(135deg,${x.from},${x.to})">${x.cover?'':`<span class="cmh-ico">${ico}</span>`}</div>
-   <div class="cmh-body"><div class="cmh-top">${badge}</div><h3 class="h3">${esc(x.name)}</h3><p class="muted">${esc(x.desc)}</p>
-    <p class="cmh-meta">${x.live?`${ic('users',15)} ${x.members+(joined?1:0)} thành viên`:`${ic('clock',15)} Đang chuẩn bị`}</p>${x.note?`<p class="cmh-note">${esc(x.note)}</p>`:''}</div></article>`;}).join('');
- return `<section class="wrap page cmh"><div class="page-head"><span class="eyebrow">Cộng đồng</span><h2 class="h2">Cộng đồng Học viện Siêu Tăng Trưởng</h2></div>
+ // thẻ cộng đồng theo mẫu website cũ user gửi (10/2026): ảnh bìa 16:9 · tên 1 dòng · số thành viên + nút "Vào học ngay" (cam); bấm cả thẻ cũng vào
+ const cards=COMMUNITIES.map(x=>{const joined=x.id==='aiceo'&&login&&S.comm.joined,ico=ic(x.icon,30)||ic('users',30);
+  return `<article class="card cmh-card${x.live?'':' soon'}"${x.live?` data-a="commEnter" data-v="${x.id}" role="button" tabindex="0" aria-label="Vào ${esc(x.name)}"`:''}><div class="cmh-cover" style="background:${x.cover?`center/cover no-repeat url(${x.cover}),`:''}linear-gradient(135deg,${x.from},${x.to})">${x.cover?'':`<span class="cmh-ico">${ico}</span>`}</div>
+   <div class="cmh-body"><h3 class="cmh-name" title="${esc(x.name)}">${esc(x.name)}</h3>
+    <div class="cmh-foot"><span class="cmh-mem">${x.live?`${x.members+(joined?1:0)} thành viên`:'Đang chuẩn bị'}</span>${x.live?'<span class="cmh-go">Vào học ngay</span>':'<span class="cmh-go off">Sắp ra mắt</span>'}</div></div></article>`;}).join('');
+ return `<section class="wrap page cmh"><div class="page-head hub-head"><span class="crs-tagline">${ic('users',15)} Cộng đồng</span><h1 class="h2">Tham gia ngay các cộng đồng</h1><p class="sub">Cập nhật kiến thức AI theo từng lĩnh vực — từ Marketing, Sales, HR đến Website, Quản lý dự án.</p></div>
   ${login?'':`<div class="callout info cmh-login"><span>${ic('users',18)}</span><div><b>Đăng nhập để tham gia cộng đồng</b><span>Dùng tài khoản Học viện. Chưa có tài khoản thì đăng ký miễn phí.</span></div><div class="cmh-login-b"><button class="btn btn-primary" data-a="commAuth" data-v="login">Đăng nhập</button><button class="btn btn-line" data-a="commAuth" data-v="register">Đăng ký</button></div></div>`}
   <div class="cmh-grid">${cards}</div></section>`;
+}
+/* ---------- Thanh đầu trang khi đang ở trong 1 cộng đồng (theo giao diện cộng đồng của website cũ user gửi, màu theo Brand Guidelines; 10/2026) ----------
+   Hàng trên: logo Siêu Tăng Trưởng | biểu tượng + tên cộng đồng · bên phải: chuông thông báo, tin nhắn, ảnh đại diện + tên.
+   Hàng dưới: các tab căn trái, tab đang chọn chữ đậm + gạch chân xanh. Thay cho thanh menu chung của website trong lúc ở cộng đồng. */
+const commInside=()=>S.screen==='community'&&!!T.commId&&!!commOf(T.commId)&&commOf(T.commId).live&&S.loggedIn&&!!S.account&&!!(S.comm&&S.comm.joined);
+const commTabs=()=>[['about','Giới thiệu'],['feed','Cộng đồng'],V2?['courses','Khóa học']:['class','Lớp học'],['calendar','Sự kiện'],['members','Thành viên'],['leaders','Xếp hạng']];
+function commHeader(){
+ const tab=T.commTab||'feed',name=S.account.name||'',unread=(S.expert&&S.expert.unread)||0;
+ return `<header class="hdr cmhd"><div class="wrap cmhd-top">
+  <button class="logo" data-a="go" data-to="landing" aria-label="Trang chủ Siêu Tăng Trưởng"><img class="logo-img" src="img/logo.png" onerror="this.onerror=null;this.src='../Logo.png'" alt="Siêu Tăng Trưởng" width="1725" height="237"></button>
+  <span class="cmhd-sep" aria-hidden="true"></span>
+  <button class="cmhd-id" data-a="commHub" title="Tất cả cộng đồng"><span class="cmhd-logo"${COMM.cover?` style="background:center/cover no-repeat url(${COMM.cover})"`:''}>${COMM.cover?'':ic('users',20)}</span><b>${esc(COMM.name)}</b></button>
+  <div class="cmhd-r">
+   <button class="cmhd-ic" data-a="commNotif" aria-label="Thông báo, 3 mới" title="Thông báo">${ic('bell',21)}<i class="cmhd-badge">3</i></button>
+   <button class="cmhd-ic" data-a="openChat" data-v="expert" aria-label="Tin nhắn${unread?`, ${unread} chưa đọc`:''}" title="Tin nhắn">${ic('chat',21)}${unread?`<i class="cmhd-badge">${unread}</i>`:''}</button>
+   <button class="me" data-a="go" data-to="${S.enrolled?'mycourses':'landing'}"><span class="avatar">${esc(name.trim().split(/\s+/).pop()[0]||'N')}</span><span class="n">${esc(name)}</span></button></div></div>
+  <nav class="wrap cmhd-tabs" role="tablist" aria-label="Mục trong cộng đồng">${commTabs().map(([k,l])=>`<button role="tab" aria-selected="${tab===k}" class="${tab===k?'on':''}" data-a="commTab" data-v="${k}">${k==='class'&&!S.enrolled?`${ic('lock',13)} `:''}${l}</button>`).join('')}</nav></header>`;
 }
 function community(){
  if(!T.commId||!commOf(T.commId)||!commOf(T.commId).live)return commHub();
@@ -106,12 +120,14 @@ function community(){
   ${T.err.cm?`<p class="err">${esc(T.err.cm)}</p>`:''}
   <div><button class="btn btn-primary btn-lg" data-a="commJoin">Tham gia cộng đồng ${ic('arrow')}</button></div></div></div></section>`;
  const tab=T.commTab||'feed';
- const tabs=[['feed','Cộng đồng'],['class','Lớp học'],['calendar','Sự kiện'],['members','Thành viên'],['leaders','Bảng xếp hạng'],['about','Giới thiệu']];
+ const tabs=[['feed','Cộng đồng'],V2?['courses','Khóa học']:['class','Lớp học'],['calendar','Sự kiện'],['members','Thành viên'],['leaders','Bảng xếp hạng'],['about','Giới thiệu']];
  const head=`<div class="cm-head"><div class="wrap"><button class="cm-hubbtn" data-a="commHub" aria-label="Tất cả cộng đồng" title="Tất cả cộng đồng">${ic('back',18)}</button><div class="cm-title"><span class="cm-logo">${ic('users',20)}</span><div><b>${COMM.name}</b><small>${COMM.members+1} thành viên · ${COMM.online} đang trực tuyến</small></div></div>
   <nav class="cm-tabs" role="tablist">${tabs.map(([k,l])=>`<button role="tab" aria-selected="${tab===k}" class="${tab===k?'on':''}" data-a="commTab" data-v="${k}">${k==='class'&&!S.enrolled?`${ic('lock',13)} `:''}${l}</button>`).join('')}</nav></div></div>`;
- const body=tab==='calendar'?commCalendar():tab==='members'?commMembers():tab==='leaders'?commLeaders():tab==='about'?commAbout():tab==='class'?(S.enrolled?commClass():commClassLocked()):(T.commPost?commPostView(T.commPost):commFeed());
- return `${head}<section class="wrap page cm">${body}</section>`;
+ const body=tab==='courses'?commCourses():tab==='calendar'?commCalendar():tab==='members'?commMembers():tab==='leaders'?commLeaders():tab==='about'?commAbout():tab==='class'?(S.enrolled?commClass():commClassLocked()):(T.commPost?commPostView(T.commPost):commFeed());
+ return `${commInside()?'':head}<section class="wrap page cm">${body}</section>`;
 }
+// Version 2: tab "Khóa học" trong cộng đồng = lưới thẻ khóa học (dùng chung courseCards với trang Khóa học của bản 1)
+function commCourses(){return `<div class="cm-crs">${courseCards()}</div>`;}
 // thẻ bên phải: giới thiệu nhanh + cấp độ của tôi + top 5
 function commSide(){
  const pts=myPoints(),lv=commLevel(pts),next=COMM_LEVELS[lv]||pts,prev=COMM_LEVELS[lv-1];

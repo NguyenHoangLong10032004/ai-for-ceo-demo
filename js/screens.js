@@ -11,11 +11,12 @@ function demoBar(){
  <button class="demo-reset demo-mail" data-a="mailOpen" aria-label="Hộp thư mô phỏng${unreadMails()?`, ${unreadMails()} email chưa đọc`:''}">${ic('mail',13)} Hộp thư${unreadMails()?`<span class="cnt">${unreadMails()}</span>`:''}</button><button class="demo-reset demo-mail" data-a="zaloOpen" aria-label="Zalo mô phỏng${unreadZalo()?`, ${unreadZalo()} tin chưa đọc`:''}"><span class="zalo-ico sm">Z</span> Zalo${unreadZalo()?`<span class="cnt">${unreadZalo()}</span>`:''}</button>${aiDot()}<button class="demo-reset" data-a="reset">${ic('refresh',13)} Làm lại</button></div></div>`;
 }
 function header(){
+ if(typeof commInside==='function'&&commInside())return commHeader(); // đang ở trong 1 cộng đồng: thanh đầu trang riêng của cộng đồng
  const name=S.enrolled?(S.profile.name||(S.order&&S.order.name)||''):S.loggedIn&&S.account?S.account.name:'';
  const inCourse=['mycourses','onboarding','syllabus','learn','lesson','complete','outputs','dashboard'].includes(S.screen);
  return `<header class="hdr"><div class="wrap">
  <button class="logo" data-a="go" data-to="landing" aria-label="Trang chủ"><img class="logo-img" src="img/logo.png" onerror="this.onerror=null;this.src='../Logo.png'" alt="Siêu Tăng Trưởng" width="1725" height="237"></button>
- <nav class="nav"><button class="${!inCourse&&!['community','courses'].includes(S.screen)?'on':''}" data-a="go" data-to="landing">AI for CEO</button><button class="${S.screen==='courses'?'on':''}" data-a="go" data-to="courses">Khóa học</button><button data-a="go" data-to="landing">Thử thách</button><button class="${S.screen==='community'?'on':''}" data-a="openCommunity" title="Mở cộng đồng ở tab mới">Cộng đồng</button><button data-a="go" data-to="landing">Blog / Tin tức</button>${S.enrolled?`<button class="${inCourse?'on':''}" data-a="go" data-to="mycourses">Khóa học của tôi</button>`:''}</nav>
+ <nav class="nav">${HIDE_LANDING?'':`<button class="${!inCourse&&!['community','courses'].includes(S.screen)?'on':''}" data-a="go" data-to="landing">AI for CEO</button>`}${V2?'':`<button class="${S.screen==='courses'?'on':''}" data-a="go" data-to="courses"><span class="nav-ic">${ic('bookopen',15)}</span>Khóa học</button>`}<button class="${S.screen==='community'?'on':''}" data-a="openCommunity"><span class="nav-ic">${ic('users',15)}</span>Cộng đồng</button><button data-a="go" data-to="landing"><span class="nav-ic">${ic('trophy',15)}</span>Thử thách</button><button data-a="go" data-to="landing"><span class="nav-ic">${ic('news',15)}</span>Blog / Tin tức</button>${S.enrolled?`<button class="${inCourse?'on':''}" data-a="go" data-to="mycourses"><span class="nav-ic">${ic('book',15)}</span>Khóa học của tôi</button>`:''}</nav>
  <div class="hdr-r">${name?`<button class="me" data-a="go" data-to="${S.enrolled?'mycourses':'landing'}"><span class="avatar">${esc(name.trim().split(/\s+/).pop()[0]||'N')}</span><span class="n">${esc(name)}</span></button>`:`<button class="btn btn-ghost btn-sm" data-a="acOpen" data-v="login">Đăng nhập</button><button class="btn btn-primary btn-sm" data-a="acOpen" data-v="register">Đăng ký</button>`}</div>
  </div></header>`;
 }
@@ -162,7 +163,9 @@ function checkout(){
  else if(st==='success')main=`<div class="card status"><span class="big ok">${ic('check',30)}</span><h3 class="h2" style="font-size:30px">Đăng ký thành công</h3><p class="muted" style="max-width:50ch">Thanh toán đã được ghi nhận<br>Quyền truy cập khóa <b>AI for CEO</b> đã được kích hoạt cho <b>${esc(S.order.email)}</b>.</p>
   <div style="width:100%;max-width:420px;text-align:left;border-top:1px solid var(--line)"><div class="sum-row"><span class="k">Mã đơn</span><span class="v tnum">${esc(S.order.code)}</span></div><div class="sum-row"><span class="k">Học viên</span><span class="v">${esc(S.order.name)}</span></div><div class="sum-row"><span class="k">Đã thanh toán</span><span class="v tnum">${money(COURSE.price)}</span></div><div class="sum-row"><span class="k">Trạng thái</span><span class="v"><span class="pill ok">Đã kích hoạt</span></span></div></div>
   <button class="btn btn-primary btn-lg" data-a="go" data-to="mycourses">Vào khóa học ${ic('arrow')}</button>
-  ${(cm=>cm?`<p class="hint mail-note">${ic('mail',14)} Vui lòng kiểm tra email <b>${esc(S.order.email)}</b>${S.order.phone?` và Zalo <b>${esc(S.order.phone)}</b>`:''} để xem xác nhận đăng ký và hướng dẫn truy cập khóa học.</p>`:`<p class="hint mail-note">${ic('mail',14)} Đang gửi email xác nhận tới <b>${esc(S.order.email)}</b>…</p>`)(S.mails.find(m=>m.kind==='confirm'&&m.code===S.order.code))}${S.order.invoice?(im=>`<div class="callout info inv-note" role="status"><span class="inv-ico">${ic('file',18)}</span><div><b>${im?'Đã xuất hóa đơn điện tử':'Đang xuất hóa đơn điện tử…'}</b><span>${im?`Hóa đơn số <b>${esc((im.order.inv||{}).no||'')}</b> cho ${esc(S.order.invName||'')} đã được gửi tới <b>${esc(S.order.invEmail)}</b>.`:`Hóa đơn cho ${esc(S.order.invName||'')} sẽ được gửi tới <b>${esc(S.order.invEmail)}</b>.`}</span><div><button type="button" class="btn btn-line btn-sm inv-open" data-a="invView">${ic('eye',15)} Xem trước hóa đơn</button></div></div></div>`)(S.mails.find(m=>m.kind==='invoice'&&!m.sample&&m.code===S.order.code)):''}</div>`;
+  <div class="note-wrap">${(cm=>cm?`<p class="hint mail-note">${ic('mail',14)} Vui lòng kiểm tra email và Zalo để xem xác nhận đăng ký và hướng dẫn truy cập khóa học.</p>`:`<p class="hint mail-note">${ic('mail',14)} Đang gửi email xác nhận tới <b>${esc(S.order.email)}</b>…</p>`)(S.mails.find(m=>m.kind==='confirm'&&m.code===S.order.code))}${S.order.invoice?(o=>o.invConfirmed
+   ?`<div class="callout info inv-note" role="status"><span class="inv-ico">${ic('file',18)}</span><div><b>Đã xuất hóa đơn điện tử</b><span>Hóa đơn số <b>${esc((o.inv||{}).no||'')}</b> cho ${esc(o.invName||'')} đã được gửi tới <b>${esc(o.invEmail)}</b>.</span><div><button type="button" class="btn btn-line btn-sm inv-open" data-a="invView">${ic('eye',15)} Xem hóa đơn</button></div></div></div>`
+   :`<div class="callout info inv-note" role="status"><span class="inv-ico">${ic('file',18)}</span><div><b>Xác nhận thông tin hóa đơn</b><span>Vui lòng kiểm tra thông tin hóa đơn số <b>${esc((o.inv||{}).no||'')}</b> của <b>${esc(o.invName||'')}</b> trước khi xác nhận.</span><span>Sau khi xác nhận, hóa đơn điện tử sẽ được gửi đến <b>${esc(o.invEmail)}</b>.</span><div><button type="button" class="btn btn-line btn-sm inv-open" data-a="invView">${ic('eye',15)} Xem và xác nhận hóa đơn</button></div></div></div>`)(S.order):''}</div></div>`;
  else main=`<form class="card form" data-f="checkoutSubmit" novalidate>
   <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><h3 class="h3">Thông tin thanh toán</h3></div>
   <div class="row2"><div class="field"><label for="c-name">Họ và tên <span class="req" aria-hidden="true">*</span></label><input class="inp" id="c-name" name="name" value="${esc(o.name)}" required aria-required="true" autocomplete="name"></div><div class="field"><label for="c-phone">Số điện thoại / Zalo <span class="req" aria-hidden="true">*</span></label><input class="inp" id="c-phone" name="phone" type="tel" value="${esc(o.phone)}" required aria-required="true" autocomplete="tel"></div></div>
@@ -173,8 +176,8 @@ function checkout(){
   <fieldset><legend>Phương thức thanh toán</legend><div class="opt-grid">${Object.entries(PAY_METHODS).map(([v,l],i)=>`<label class="opt" for="pm-${i}"><input type="radio" id="pm-${i}" name="method" value="${v}" ${S.pay.method===v?'checked':''}><span>${l}</span></label>`).join('')}<label class="opt opt-off" for="pm-card" aria-disabled="true"><input type="radio" id="pm-card" name="method" value="card" disabled><span class="opt-txt"><span>Thẻ thanh toán</span><small>Tạm thời chưa hỗ trợ</small></span><span class="card-brands" aria-hidden="true"><i class="cb-visa">VISA</i><i class="cb-mc"><b></b><b></b></i><i class="cb-jcb">JCB</i><i class="cb-amex">AMEX</i></span></label></div></fieldset>
   <div class="ck-terms"><label class="ck-agree" for="c-agree"><input type="checkbox" id="c-agree" name="agree" ${o.agree?'checked':''} aria-required="true" ${T.err.field==='c-agree'?'aria-invalid="true"':''}><span>Tôi đã đọc và đồng ý với <button type="button" class="btn-link" data-a="policy">Điều khoản &amp; quy định</button>. <span class="req" aria-hidden="true">*</span></span></label></div>
   ${T.err.checkout?`<p class="err">${T.err.checkout}</p>`:''}
-  <div class="form-foot"><span class="hint"><span class="req">*</span> Thông tin bắt buộc.</span><button class="btn btn-primary btn-lg">Tiếp tục thanh toán ${ic('arrow')}</button></div></form>`;
- return `<section class="wrap page"><div class="crumbs"><button data-a="go" data-to="landing">AI for CEO</button><span>/</span><span>Đăng ký & thanh toán</span></div>${stepper}<div class="two"><div>${main}</div>${summary}</div></section>`;
+  <div class="form-foot"><span></span><button class="btn btn-primary btn-lg">Tiếp tục thanh toán ${ic('arrow')}</button></div></form>`;
+ return `<section class="wrap page"><div class="crumbs"><button data-a="go" data-to="${V2?'courses':'landing'}">${V2?'Cộng đồng · Khóa học':HIDE_LANDING?'Khóa học':'AI for CEO'}</button><span>/</span><span>Đăng ký & thanh toán</span></div>${stepper}<div class="two"><div>${main}</div>${summary}</div></section>`;
 }
 
 /* ---------- Màn thanh toán: chuyển khoản ngân hàng (theo yêu cầu user) ----------
@@ -189,7 +192,7 @@ function invoicePaper(o){
  const ln=(k,en,v,cls='')=>`<div class="iv-ln ${cls}"><span>${k} <i>(${en})</i>:</span><b>${v||''}</b></div>`;
  return `<article class="iv-paper" aria-label="Hóa đơn giá trị gia tăng">
  <span class="iv-c tl"></span><span class="iv-c tr"></span><span class="iv-c bl"></span><span class="iv-c br"></span>
- ${inv.no?'':'<span class="iv-wm" aria-hidden="true">BẢN XEM TRƯỚC</span>'}
+ 
  <header class="iv-top"><div class="iv-title"><h2>HÓA ĐƠN GIÁ TRỊ GIA TĂNG</h2><p class="iv-en">(VAT INVOICE)</p><p class="iv-date">Ngày <i>(Date)</i> <u>${d[0]||''}</u> tháng <i>(month)</i> <u>${d[1]||''}</u> năm <i>(year)</i> <u>${d[2]||''}</u></p></div>
   <div class="iv-serial"><p>Ký hiệu <i>(Serial)</i>: ${SELLER.series}</p><p>Số <i>(No.)</i>: <b class="iv-no">${inv.no?esc(inv.no):'Chưa cấp số'}</b></p></div></header>
  <section class="iv-seller"><div>${ln('Đơn vị bán hàng','Seller',`<span class="iv-red">${SELLER.name}</span>`)}${ln('Mã số thuế','Tax code',`<span class="iv-tax">${SELLER.taxId.split('').join(' ')}</span>`)}${ln('Địa chỉ','Address',SELLER.address)}</div><div class="iv-qr">${fakeQR(o.code||'INV')}</div></section>
@@ -202,18 +205,18 @@ function invoicePaper(o){
    <tr><td colspan="3" class="l">Thuế suất GTGT <i>(VAT rate)</i>:</td><td colspan="2" class="r">Tiền thuế GTGT <i>(VAT amount)</i>:</td><td class="r"></td></tr>
    <tr><td colspan="5" class="r">Tổng cộng tiền thanh toán <i>(Total payment)</i>:</td><td class="r"><b>${amt.toLocaleString('vi-VN')}</b></td></tr>
    <tr><td colspan="6" class="l">Số tiền viết bằng chữ <i>(Amount in words)</i>: <b>${vnMoneyWords(amt)}</b></td></tr></tfoot></table>
- <section class="iv-sign"><div><b>Người mua hàng <i>(Buyer)</i></b></div><div><b>Người bán hàng <i>(Seller)</i></b><div class="iv-stamp"><b>${inv.no?'Signature Valid':'Mẫu:'}</b><span>Ký bởi: ${SELLER.name}</span><span>Ký ngày: ${inv.no?esc(inv.date||''):''}</span></div></div></section>
+ <section class="iv-sign"><div><b>Người mua hàng <i>(Buyer)</i></b></div><div><b>Người bán hàng <i>(Seller)</i></b><div class="iv-stamp"><b>${o.invConfirmed?'Signature Valid':'Mẫu:'}</b><span>Ký bởi: ${SELLER.name}</span><span>Ký ngày: ${o.invConfirmed?esc(inv.date||''):''}</span></div></div></section>
  <p class="iv-check">(Cần kiểm tra, đối chiếu khi lập, giao, nhận hóa đơn)</p>
  <p class="iv-prov">${SELLER.provider}</p></article>`;
 }
 function invoiceView(){
  if(!T.invView||!S.order||!S.order.invoice)return '';
- const o=S.order,im=S.mails.find(m=>m.kind==='invoice'&&!m.sample&&m.code===o.code),oo=im?{...o,inv:im.order.inv}:o;
+ const o=S.order,ok=!!o.invConfirmed,oo=o;
  return `<div class="mail-ov iv-ov" role="presentation"><div class="iv-dlg" role="dialog" aria-modal="true" aria-label="Xem trước hóa đơn">
-  <div class="iv-bar"><div><b>Xem trước hóa đơn GTGT</b><span>${im?`Hóa đơn số ${esc(im.order.inv.no)} đã gửi tới ${esc(o.invEmail)}`:`Bản xem trước, hóa đơn chính thức sẽ gửi tới ${esc(o.invEmail)}`}</span></div>
+  <div class="iv-bar"><div><b>${ok?'Hóa đơn GTGT':'Xác nhận thông tin hóa đơn'}</b><span>${ok?`Hóa đơn số ${esc((o.inv||{}).no||'')} đã gửi tới ${esc(o.invEmail)}`:`Kiểm tra thông tin rồi bấm Xác nhận. Hóa đơn sẽ được gửi tới ${esc(o.invEmail)}`}</span></div>
    <div class="iv-act"><button class="btn btn-line btn-sm" data-a="invPrint">${ic('download',15)} In / Lưu PDF</button><button class="x" data-a="invClose" aria-label="Đóng">${ic('x')}</button></div></div>
   <div class="iv-scroll">${invoicePaper(oo)}</div>
-  <p class="iv-foot hint">${ic('info',14)} Kiểm tra tên đơn vị, mã số thuế, địa chỉ. Cần điều chỉnh, anh/chị gửi email tới <b>${ACADEMY.billing}</b> kèm mã đơn <b>${esc(o.code)}</b>.</p></div></div>`;
+  <div class="iv-foot"><p class="hint">${ic('info',14)} Kiểm tra tên đơn vị, mã số thuế, địa chỉ. Cần điều chỉnh, anh/chị gửi email tới <b>${ACADEMY.billing}</b> kèm mã đơn <b>${esc(o.code)}</b>.</p>${ok?'':`<div class="iv-foot-act"><button class="btn btn-primary" data-a="invConfirm">${ic('check',16)} Xác nhận hóa đơn</button></div>`}</div></div></div>`;
 }
 function fakeQR(seed){
  const n=29,cell=(x,y)=>{let h=2166136261;const k=seed+'|'+x+'|'+y;for(let i=0;i<k.length;i++){h^=k.charCodeAt(i);h=Math.imul(h,16777619);}return (h>>>0)%100<47;};
@@ -236,6 +239,7 @@ function payView(){
   ${left?'':`<div class="callout warn"><b>Mã thanh toán đã hết hạn</b><span>Anh/chị tạo mã mới để tiếp tục chuyển khoản. Nếu đã chuyển khoản, hệ thống vẫn ghi nhận theo nội dung ${esc(note)}.</span><div><button type="button" class="btn btn-line btn-sm" data-a="payRenew">${ic('refresh',15)} Tạo lại mã thanh toán</button></div></div>`}
   <div class="pay-grid">
    <figure class="pay-qr">
+    ${BANK.real?`<div class="vqr-img"><img src="${bankQR(amt,note,'compact2')}" alt="Mã VietQR: ${esc(BANK.holder)}, ${esc(BANK.name)} ${esc(BANK.acc.replace(/\s/g,''))}, số tiền ${amt.toLocaleString('vi-VN')} VND" onerror="this.parentNode.classList.add('err')"></div>`:''}
     <div class="vqr">
      <div class="vqr-brand" aria-hidden="true"><span class="v1">VIET</span><span class="v2">QR</span></div>
      <div class="vqr-code">${qr}${BANK.real?'':'<span class="vqr-mid" aria-hidden="true">V</span>'}</div>
@@ -256,7 +260,7 @@ function payView(){
    </div>
   </div>
   <div class="pay-foot"><button type="button" class="btn-link" data-a="payChange">← Sửa thông tin thanh toán</button><button type="button" class="btn-link" data-a="paySupport">${ic('headset',15)} Cần hỗ trợ thanh toán</button></div>
-  ${S.pay.support?`<div class="callout info"><b>Hỗ trợ thanh toán</b><span>Đội CSKH đã nhận yêu cầu và sẽ gọi lại trong 15 phút (mô phỏng). Hotline: <b class="tnum">${ACADEMY.hotline}</b>. Mã đơn: <b>${esc(o.code)}</b>.</span></div>`:''}
+  ${S.pay.support?`<div class="callout info"><b>Hỗ trợ thanh toán</b><span>Nếu anh/chị gặp vấn đề trong quá trình thanh toán, vui lòng liên hệ <b class="tnum">${ACADEMY.hotline}</b> để được hỗ trợ. Mã đơn: <b>${esc(o.code)}</b></span></div>`:''}
  </div>
   <div class="demo-box pay-sim"><span class="t">Mô phỏng ngân hàng</span><div class="seg" role="group" aria-label="Kết quả mô phỏng"><button type="button" class="${S.pay.sim==='success'?'on':''}" data-a="paySim" data-v="success">Nhận đủ tiền</button><button type="button" class="${S.pay.sim==='fail'?'on':''}" data-a="paySim" data-v="fail">Chưa nhận được</button></div><button type="button" class="btn btn-primary btn-sm" data-a="payDone">Mô phỏng: ngân hàng báo có tiền</button></div>`;
 }
@@ -268,11 +272,10 @@ function account(){
  const tab=T.acTab||'register',d=T.acDraft||{},e=T.err.ac,f=T.err.field,need=T.after==='checkout';
  const inp=(id,name,label,type,val,req=true,extra='')=>`<div class="field"><label for="${id}">${label}${req?' <span class="req" aria-hidden="true">*</span>':''}</label>${type==='password'?'<div class="pw">':''}<input class="inp ${f===id?'bad':''}" id="${id}" name="${name}" type="${type}" value="${esc(val||'')}" ${req?'required aria-required="true"':''} ${f===id?'aria-invalid="true"':''} ${extra}>${type==='password'?`<button type="button" class="pw-t" data-a="pwToggle" data-v="${id}" aria-label="Hiện mật khẩu" aria-pressed="false" title="Hiện mật khẩu">${ic('eye',18)}</button></div>`:''}</div>`;
  const reg=`<form class="ac-form" data-f="acRegister" novalidate>
-  ${inp('a-name','name','Họ và tên','text',d.name,true,'autocomplete="name" placeholder="Ví dụ: Nguyễn Văn An"')}
-  ${inp('a-phone','phone','Số điện thoại / Zalo','tel',d.phone,true,'autocomplete="tel" inputmode="tel" placeholder="Ví dụ: 0912 345 678"')}
-  ${inp('a-email','email','Email','email',d.email,true,'autocomplete="email" placeholder="Ví dụ: ten@congty.vn"')}
+  ${inp('a-name','name','Họ và tên','text',d.name,true,'autocomplete="name" placeholder="Nhập Họ và tên"')}
+  ${inp('a-phone','phone','Số điện thoại / Zalo','tel',d.phone,true,'autocomplete="tel" inputmode="tel" placeholder="Nhập Số điện thoại / Zalo"')}
+  ${inp('a-email','email','Email','email',d.email,true,'autocomplete="email" placeholder="Nhập Email"')}
   ${inp('a-pass','pass','Mật khẩu','password','',true,'autocomplete="new-password" minlength="6" placeholder="Ít nhất 6 ký tự"')}
-  <p class="hint"><span class="req">*</span> Thông tin bắt buộc.</p>
   ${e?`<p class="err">${e}</p>`:''}
   <button class="btn btn-primary btn-lg btn-block">Đăng ký</button>
   <p class="ac-terms">Khi đăng ký, bạn đồng ý với <button type="button" class="btn-link" data-a="policy">Điều khoản &amp; Chính sách bảo mật</button> của chúng tôi.</p>
@@ -317,8 +320,7 @@ function mycourses(){
   <article class="card course"><button class="course-thumb" data-a="openCourse" aria-label="Mở khóa AI for CEO">${COURSE.cover?`<img class="crs-cover" src="${esc(COURSE.cover)}" alt="">`:''}<span class="k">Khóa học trọng tâm</span><span class="n">AI for <b>CEO</b></span><span class="s">${LIB.length} chương · ${ALL_BAI.length} bài</span></button>
    <div class="pad" style="display:grid;gap:14px">
     <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap"><h3 class="h3">AI for CEO</h3><span class="pill ${status[1]}">${status[0]}</span></div>
-    ${started?`<div style="display:grid;gap:6px"><div style="display:flex;align-items:center;gap:10px"><div class="bar" style="flex:1"><i style="width:${st.upct}%"></i></div><b class="tnum" style="font-size:14px;color:var(--blue)">${st.upct}%</b></div><span class="hint tnum">${st.unitsDone}/${st.units} bài học · ${subsCount()}/${Object.keys(TASKS).length} bài tập</span></div>`
-     :''}
+    ${(pc=>`<div style="display:grid;gap:6px"><div style="display:flex;align-items:center;gap:10px"><div class="bar" style="flex:1"><i style="width:${pc}%"></i></div><b class="tnum" style="font-size:14px;color:var(--blue)">${pc}%</b></div><span class="hint tnum">${started?st.unitsDone:0}/${ALL_BAI.length} bài học · ${started?subsCount():0}/${Object.keys(TASKS).length} bài tập</span></div>`)(started?st.upct:0)}
     <div class="kv"><div><span>Ngày kích hoạt</span><b>${esc((S.order&&S.order.paidAt)||today())}</b></div><div><span>Mã đơn</span><b class="tnum">${esc((S.order&&S.order.code)||'')}</b></div><div><span>Thời hạn truy cập</span><b>1 năm</b></div></div>
     <button class="btn btn-primary btn-lg btn-block" data-a="openCourse">${cta} ${ic('arrow')}</button>
    </div></article>
@@ -653,13 +655,18 @@ function complete(){
    Hiện có 1 khóa: AI for CEO, thẻ dọc trong lưới 3 thẻ/hàng (ảnh bìa 16:9). Thêm khóa sau này: thêm thẻ
    vào lưới crs-grid. Nội dung thẻ lấy từ dữ liệu sẵn có (COURSE, trang giới thiệu), không thêm cam kết mới. */
 function courses(){
- const mods=LIB.filter(x=>x.type==='module').length,enr=S.enrolled;
+ return `<section class="wrap page crs">
+ <div class="page-head crs-head"><span class="crs-tagline">${ic('bookopen',15)} Khóa học</span><h1 class="h2">Học AI thực tiễn, ứng dụng hiệu quả</h1><p class="sub">Các chương trình học được thiết kế để giúp bạn đưa AI vào công việc và hoạt động doanh nghiệp.</p></div>
+ ${courseCards()}
+ </section>`;
+}
+// lưới thẻ khóa học: AI for CEO + các khóa minh họa
+function courseCards(){
+ const enr=S.enrolled;
  // đã mua khóa: chỉ còn nút "Vào học" ở cuối thẻ (rộng hết thẻ); chưa mua: giá + nút "Đăng ký"
  const cta=enr?`<button class="btn btn-primary btn-lg" data-a="openCourse">Vào học ${ic('arrow')}</button>`
   :`<button class="btn btn-lg crs-buy" data-a="go" data-to="checkout">${ic('cart',18)} MUA KHÓA</button>`;
- return `<section class="wrap page crs">
- <div class="page-head"><span class="eyebrow">Học viện Siêu Tăng Trưởng</span><h1 class="h2">Khóa học</h1></div>
- <div class="crs-grid"><article class="card crs-feat">
+ return `<div class="crs-grid"><article class="card crs-feat">
   <button class="crs-thumb" data-a="go" data-to="landing" aria-label="Xem giới thiệu khóa AI for CEO">${COURSE.cover?`<img class="crs-cover" src="${esc(COURSE.cover)}" alt="">`:''}<span class="k">Khóa học trọng tâm</span><span class="n">AI for <b>CEO</b></span><span class="s">${LIB.length} chương · ${CAP_MAP.length} năng lực</span></button>
   <div class="crs-body">
    
@@ -672,7 +679,7 @@ function courses(){
     <div class="crs-cta">${cta}</div>
    </div>
   </div>
- </article>${OTHER_COURSES.map(c=>`<article class="card crs-feat crs-oth">
+ </article>${(V2?[]:OTHER_COURSES).map(c=>`<article class="card crs-feat crs-oth">
   <button class="crs-thumb" data-a="crsDemo" style="background:${c.bg}" aria-label="${esc(c.title)}">${c.cover?`<img class="crs-cover" src="${esc(c.cover)}" alt="">`:''}<span class="k">${c.k}</span><span class="n">${c.n}</span></button>
   <div class="crs-body">
    <div class="crs-oh"><h2 class="crs-name" title="${esc(c.title)}">${esc(c.title)}</h2><span class="crs-medal" title="Có chứng nhận hoàn thành">${ic('medal',16)}</span></div>
@@ -680,8 +687,7 @@ function courses(){
    <p class="crs-meta">${ic('bookopen',15)} ${c.lessons} bài học</p>
    <div class="crs-foot"><div class="crs-price"><b class="tnum">${money(c.price)}</b></div><div class="crs-cta"><button class="btn btn-lg crs-buy" data-a="crsDemo">${ic('cart',18)} MUA KHÓA</button></div></div>
   </div>
- </article>`).join('')}</div>
- </section>`;
+ </article>`).join('')}</div>`;
 }
 
 const SCREENS={courses,landing,account,checkout,mycourses,onboarding,syllabus,learn,lesson,complete,outputs,dashboard,community};

@@ -2166,7 +2166,7 @@ main.brand-pg>*{position:relative;z-index:1}
 .brand-pg .card{border-color:#D9E3F0;box-shadow:var(--shadow)}
 .brand-pg .eyebrow{color:#B45F00}
 .brand-pg .on-band .eyebrow{color:#FFB547}
-.brand-pg .bar i,.brand-pg .cl-bar>span>i{background:linear-gradient(90deg,#004AAD,#2F7BE0 60%,#FE9B0E)}
+.brand-pg .bar i,.brand-pg .cl-bar>span>i{background:#004AAD}
 .brand-pg .btn-primary{background:#004AAD;color:#fff;box-shadow:0 4px 14px rgba(0,74,173,.25)}
 .brand-pg .btn-primary:hover{background:#003A8C}
 .brand-pg .btn-accent{background:#FE9B0E;color:#0B1F44;border-color:transparent}
@@ -2366,7 +2366,7 @@ main.scr-checkout .page{max-width:1408px;padding-inline:28px;padding-block:28px 
 
 /* Thông tin đơn hàng: thẻ tóm tắt nổi bật, vạch thương hiệu trên đầu */
 .scr-checkout aside.card{position:sticky;padding:26px;border-radius:18px;overflow:hidden}
-.scr-checkout aside.card::before{content:"";position:absolute;left:0;right:0;top:0;height:4px;background:linear-gradient(90deg,var(--ck-blue) 0%,var(--ck-blue) 60%,var(--ck-orange) 100%)}
+.scr-checkout aside.card::before{content:"";position:absolute;left:0;right:0;top:0;height:4px;background:var(--ck-blue)}
 .scr-checkout aside.card>.h3{font-size:21px;font-weight:700;color:var(--ck-ink);margin-bottom:14px!important}
 .scr-checkout .sum-row{border-bottom-color:var(--ck-div);padding:13px 0;font-size:15px}
 .scr-checkout .sum-row .k{color:var(--ck-ink2)}
@@ -3063,3 +3063,97 @@ main.scr-courses{background:linear-gradient(180deg,#F4F8FF 0,#F7F9FC 460px) #F7F
 #inv-print{display:none}
 @media print{body.printing-inv>*:not(#inv-print){display:none!important}body.printing-inv #inv-print{display:block}body.printing-inv .iv-paper{box-shadow:none;max-width:none;margin:0}body.printing-inv .iv-wm{color:rgba(220,38,38,.12)}body.printing-inv #inv-print{page:inv}}
 @page inv{size:A4 portrait;margin:10mm}
+
+/* xác nhận hóa đơn trước khi gửi (theo yêu cầu user): khối nhắc + nút Xác nhận trong hộp xem hóa đơn */
+.inv-note>div{display:grid;gap:4px}
+.iv-foot{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.iv-foot p{margin:0;flex:1;min-width:240px}
+.iv-foot-act{display:flex;gap:8px}
+/* ô hóa đơn rộng đúng bằng dòng nhắc kiểm tra email ở trên (theo user) */
+.note-wrap{display:grid;gap:12px;width:fit-content;max-width:100%;justify-items:stretch}
+.note-wrap .inv-note{width:0;min-width:100%;max-width:none;box-sizing:border-box}
+
+/* thẻ VietQR: dùng đúng ảnh chuẩn VietQR (mẫu compact2 của img.vietqr.io: logo VietQR, napas 247, ngân hàng, chủ TK, STK, số tiền) để giống 100% mẫu user gửi; không tải được ảnh thì hiện thẻ tự vẽ */
+.vqr-img{width:100%;border:1px solid var(--line);border-radius:12px;background:#fff;padding:12px;display:grid;justify-items:center}
+.vqr-img img{width:100%;max-width:300px;height:auto;display:block}
+.vqr-img:not(.err)+.vqr{display:none}
+.vqr-img.err{display:none}
+/* ảnh VietQR to hơn cho dễ đọc tên chủ tài khoản, số tiền (theo user): cột QR 360px, ảnh rộng hết khung */
+.pay-grid:has(.vqr-img:not(.err)){grid-template-columns:minmax(0,360px) minmax(0,1fr)}
+.vqr-img{padding:8px}
+.vqr-img img{max-width:344px}
+@media (max-width:760px){.pay-qr:has(.vqr-img){max-width:420px}}
+/* header trang Khóa học (theo brief user 10/2026): nhãn pill xanh nhạt + sách mở → tiêu đề → mô tả, căn trái thẳng mép lưới thẻ */
+.crs .crs-head{display:grid;justify-items:start;gap:0;margin-bottom:12px;text-align:left}
+.crs-tagline{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;background:#E8F1FF;color:#1D4ED8;font-size:12.5px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;line-height:1.2}
+.crs-tagline .ic{color:#1D4ED8;flex:none}
+.crs .crs-head .h2{margin-top:12px;font-size:36px;font-weight:700;line-height:1.2;color:#1C274C;letter-spacing:-.02em}
+.crs .crs-head .sub{margin-top:10px;font-size:16px;color:#5B6B88;line-height:1.55;max-width:none}
+@media (max-width:640px){.crs .crs-head .h2{font-size:26px}}
+
+/* Version 2: tab Khóa học trong Cộng đồng (lưới thẻ dùng chung với trang Khóa học) */
+.cm-crs{padding-top:4px}
+.cm-crs .crs-grid{font-family:Inter,system-ui,-apple-system,"Segoe UI",Arial,sans-serif}
+
+/* =========================================================
+   THANH ĐẦU TRANG CỘNG ĐỒNG (giống giao diện cộng đồng website cũ, màu theo Brand Guidelines #004AAD · #FE9B0E · #A7B2B9, font Inter)
+   ========================================================= */
+#app .hdr.cmhd{background:#fff;box-shadow:0 1px 0 #E8EEF7;padding:0}
+#app .hdr.cmhd::after{display:none}
+.cmhd-top{display:flex;align-items:center;gap:16px;min-height:72px}
+.cmhd-top .logo{flex:none}
+.cmhd-sep{width:1px;height:34px;background:#D9DEE3;flex:none}
+.cmhd-id{display:flex;align-items:center;gap:12px;border:0;background:none;cursor:pointer;padding:4px 6px;border-radius:10px;min-width:0;font:inherit}
+.cmhd-id:hover{background:#F4F8FF}
+.cmhd-logo{width:40px;height:40px;border-radius:10px;flex:none;display:grid;place-items:center;color:#fff;background:linear-gradient(135deg,#004AAD,#2F7BE0)}
+.cmhd-id b{font-size:17px;font-weight:600;color:#1C274C;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cmhd-r{margin-left:auto;display:flex;align-items:center;gap:6px}
+.cmhd-ic{position:relative;width:42px;height:42px;border-radius:50%;border:0;background:none;display:grid;place-items:center;color:#5B6B88;cursor:pointer}
+.cmhd-ic:hover{background:#F4F8FF;color:#004AAD}
+.cmhd-badge{position:absolute;top:3px;right:3px;min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:#E5484D;color:#fff;font:700 11px/18px Inter,Arial,sans-serif;font-style:normal;text-align:center;border:2px solid #fff;box-sizing:content-box;transform:translate(25%,-15%)}
+.hdr.cmhd .me{margin-left:6px}
+.cmhd-tabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+.cmhd-tabs::-webkit-scrollbar{display:none}
+.cmhd-tabs button{flex:none;border:0;background:none;padding:12px 16px 14px;font:500 16px/1.2 Inter,system-ui,sans-serif;color:#7A8794;cursor:pointer;position:relative;display:inline-flex;align-items:center;gap:6px}
+.cmhd-tabs button:hover{color:#1C274C}
+.cmhd-tabs button.on{color:#1C274C;font-weight:600}
+.cmhd-tabs button.on::after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;border-radius:3px 3px 0 0;background:#004AAD}
+.cmhd-tabs button:focus-visible{outline:2px solid #004AAD;outline-offset:-2px;border-radius:8px}
+@media (max-width:760px){.cmhd-top{gap:10px;min-height:60px}.cmhd-sep,.hdr.cmhd .me .n{display:none}.cmhd-id b{font-size:15px}.cmhd-logo{width:34px;height:34px}.cmhd-tabs button{padding:10px 12px 12px;font-size:15px}}
+.cmhd-tabs{gap:32px}.cmhd-tabs button{padding:12px 0 14px}@media (max-width:760px){.cmhd-tabs{gap:22px}.cmhd-tabs button{padding:10px 0 12px}}
+
+/* thẻ cộng đồng ở trang Cộng đồng (theo mẫu website cũ): ảnh bìa 16:9, tên 1 dòng, hàng dưới = số thành viên (xám) + nút cam "Vào học ngay" */
+.cmh-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
+@media (max-width:1000px){.cmh-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:640px){.cmh-grid{grid-template-columns:1fr}}
+.cmh-card{display:flex;flex-direction:column;border-radius:18px;border:1px solid #E8EEF7;overflow:hidden}
+.cmh-card.soon{opacity:1}
+.cmh-cover{aspect-ratio:16/9;height:auto;min-height:0}
+.cmh-ico{width:64px;height:64px;border-radius:18px}
+.cmh-body{padding:18px 20px 20px;display:flex;flex-direction:column;gap:18px;flex:1}
+.cmh-name{margin:0;font:600 18px/1.35 Inter,system-ui,sans-serif;color:#1C274C;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cmh-foot{margin-top:auto;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.cmh-mem{font-size:15px;color:#8A94A6}
+.cmh-go{display:inline-flex;align-items:center;height:40px;padding:0 18px;border-radius:10px;background:#FE9B0E;color:#fff;font:600 14.5px/1 Inter,system-ui,sans-serif;box-shadow:0 6px 14px rgba(254,155,14,.25);transition:background .15s}
+.cmh-card[data-a]:hover .cmh-go{background:#F08A00}
+.cmh-go.off{background:#EEF1F5;color:#8A94A6;box-shadow:none}
+/* header trang Cộng đồng (theo mẫu user 10/2026): nhãn pill "CỘNG ĐỒNG" + tiêu đề lớn + mô tả; căn trái theo user */
+.cmh .hub-head{display:grid;justify-items:center;text-align:center;gap:0;margin:8px auto 36px;max-width:820px}
+.cmh .hub-head .h2{margin-top:16px;font:800 clamp(30px,4vw,46px)/1.15 Inter,system-ui,sans-serif;color:#111827;letter-spacing:-.02em}
+.cmh .hub-head .sub{margin-top:14px;font-size:18px;line-height:1.6;color:#6B7280;max-width:640px}
+@media (max-width:640px){.cmh .hub-head .sub{font-size:16px}}
+.cmh .hub-head{justify-items:start;text-align:left;margin:8px 0 36px;max-width:none}.cmh .hub-head .sub{max-width:none}
+/* cỡ chữ header trang Cộng đồng bằng header trang Khóa học (theo user): tiêu đề 36px/700 (điện thoại 26px), mô tả 16px xám, cách 12 / 10px */
+.cmh .hub-head .h2{margin-top:12px;font:700 36px/1.2 Inter,system-ui,sans-serif;color:#1C274C;letter-spacing:-.02em}
+.cmh .hub-head .sub{margin-top:10px;font-size:16px;line-height:1.55;color:#5B6B88}
+@media (max-width:640px){.cmh .hub-head .h2{font-size:26px}}
+
+/* menu trên cùng: biểu tượng trong vòng tròn xám nhạt + chữ đậm (theo mẫu website STT user gửi, 10/2026) */
+#app .nav{gap:6px}
+#app .nav button{display:inline-flex;align-items:center;gap:10px;padding:6px 12px 6px 6px;border-radius:999px;font-weight:500;color:#2C3E5C}
+.nav-ic{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;flex:none;background:#EEF1F5;border:1px solid #E1E6EC;color:#5B6B88;transition:background .15s,color .15s}
+#app .nav button:hover{background:transparent;color:#004AAD}
+#app .nav button:hover .nav-ic{background:#E7EFFA;border-color:#C9DAF3;color:#004AAD}
+#app .nav button.on{color:#004AAD;font-weight:700}
+#app .nav button.on .nav-ic{background:#E7EFFA;border-color:#BFD4F5;color:#004AAD}
+#app .nav button.on::after{left:46px;right:12px;bottom:-11px}
