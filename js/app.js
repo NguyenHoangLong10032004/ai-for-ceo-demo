@@ -6,7 +6,7 @@
 /* ---------- trạng thái ---------- */
 // S: trạng thái lưu vào trình duyệt (localStorage). T: trạng thái tạm, mất khi tải lại trang.
 const LS='aiceo-demo-v6'+(V2?'-v2':''); // Version 2 lưu riêng để 2 bản không đè dữ liệu của nhau
-const DEFAULT=()=>({screen:'landing',spent:{},account:null,loggedIn:false,eval:null,fit:null,nurture:false,order:null,pay:{status:null,method:'bank',sim:'success',support:false},enrolled:false,
+const DEFAULT=()=>({screen:'home',spent:{},account:null,loggedIn:false,eval:null,fit:null,nurture:false,order:null,pay:{status:null,method:'bank',sim:'success',support:false},enrolled:false,
  profile:{},ob:{flow:[],i:0,msgs:[],multi:[],done:false},plan:null,adjustLog:[],done:{},doneAt:{},subs:{},lesson:0,unit:null,
  expert:{id:null,msgs:[],unread:0,pending:false},mails:[],zalo:[],comm:{joined:false,posts:[],comments:{},likes:{},gotLikes:{},events:{}},remind:{...REMIND_DEFAULT},feedback:null,asst:[],completedAt:null,liveRemind:false,offline:false});
 const T={vp:{vol:80,muted:false,speed:1,quality:"auto",cc:false},gen:null,ai:null,asstOpen:false,tab:"ai",expertDraft:"",expertTyping:false,mailOpen:null,share:null,shareCap:null,dashFilter:'all',fbDraft:null,fbEdit:false,remindOpen:false,commTab:'feed',commCat:'all',commPost:null,commWrite:false,commDraft:null,commQ:'',remindDraft:null,remindPreview:null,zaloOpen:false,asstBusy:false,obTyping:false,focus:null,err:{},ph:{},cx:{},lx:{},clAll:{},drawer:null};
@@ -64,6 +64,8 @@ const clip=(s,n)=>s.length>n?s.slice(0,n-1).replace(/\s+\S*$/,'')+'…':s;
 const kb=n=>n>=1024*1024?(n/1024/1024).toFixed(1).replace('.',',')+' MB':Math.max(1,Math.round(n/1024))+' KB';
 
 /* ---------- bài tập: nộp, nhận xét, xuất file ---------- */
+// bài đang học của Chương 0 (onboarding)
+const curUnitC0=()=>C0_KEYS().find(k=>!S.done[k])||C0_KEYS()[C0_KEYS().length-1];
 const subsCount=()=>Object.keys(TASKS).filter(id=>S.subs[id]).length;
 // Bài nộp = { text: câu trả lời dạng văn bản, files: [{name,size,type,data?}], at, v, feedback } — có văn bản, có tệp, hoặc cả hai
 function subText(id){const s=S.subs[id];if(!s)return '';
@@ -168,7 +170,7 @@ function brandBand(){
 }
 let bandT=0;addEventListener('resize',()=>{clearTimeout(bandT);bandT=setTimeout(brandBand,120);});
 function render(){
- if(HIDE_LANDING&&S.screen==='landing'){if(V2){S.screen='community';T.commId=null;T.commTab='feed';T.commPost=null;}else S.screen='courses';} // trang giới thiệu đang tạm ẩn; Version 2: trang chủ = trang Cộng đồng (danh sách cộng đồng)
+ if(HIDE_LANDING&&S.screen==='landing')S.screen='home'; // trang giới thiệu đang tạm ẩn: logo, Làm lại, sau đăng nhập… về Trang chủ (cả 2 bản) // trang giới thiệu đang tạm ẩn; Version 2: trang chủ = trang Cộng đồng (danh sách cộng đồng)
  // vào cộng đồng là tham gia luôn (đã bỏ màn quy tắc cộng đồng theo yêu cầu user 10/2026)
  if(S.screen==='community'&&T.commId&&S.loggedIn&&S.account&&S.comm&&!S.comm.joined){S.comm.joined=true;setTimeout(()=>toast(`Chào mừng anh/chị đến ${COMM.name}!`),0);}
  if(V2&&S.screen==='courses'){S.screen='community';T.commId='aiceo';T.commTab='courses';T.commPost=null;} // Version 2: khóa học nằm trong Cộng đồng
@@ -191,10 +193,10 @@ function render(){
  if(T.focus){const id={ob:'ob-in',asst:'asst-in',adj:'adj-in',expert:'ex-in'}[T.focus];const el=document.getElementById(id);if(el)el.focus({preventScroll:true});T.focus=null;}
 }
 // đánh dấu xong 1 phần (video/bài tập) và ghi lại ngày xong để Dashboard tính thời gian hoàn thành
-function markDone(k){S.done[k]=true;if(!S.doneAt[k])S.doneAt[k]=Date.now();}
+function markDone(k){S.done[k]=true;if(!S.doneAt[k])S.doneAt[k]=Date.now();updateReach();}
 // Công cụ demo: giả lập đã học xong h bài đầu, mỗi ngày một bài (bài cuối xong hôm nay)
 function simulateUpTo(h){
- const ls=lessons();h=Math.max(0,Math.min(h,ls.length));S.plan.start=dayStart(Date.now())-Math.max(0,h-1)*DAY;S.done={};S.doneAt={};
+ const ls=lessons();h=Math.max(0,Math.min(h,ls.length));S.reachCh=null;S.plan.start=dayStart(Date.now())-Math.max(0,h-1)*DAY;S.done={};S.doneAt={};
  S.spent={};ls.slice(0,h).forEach((ks,i)=>ks.forEach((k,j)=>{S.done[k]=true;S.doneAt[k]=planDay(i)+(8+i%4)*36e5+j*6e5;S.spent[k]=Math.round(U(k).m*(.9+((i*7+j*3)%6)/10)*10)/10;}));
  Object.keys(TASKS).forEach(id=>{const k='E:'+id;if(!S.done[k]){delete S.subs[id];return;}if(S.subs[id])return;const t=TASKS[id],at=new Date(S.doneAt[k]).toLocaleString('vi-VN',{hour:'2-digit',minute:'2-digit',day:'2-digit',month:'2-digit',year:'numeric'});
   S.subs[id]={text:sampleText(id),files:[],at,v:1};S.subs[id].feedback={...exRuleReview(id),at};});
@@ -228,17 +230,19 @@ function ensureFor(to){
  if(need&&!S.account)S.account={name:SAMPLE_PROFILE.name,phone:'0912 345 678',email:'long.nguyen@minhan.vn',createdAt:today()};
  if(need)S.loggedIn=true;
  if(need&&!S.enrolled){S.order=S.order||{code:'AICEO-'+Math.floor(100000+Math.random()*900000),name:S.account.name,phone:S.account.phone,email:S.account.email,company:SAMPLE_PROFILE.company,invoice:false,method:'bank',paidAt:today()};S.pay.status='success';S.enrolled=true;}
- if(to==='onboarding'&&!S.ob.flow.length&&!S.ob.done)startOb();
+ if(to==='onboarding'&&!S.ob.flow.length&&!S.ob.done){startOb();S.unit=curUnitC0();S.lesson=0;}
  if(['syllabus','learn','complete'].includes(to)&&!profileComplete(S.profile)){
   S.profile={...SAMPLE_PROFILE,...(S.eval?{industry:S.eval.industry,size:S.eval.size,level:S.eval.level,goals:S.eval.goals}:{}),name:S.order.name,company:S.order.company};
-  S.ob={flow:[],i:0,msgs:[{role:'bot',text:'Hồ sơ mẫu đã được nạp cho demo.'}],multi:[],done:true};
+  obMarkC0Done();
  }
+ if(['syllabus','learn','complete'].includes(to)&&profileComplete(S.profile)&&!c0Done())obMarkC0Done();
  if(['learn','complete'].includes(to)&&!S.plan){S.plan=rulePlan(S.profile);S.plan.accepted=true;S.plan.wasActive=true;}
 }
 // Sang phần tiếp theo trong bài; hết bài thì sang bài kế tiếp
 function advance(){
  const all=planUnits(),pos=all.indexOf(S.unit),d=S.lesson,nx=all[pos+1];
  if(lessonDone(d)&&(!nx||lessonOfUnit(nx)!==d))toast(`Hoàn thành ${dayLabel(d)}: ${lessons()[d].length} bài`);
+ if(chOf(S.unit)==='C0'&&(!nx||chOf(nx)!=='C0')){go('syllabus');return;} // xong Chương 0 → xem lộ trình
  if(!nx){go('complete');return;}
  const k=unitOpen(nx)?nx:curUnit();if(!k){go('complete');return;}
  S.unit=k;S.lesson=lessonOfUnit(k);S.from=null;T.editEx=null;render();hist();window.scrollTo(0,0);
@@ -250,6 +254,7 @@ const ACT={
  jump:d=>{ensureFor(d.to);go(d.to);},
  // tài khoản Học viện: bắt buộc có trước khi đăng ký mua khóa học
  acOpen:d=>{T.acTab=d.v;T.after=null;T.acDraft=null;go('account');},
+ myCourses:()=>{if(!S.loggedIn){T.acTab=S.account?'login':'register';T.after='mycourses';T.acDraft=null;go('account');return;}go('mycourses');}, // thẻ Khóa học của tôi ở trang chủ
  // ẩn/hiện mật khẩu: đổi trực tiếp, không vẽ lại để giữ chữ đang gõ
  pwToggle:(d,b)=>{const i=document.getElementById(d.v);if(!i)return;const show=i.type==='password';i.type=show?'text':'password';const l=show?'Ẩn mật khẩu':'Hiện mật khẩu';b.setAttribute('aria-label',l);b.title=l;b.setAttribute('aria-pressed',String(show));b.innerHTML=ic(show?'eyeoff':'eye',18);i.focus();},
  acForgot:()=>{const e=document.getElementById('l-email'),v=e&&e.value.trim();toast(v?`Đã gửi hướng dẫn đặt lại mật khẩu tới ${v} (mô phỏng)`:'Nhập email tài khoản rồi bấm Quên mật khẩu? để nhận hướng dẫn đặt lại',v?'ok':'bad');if(!v&&e)e.focus();},
@@ -259,12 +264,12 @@ const ACT={
  // trang bài học → quay lại danh sách bài học, cuộn tới đúng bài đang xem
  // hộp thư mô phỏng: xem email tự động đã gửi cho học viên
  crsDemo:()=>toast('Khóa học minh họa trong bản demo. Hiện chỉ khóa AI for CEO mở được.'),
- mailOpen:d=>{if(!d.v||d.v==='list'){if(!d.v){ensureSampleInvoice();ensureSamplePrelaunch();ensureSampleReminders();}if(!S.mails.length){toast('Hộp thư chưa có email nào. Email xác nhận được gửi khi thanh toán thành công','bad');return;}T.mailOpen='list';T.asstOpen=false;render();return;}const m=S.mails.find(x=>x.id===d.v)||S.mails[0];if(!m)return;m.read=true;T.mailOpen=m.id;T.asstOpen=false;render();const b=document.querySelector('.gm-main');if(b)b.scrollTop=0;},
+ mailOpen:d=>{if(!d.v||d.v==='list'){if(!d.v){ensureSampleInvoice();ensureSamplePrelaunch();ensureSampleExpired();ensureSampleReminders();}if(!S.mails.length){toast('Hộp thư chưa có email nào. Email xác nhận được gửi khi thanh toán thành công','bad');return;}T.mailOpen='list';T.asstOpen=false;render();return;}const m=S.mails.find(x=>x.id===d.v)||S.mails[0];if(!m)return;m.read=true;T.mailOpen=m.id;T.asstOpen=false;render();const b=document.querySelector('.gm-main');if(b)b.scrollTop=0;},
  mailResend:d=>{resendRealEmail(d.v);},
  invLookup:()=>{toast('Trang tra cứu hóa đơn điện tử thuộc nhà cung cấp hóa đơn, chưa có trong bản demo');},
  mailClose:()=>{T.mailOpen=null;render();},
  mailCta:()=>{T.mailOpen=null;ensureFor('mycourses');go('mycourses');toast('Đã mở khóa học từ email xác nhận');},
- backToList:()=>{T.focusLesson=S.unit;S.from=null;T.editEx=null;go('learn');},
+ backToList:()=>{T.focusLesson=S.unit;S.from=null;T.editEx=null;if(!S.enrolled||!S.plan||!(S.plan.accepted||S.plan.wasActive)){go(S.plan?'syllabus':'home');return;}go('learn');},
  // bài tập mở từ "Bài tập của tôi" → quay lại đó, cuộn tới đúng thẻ bài tập
  // Bài tập của tôi → danh sách bài học, cuộn tới bài đang học
  outputsBack:()=>{T.focusLesson=curUnit();T.editEx=null;go('learn');},
@@ -272,7 +277,7 @@ const ACT={
  reset:()=>{S=DEFAULT();PREVIEW=null;Object.assign(T,{gen:null,asstOpen:false,tab:"ai",expertDraft:"",expertTyping:false,asstBusy:false,obTyping:false,err:{}});go('landing');toast('Đã làm lại demo từ đầu');},
  scrollTo:d=>{const el=document.getElementById(d.v);if(el)el.scrollIntoView({behavior:'smooth'});},
  // khóa học của tôi → vào đúng bước theo trạng thái
- openCourse:()=>{if(!S.ob.done){if(!S.ob.flow.length)startOb();go('onboarding');}else if(!S.plan||!(S.plan.accepted||S.plan.wasActive))go('syllabus');else go('learn');},
+ openCourse:()=>{if(!c0Done()||!S.ob.done){if(!S.ob.flow.length)startOb();S.unit=curUnitC0();S.lesson=0;S.from=null;go('lesson');}else if(!S.plan||!(S.plan.accepted||S.plan.wasActive))go('syllabus');else go('learn');},
  // thanh toán
  invToggle:(d,el)=>{const b=document.getElementById('inv-box');if(b)b.hidden=!el.checked;},
  paySim:d=>{S.pay.sim=d.v;document.querySelectorAll('[data-a="paySim"]').forEach(b=>b.classList.toggle('on',b.dataset.v===d.v));save();},
@@ -293,7 +298,7 @@ const ACT={
   }catch(e){say('Không kết nối được dịch vụ tra cứu. Anh/chị kiểm tra mạng hoặc nhập tay tên và địa chỉ doanh nghiệp.','bad');}
   if(btn)btn.disabled=false;},
  payDone:()=>{S.pay.status='processing';render();window.scrollTo(0,0);
-  setTimeout(()=>{if(S.pay.sim==='fail'){S.pay.status='failed';toast('Chưa nhận được thanh toán','bad');}else{S.pay.status='success';S.enrolled=true;S.order.paidAt=today();toast('Đã nhận thanh toán, khóa học đã được kích hoạt');prepInvoice(S.order);setTimeout(()=>{sendConfirmEmail();render();},1800);}render();},1400);},
+  setTimeout(()=>{if(S.pay.sim==='fail'){S.pay.status='failed';toast('Chưa nhận được thanh toán','bad');}else{S.pay.status='success';S.enrolled=true;S.order.paidAt=today();if(S.plan&&!S.plan.wasActive)S.plan.start=Date.now();toast('Đã nhận thanh toán, khóa học đã được kích hoạt');prepInvoice(S.order);setTimeout(()=>{sendConfirmEmail();if(!S.order.invoice){S.order.invConfirmed=true;sendInvoiceEmail();}render();},1800);}render();},1400);},
  payCopy:(d,el)=>{const v=el&&el.dataset.c||'',lb={acc:'số tài khoản',amt:'số tiền',note:'mã đơn'}[d.v]||'';
   const ok=()=>{toast('Đã sao chép '+lb+': '+v);if(el){el.innerHTML=ic('check',16);el.classList.add('ok');setTimeout(()=>{el.innerHTML=ic('copy',16);el.classList.remove('ok');},1800);}};
   if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(v).then(ok,()=>{fallbackCopy(v);ok();});else{fallbackCopy(v);ok();}},
@@ -301,7 +306,7 @@ const ACT={
  payChange:()=>{S.pay.status=null;S.pay.support=false;render();},
  paySupport:()=>{S.pay.support=true;render();},
  // onboarding
- startOnboarding:()=>{startOb();go('onboarding');},
+ startOnboarding:()=>{startOb();S.unit=curUnitC0();S.lesson=0;go('lesson');},
  obChip:d=>{if(d.v==='__custom'){const el=document.getElementById('ob-in');if(el){el.focus();el.placeholder='Ví dụ: 10 ngày, 3 tuần…';}return;}obAnswer(d.v,d.l);},
  obToggle:d=>{const m=S.ob.multi;const i=m.indexOf(d.v);if(i>=0)m.splice(i,1);else if(m.length<3)m.push(d.v);render();},
  obGoalsDone:()=>{if(!S.ob.multi.length)return;const g=S.ob.multi.slice();S.ob.multi=[];obAnswer(g,g.map(x=>GOALS[x]).join(', '));},
@@ -310,14 +315,51 @@ const ACT={
  adjust:d=>{generate(d.q);},
  fixDays:d=>{const p0={...S.profile},was=!!(S.plan&&S.plan.wasActive);S.profile.days=+d.v;S.plan=rulePlan(S.profile);S.plan.wasActive=was;S.adjustLog.push({role:'bot',text:describeChanges(p0,S.profile)});render();},
  fixPace:d=>{const p0={...S.profile},was=!!(S.plan&&S.plan.wasActive);S.profile.minPerSession=+d.v;S.plan=rulePlan(S.profile);S.plan.wasActive=was;S.adjustLog.push({role:'bot',text:describeChanges(p0,S.profile)});render();},
- acceptPlan:()=>{if(!S.plan||S.plan.warning)return;T.drawer=null;const was=S.plan.wasActive;S.plan.accepted=true;S.plan.wasActive=true;go('learn');toast(was?'Đã lưu lộ trình mới':'Đã xác nhận lộ trình. Bắt đầu Bài 1 nhé!');},
+ acceptPlan:()=>{if(!S.plan||S.plan.warning)return;if(!S.enrolled){go('checkout');toast('Đăng ký khóa học để bắt đầu học theo lộ trình của anh/chị');return;}T.drawer=null;const was=S.plan.wasActive;if(!was)S.plan.start=Date.now();S.plan.accepted=true;S.plan.wasActive=true;
+  if(!was&&c0Done()&&curUnit()){S.unit=curUnit();S.lesson=lessonOfUnit(S.unit);S.from=null;go('lesson');toast('Đã xác nhận lộ trình. Bắt đầu Chương 1 nhé!');return;}
+  go('learn');toast(was?'Đã lưu lộ trình mới':'Đã xác nhận lộ trình. Bắt đầu Chương 0 nhé!');},
  // học
  invView:()=>{T.invView=true;render();},
- invConfirm:()=>{const o=S.order;if(!o||!o.invoice)return;o.invConfirmed=true;T.invView=false;sendInvoiceEmail();render();},
+ invConfirm:()=>{const o=S.order;if(!o)return;o.invConfirmed=true;T.invView=false;sendInvoiceEmail();render();},
  invClose:()=>{T.invView=false;render();},
  invPrint:()=>{const p=document.querySelector('.iv-paper');if(!p)return;let box=document.getElementById('inv-print');if(!box){box=document.createElement('div');box.id='inv-print';document.body.appendChild(box);}
   box.innerHTML=p.outerHTML;document.body.classList.add('printing-inv');const done=()=>{document.body.classList.remove('printing-inv');window.removeEventListener('afterprint',done);};window.addEventListener('afterprint',done);setTimeout(()=>window.print(),150);},
- openUnit:d=>{const k=d.v;if(!unitOpen(k)){toast(unitLockMsg(k),'bad');return;}S.unit=k;S.lesson=lessonOfUnit(k);S.from=null;T.editEx=null;go('lesson');},
+ trialStart:()=>{if(S.enrolled){ACT.openCourse();return;}if(c0Done()&&S.plan){go('syllabus');return;}if(!S.ob.flow.length)startOb();S.unit=curUnitC0();S.lesson=0;S.from=null;go('lesson');}, // Chương 0 học thử miễn phí
+ toSyllabus:()=>{go('syllabus');},
+ saveRoute:()=>{T.acTab=S.account?'login':'register';T.after='checkout';T.acDraft=null;go('account');toast('Tạo tài khoản miễn phí để lưu lộ trình của anh/chị');},
+ homeTo:d=>{go('home');setTimeout(()=>{const el=document.getElementById(d.v);if(el)el.scrollIntoView({block:'start',behavior:'smooth'});},30);},
+ listFilter:d=>{T[d.k]=d.v;render();},
+ // Chương 0 bản 2: Bài 4 (quyết định 30 ngày)
+ c0DecSugg:()=>{const el=document.getElementById('c0-dec');T.c0draft=el?el.value:T.c0draft;T.c0sugg=!T.c0sugg;render();},
+ c0DecPick:d=>{const el=document.getElementById('c0-dec'),v=DEC_SAMPLES[+d.v][1];if(el){el.value=v;el.focus();}T.c0draft=v;},
+ c0UseSugg:()=>{const b4=S.ob.b4;c0Msg('C0-4','user','Dùng câu gợi ý');c0SetDec(b4.sugg);render();},
+ c0KeepMine:()=>{const b4=S.ob.b4;c0Msg('C0-4','user','Giữ câu của tôi');c0Msg('C0-4','bot','Em giữ nguyên câu của anh/chị. Anh/chị có thể điều chỉnh bất cứ lúc nào trong quá trình học.');c0SetDec(b4.mine);render();},
+ c0DecEdit:()=>{S.ob.b4.step='ask';c0Msg('C0-4','bot',`Anh/chị gõ lại giúp em phần còn lại của câu "${DEC_PREFIX}…" hoặc chọn một câu mẫu bên dưới nhé.`);T.focus='ob';render();},
+ // Bài 5 (hồ sơ 7 nhóm): chọn lựa chọn nhanh; giữ chữ đang gõ trong form khi vẽ lại
+ c0Pick:d=>{const form=document.getElementById('c0-form'),f=T.c0f=T.c0f||{};if(form)[...form.elements].forEach(e=>{if(e.name)f['_'+e.name]=e.value;});
+  if(d.m){let a=(f[d.k]||[]).slice();const i=a.indexOf(d.v);if(i>=0)a.splice(i,1);else{if(d.v==='__none')a=['__none'];else{a=a.filter(x=>x!=='__none');if(a.length>=+d.m){toast('Chọn tối đa '+d.m+' mục','bad');return;}a.push(d.v);}}f[d.k]=a;if(d.k==='depts'&&f.focus&&!a.includes(f.focus))f.focus=null;}
+  else f[d.k]=d.v;T.err={};render();},
+ c0Edit:d=>{const b5=S.ob.b5,keys=C5_PART[d.v];if(!keys)return;const part=d.v==='9'?'Lịch học':(c0Parts().find(p=>p[2]===d.v)||[''])[0];c0Msg('C0-5','user','Sửa phần: '+part);b5.flow=keys.slice();b5.i=0;c5Ask();T.focus='ob';render();},
+ c0Confirm:()=>{const b5=S.ob.b5;c0Msg('C0-5','user','Thông tin đã đúng, tôi xác nhận hồ sơ.');S.profile.confirmedAt=nowStr();if(S.done['E:C0-5']){b5.ph='done';c0Msg('C0-5','bot','Em đã cập nhật hồ sơ của anh/chị.');c0Regen();}else{b5.flow=['days','min'];b5.i=0;c5Ask();}T.focus='ob';render();},
+ // Bài 5: lựa chọn nhanh (1 lựa chọn = trả lời luôn), chọn nhiều + "Xong"
+ c5Chip:d=>{if(d.v==='__custom'){const el=document.getElementById('ob-in');if(el){el.focus();el.placeholder='Ví dụ: 45 ngày, 6 tuần…';}return;}c5Answer(d.v,d.l);},
+ c5Toggle:d=>{const b5=S.ob.b5,q=Q5[c5Cur()];if(!q)return;let a=b5.multi;const i=a.indexOf(d.v);if(i>=0)a.splice(i,1);else if(d.v==='__none')b5.multi=['__none'];else{a=b5.multi=a.filter(x=>x!=='__none');if(a.length>=q.multi){toast('Chọn tối đa '+q.multi+' mục','bad');return;}a.push(d.v);}render();},
+ c5Done:()=>{const b5=S.ob.b5,q=Q5[c5Cur()];if(!q||!b5.multi.length)return;const lab=b5.multi.map(v=>(q.chips().find(c=>c[0]===v)||[v,v])[1]).join(', ');c5Answer(b5.multi.slice(),lab);},
+ // Bài 4: bấm câu mẫu = gửi luôn câu đó
+ c4Pick:d=>{c0Dec(DEC_SAMPLES[+d.v][1]);T.focus='ob';render();},
+ // Hỏi lại quyết định 30 ngày cuối chương
+ decKeep:d=>{(S.profile.decHist=S.profile.decHist||[]).push({ch:d.v,act:'keep',at:nowStr()});toast('Đã ghi nhận: giữ nguyên quyết định 30 ngày');render();},
+ decMode:d=>{T.decMode=T.decMode||{};T.decMode[d.v]=d.k||null;render();},
+ decLater:d=>{(S.decLater=S.decLater||{})[d.v]=true;toast('Em sẽ nhắc lại ở trang Khóa học');render();},
+ decOpen:d=>{if(S.decLater)delete S.decLater[d.v];const k=chLastUnit(d.v);if(!k)return;S.unit=k;S.lesson=lessonOfUnit(k);S.from=null;T.focusEl='dec-'+d.v;go('lesson');},
+ libDl:()=>toast('Tài liệu minh họa trong bản demo, chưa có tệp thật để tải'),
+ // Trang Chi tiết khóa học
+ crsOpen:d=>{T.crsId=d.v;T.cdOpen=null;go('course');window.scrollTo(0,0);},
+ cdCh:d=>{const o=T.cdOpen||[];T.cdOpen=o.includes(d.v)?o.filter(x=>x!==d.v):[...o,d.v];render();},
+ cdAll:()=>{T.cdOpen=(T.cdOpen||[]).length===LIB.length?[]:LIB.map(x=>x.id);render();},
+ cdTry:d=>{if(HAS_C0&&(!S.ob||S.ob.v!==2))startOb();S.unit=d.v;S.lesson=0;S.from=null;go('lesson');},
+ homeDemo:()=>toast('Nội dung minh họa trên trang chủ demo'),
+ openUnit:d=>{if(paidLock(d.v)){toast('Bài này mở khi anh/chị đăng ký khóa học. Chương 0 học miễn phí.','bad');return;}const k=d.v;if(!unitOpen(k)){toast(unitLockMsg(k),'bad');return;}S.unit=k;S.lesson=lessonOfUnit(k);S.from=null;T.editEx=null;go('lesson');},
  openLesson:d=>{if(!lessonOpen(+d.v)){toast(lockMsg(+d.v),'bad');return;}S.lesson=+d.v;S.unit=null;S.from=null;go('lesson');},
  selUnit:d=>{S.unit=d.v;render();},
  playUnit:()=>{if(U(S.unit).kind==='exercise')return;if(!S.done[S.unit])S.spent[S.unit]=(S.spent[S.unit]||0)+U(S.unit).m;markDone(S.unit);render();},
@@ -329,7 +371,8 @@ const ACT={
   const t=p?p.dataset.title:'',l=p?p.dataset.label:'';
   w.document.open();w.document.write(`<!doctype html><html lang="vi"><head><meta charset="utf-8"><title>${t} · AI for CEO</title><style>body{margin:0;height:100vh;display:grid;place-items:center;background:radial-gradient(120% 90% at 80% 0%,#22304F,#172033 60%);color:#fff;font-family:Inter,system-ui,sans-serif;text-align:center}main{display:grid;gap:12px;justify-items:center;padding:24px}small{font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;color:#AEB6CA;font-weight:700}h1{font-size:22px;margin:0;max-width:32ch}p{color:#AEB6CA;font-size:13px;margin:0}</style></head><body><main><small>${l}</small><h1>${t}</h1><p>Video mô phỏng. Bản thật sẽ phát tiếp video ở đúng vị trí đang xem.</p></main></body></html>`);w.document.close();w.focus();},
  vpFull:()=>{const p=document.querySelector('.player');if(!p)return;if(document.fullscreenElement){document.exitFullscreen();return;}const f=p.requestFullscreen||p.webkitRequestFullscreen;if(!f){toast('Trình duyệt này chưa hỗ trợ toàn màn hình','bad');return;}const r=f.call(p);if(r&&r.catch)r.catch(()=>toast('Trình duyệt không cho phép toàn màn hình','bad'));},
- markNext:()=>{markDone(S.unit);advance();},
+ unitTick:d=>{const k=d.v,u=U(k);if(u.kind==='exercise'||!unitOpen(k))return;if(S.done[k]){updateReach();delete S.done[k];delete S.doneAt[k];toast('Đã bỏ đánh dấu hoàn thành');}else{markDone(k);toast('Đã đánh dấu hoàn thành');}render();}, // bấm dấu tick ở danh sách bài (trang bài học)
+ markNext:()=>{const u=U(S.unit);if(u.kind==='text'&&!S.done[S.unit])S.spent[S.unit]=(S.spent[S.unit]||0)+u.m;markDone(S.unit);advance();}, // bài văn bản: tính thời gian đọc = thời lượng bài
  asstLesson:()=>{T.asstOpen=true;T.tab="ai";askAssistant('Giải thích phần này theo góc nhìn CEO và công ty tôi có thể dùng ở đâu?');},
  // bài tập
  exSample:d=>{const el=document.getElementById('ex-text');if(el){el.value=sampleText(d.v);el.focus();}},
@@ -371,7 +414,7 @@ const ACT={
  remindLater:()=>{S.remind.asked=true;render();toast('Anh/chị có thể bật nhắc lịch học bất cứ lúc nào ở thẻ chuỗi ngày học');},
  remindSave:()=>{const d=T.remindDraft||S.remind;if(d.on&&!d.email&&!d.zalo){toast('Chọn ít nhất một kênh: Email hoặc Zalo','bad');return;}if(d.on&&!(d.days||[]).length){toast('Chọn ít nhất một ngày trong tuần','bad');return;}S.remind={...d,asked:true};T.remindOpen=false;T.remindDraft=null;render();toast(S.remind.on?`Đã lưu lịch nhắc: ${S.remind.time}, ${daysText(S.remind.days)}`:'Đã tắt nhắc lịch học');},
  remindTest:()=>{const d=T.remindDraft||S.remind;const keep=S.remind;S.remind={...d};const ok=sendReminder(T.remindPreview||remindKind());if(!ok)S.remind=keep;else{S.remind={...d,asked:true};}render();},
- zaloOpen:()=>{ensureSampleReminders();T.zaloOpen=true;S.zalo.forEach(m=>m.read=true);T.asstOpen=false;render();},
+ zaloOpen:()=>{ensureSamplePrelaunchZalo();ensureSampleReminders();T.zaloOpen=true;S.zalo.forEach(m=>m.read=true);T.asstOpen=false;render();},
  zaloClose:()=>{T.zaloOpen=false;render();},
  zaloCta:d=>{T.zaloOpen=false;T.mailOpen=null;T.remindOpen=false;const to=d.v||'learn';if(to==='learn'){const n=nextLesson();if(n>=0){ensureFor('learn');S.lesson=n;S.unit=null;S.from=null;go('lesson');return;}}ensureFor(to);go(to);},
  // chứng nhận hoàn thành
@@ -450,6 +493,26 @@ const FORMS={
   if(!pass)return bad('Chưa nhập mật khẩu.','l-pass');
   S.loggedIn=true;T.err={};T.acDraft=null;toast('Đăng nhập thành công');const to=T.after||'landing';T.after=null;go(to);},
  obSend:f=>{const t=f.t.value.trim();if(!t)return;obText(t);},
+ c0DecSend:f=>{const t=decClean(f.t.value);if(t.length<8){T.err={c0:'Anh/chị viết tiếp câu bằng một quyết định cụ thể của doanh nghiệp (ít nhất vài từ).'};render();const el=document.getElementById('c0-dec');if(el)el.focus();return;}T.err={};T.c0draft='';T.c0sugg=false;c0Dec(t);render();},
+ c0Group:f=>{const g=S.ob.b5.g,v=T.c0f||{},p=S.profile,val=n=>(f[n]&&f[n].value||'').trim(),err=m=>{T.err={c0:m};[...f.elements].forEach(e=>{if(e.name)v['_'+e.name]=e.value;});render();};let said='';
+  if(g===1){if(!v.industry||!v.model||!v.size)return err('Anh/chị chọn giúp ngành, mô hình kinh doanh và quy mô nhân sự.');Object.assign(p,{industry:v.industry,model:v.model,size:v.size,products:val('products'),customers:val('customers'),branches:val('branches')});said=[v.industry,v.model,v.size,p.products,p.customers].filter(Boolean).join(' · ');}
+  if(g===2){if(!v.role||!v.roleMode)return err('Anh/chị chọn giúp vai trò và cách điều hành.');Object.assign(p,{role:v.role,roleMode:v.roleMode,roleDepts:v.roleDepts||[]});said=[v.role,v.roleMode].join(' · ');}
+  if(g===3){if(!(v.depts||[]).length||!v.focus)return err('Anh/chị chọn các bộ phận và 1 bộ phận quan tâm nhất.');Object.assign(p,{depts:v.depts,focusDept:v.focus});said='Quan tâm nhất: '+DEPTS[v.focus];}
+  if(g===4){const o=val('other').split(';').map(x=>x.trim()).filter(Boolean),a=[...(v.problems||[]),...o].slice(0,3);if(!a.length)return err('Anh/chị chọn hoặc ghi ít nhất 1 vấn đề.');p.problems=a;said=a.join('; ');}
+  if(g===5){if(!v.aiNow)return err('Anh/chị chọn 1 mức gần đúng nhất với hiện trạng.');p.aiNow=v.aiNow;said=OB_AINOW[v.aiNow][0];}
+  if(g===6){if(p.decision30&&v.keep!=='adj'){if(v.keep!=='keep')return err('Anh/chị chọn Giữ nguyên hoặc Điều chỉnh.');said='Giữ nguyên quyết định.';}else{const t=decClean(val('dec'));if(t.length<8)return err('Anh/chị viết tiếp câu bằng một quyết định cụ thể.');c0SetDec(t,'C0');said=DEC_PREFIX+' '+t+'.';}}
+  if(g===7){if(!(v.limits||[]).length)return err('Anh/chị chọn ít nhất 1 mục, hoặc "Chưa có giới hạn đặc biệt".');p.limits=v.limits.filter(x=>x!=='__none');said=p.limits.length?p.limits.join('; '):'Chưa có giới hạn đặc biệt';}
+  T.err={};T.c0fG=null;c0Msg('C0-5','user',said);c0Sync();c0Next();render();},
+ c0Sched:f=>{const v=T.c0f||{},p=S.profile;let days=v.days==='custom'?parseInt((f.custom&&f.custom.value)||''):+v.days;
+  if(!days||days<7||days>MAX_DAYS){T.err={c0:'Anh/chị chọn số ngày, hoặc nhập từ 7 đến '+MAX_DAYS+' ngày.'};render();return;}if(!v.min){T.err={c0:'Anh/chị chọn số phút mỗi ngày.'};render();return;}
+  p.days=days;p.minPerSession=+v.min;T.err={};T.c0fG=null;c0Msg('C0-5','user',`${days} ngày · ${v.min} phút/ngày`);
+  if(S.done['E:C0-5']){S.ob.b5.g=10;c0Regen();render();return;}c0Complete();render();},
+ decSave:f=>{const ch=f.dataset.ch,m=f.dataset.m,t=(f.t.value||'').trim(),p=S.profile;if(!t){toast('Anh/chị nhập nội dung trước khi lưu','bad');return;}
+  if(m==='note')(p.decHist=p.decHist||[]).push({ch,act:'note',note:t,at:nowStr()});
+  else{const before=p.decision30;c0SetDec(t,ch);if(!before)(p.decHist=p.decHist||[]).push({ch,act:'edit',before:'',after:p.decision30,at:nowStr()});}
+  if(T.decMode)T.decMode[ch]=null;toast(m==='note'?'Đã lưu suy nghĩ của anh/chị':'Đã cập nhật quyết định 30 ngày');render();},
+ c4Send:f=>{const t=decClean(f.t.value);f.t.value='';if(!t)return;if(t.length<8){c0Msg('C0-4','user',t);c0Msg('C0-4','bot','Anh/chị viết cụ thể hơn một chút giúp em: quyết định đó liên quan tới bộ phận, bài toán hay mốc thời gian nào?');T.focus='ob';render();return;}c0Dec(t);T.focus='ob';render();},
+ c5Send:f=>{const t=f.t.value.trim();f.t.value='';if(!t)return;c5Text(t);},
  adjSend:f=>{const q=f.q.value.trim();if(!q)return;generate(q);},
  exSubmit:f=>{
   const id=f.dataset.id,prev=S.subs[id],t=TASKS[id],m=exMode(t),lab=submitLabel(t).main.toLowerCase(),files=exFiles(id).slice();
@@ -498,7 +561,7 @@ document.addEventListener('submit',e=>{const f=e.target.closest('[data-f]');if(!
 window.addEventListener('scroll',()=>{const t=document.getElementById('ch-tip');if(t)t.hidden=true;},{passive:true});
 window.addEventListener('popstate',e=>{
  const st=e.state;if(!st||!SCREENS[st.screen])return;
- if(st.screen==='lesson'&&!(S.plan&&S.plan.lessons[st.lesson]&&lessonOpen(st.lesson)))return;
+ if(st.screen==='lesson'&&!(lessons()[st.lesson]&&lessonOpen(st.lesson)))return;
  if(S.screen==='lesson'&&st.screen==='learn')T.focusLesson=S.unit;
  if(S.screen==='lesson'&&st.screen==='outputs'&&S.from==='outputs')T.focusEl='out-'+S.fromEx;
  if(st.screen==='community'){T.commId=st.ci||null;T.commTab=st.ct||'feed';T.commPost=st.cp||null;}
@@ -530,6 +593,11 @@ document.addEventListener('keydown',e=>{if(T.mediaView){if(e.key==='Escape'){T.m
 /* ---------- khởi động ---------- */
 // dọn dữ liệu cũ còn lưu trong trình duyệt từ các phiên bản demo trước
 if(S.pay.status==='processing')S.pay.status=null;
+// tin Zalo kích hoạt đã lưu: bỏ 2 câu kết (theo user 10/2026)
+(S.zalo||[]).forEach(z=>{if(z.msg&&Array.isArray(z.msg.sections))z.msg.sections=z.msg.sections.filter(x=>!(x&&x.p===ACCESS_CLOSE.join(' ')));});
+(S.zalo||[]).forEach(z=>{(z.msg&&z.msg.sections||[]).forEach(x=>{if(x&&Array.isArray(x.steps)&&x.steps.length!==ACCESS_STEPS.length&&x.steps.some(t=>/^(Thiết lập lộ trình|Bắt đầu hành trình)/.test(t)))x.steps=ACCESS_STEPS.map(([t,d])=>`${t}: ${d.replace(/<br><br>/g,' ').replace(/<[^>]+>/g,'')}`);});}); // tin đã lưu: đồng bộ các bước theo ACCESS_STEPS hiện tại
+// đơn khách lẻ đã thanh toán trước khi có tính năng: bổ sung hóa đơn khách lẻ
+if(S.enrolled&&S.order&&S.order.paidAt&&!S.order.invoice&&S.order.email&&!(S.mails||[]).some(m=>m.kind==='invoice'&&!m.sample&&m.code===S.order.code)){S.order.invConfirmed=true;sendInvoiceEmail();}
 if(S.order&&S.order.invoice&&!S.order.invConfirmed&&(S.mails||[]).some(m=>m.kind==='invoice'&&!m.sample&&m.code===S.order.code))S.order.invConfirmed=true;
 // khóa đổi sang 8 chương · 37 bài (mỗi bài 1 video / 1 bài tập, 10/2026): mã bài cũ (M01:0, E:M01…) không còn → bỏ tiến độ cũ, chia lại lộ trình theo hồ sơ
 {const okKey=k=>{try{return !!U(k);}catch(e){return false;}};
@@ -572,9 +640,11 @@ if(S.pay.status==='await'&&!S.pay.until)S.pay.until=Date.now()+PAY_HOLD;
 if(S.enrolled&&!S.account&&S.order){S.account={name:S.order.name,phone:S.order.phone,email:S.order.email,createdAt:S.order.paidAt||today()};S.loggedIn=true;}
 if(!SCREENS[S.screen])S.screen='landing';
 if(!S.ob.flow.length&&!S.ob.done)S.eval=null; // bước Đánh giá đã bỏ: onboarding tự hỏi ngành, quy mô, mức AI, phòng ban
+try{c0Migrate();}catch(e){console.error(e);S.ob=c0Fresh();} // Chương 0 bản 2: chuyển dữ liệu onboarding cũ
 try{fixOb();}catch(e){S.ob={flow:[],i:0,msgs:[],multi:[],done:false};}
+if(S.plan&&Array.isArray(S.plan.lessons)&&S.plan.lessons[0]&&S.plan.lessons[0].join()!==C0_KEYS().join()&&profileComplete(S.profile)){const keep={accepted:S.plan.accepted,wasActive:S.plan.wasActive,start:S.plan.start};if(!c0Done())obMarkC0Done();S.plan={...rulePlan(S.profile),...keep};}
 if(S.profile&&S.profile.days&&!S.profile.minPerSession)S.profile.minPerSession=30;
-if(S.screen==='lesson'&&!(S.plan&&S.plan.lessons[S.lesson]))S.screen='learn';
+if(S.screen==='lesson'&&!lessons()[S.lesson])S.screen=S.enrolled?'learn':'home';
 S.asst=S.asst.filter(m=>!m.pending);
 S.remind={...REMIND_DEFAULT,...(S.remind||{})};
 S.comm={joined:false,posts:[],comments:{},likes:{},gotLikes:{},events:{},...(S.comm||{})};
@@ -590,3 +660,6 @@ scheduleExpert();
 // biết có AI hay không thì cập nhật chấm trạng thái trên thanh demo
 SAMPLE_P.then(s=>{T.ai=!!s;document.querySelectorAll('[data-ai]').forEach(el=>el.outerHTML=aiDot());});
 render();hist(true);
+
+// Thư viện: tìm bài viết theo từ khóa khi gõ (vẽ lại rồi đặt lại con trỏ trong ô)
+document.addEventListener('input',e=>{if(e.target&&e.target.id==='lib-q'){T.libQ=e.target.value;const p=e.target.selectionStart;render();const i=document.getElementById('lib-q');if(i){i.focus();try{i.setSelectionRange(p,p);}catch(_){}}}});

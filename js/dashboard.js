@@ -99,8 +99,11 @@ function dashboard(){
   <div class="seg dh-seg" role="group" aria-label="Lọc">${[['all','Tất cả'],['done','Đã hoàn thành'],['todo','Chưa hoàn thành']].map(([k,l])=>`<button class="${(T.dashFilter||'all')===k?'on':''}" data-a="dashFilter" data-v="${k}">${l}</button>`).join('')}</div></div>${workList()}</section>`;
  const ask=d.allDone&&!S.feedback?`<div class="callout info fb-ask"><span class="fb-ask-ico">${ic('star',20)}</span><div><b>Góp ý về khóa học</b><span>2 phút để Học viện làm tốt hơn.</span></div><button class="btn btn-primary btn-sm" data-a="goFeedback">Góp ý ${ic('arrow',15)}</button></div>`:'';
  const demo=`<div class="demo-box"><span class="t">Công cụ demo</span><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-line btn-sm" data-a="simulateHalf">Mô phỏng: học một nửa</button><button class="btn btn-line btn-sm" data-a="simulateAll" data-v="dash">Mô phỏng: học xong</button></div></div>`;
- return `<section class="wrap page dash">${head}${hero}${ask}${cardHTML}${capHTML}${chartsHTML(d)}${jHTML}${demo}</section>`;
+ return `<section class="wrap page dash">${head}${hero}${ask}${cardHTML}${decDashCard()}${capHTML}${chartsHTML(d)}${jHTML}${demo}</section>`;
 }
+// thẻ "Quyết định 30 ngày": câu hiện tại + các lần giữ / điều chỉnh theo chương (PLAN_Onboarding.md mục 2.4)
+function decDashCard(){const p=S.profile;if(!p||!p.decision30)return '';
+ return `<section class="card pad dh-sec dec-dash"><div class="dh-sec-h"><div><span class="eyebrow">Quyết định 30 ngày</span><h2 class="h3">${DEC_PREFIX} ${esc(p.decision30)}.</h2></div></div>${decHistHTML()||'<p class="hint">Cuối mỗi chương, Trợ lý AI sẽ hỏi anh/chị có muốn giữ nguyên hay điều chỉnh quyết định này.</p>'}</section>`;}
 // biểu đồ radar 10 năng lực (1 chuỗi: mức hoàn thành của học viên)
 function radar(){
  const n=CAP_MAP.length,cx=170,cy=160,R=110,pt=(i,r)=>{const a=-Math.PI/2+i*2*Math.PI/n;return [cx+Math.cos(a)*r,cy+Math.sin(a)*r];};

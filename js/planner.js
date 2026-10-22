@@ -19,13 +19,14 @@ function U(key){
  if(key.startsWith('R:')){const id=key.slice(2);return {key,id,kind:'review',m:REVIEW_MIN,b:null};}
  if(key.startsWith('E:')){const id=key.slice(2);return {key,id,kind:'exercise',m:TASKS[id].min,b:bai(key)};}
  const [id,p]=key.split(':');const b=L[id].items[+p];if(!b||b.ex)throw new Error('Mã bài không hợp lệ: '+key);
- return {key,id,kind:'video',part:+p,m:b.m,b};
+ return {key,id,kind:b.text?'text':'video',part:+p,m:b.m,b};
 }
 const chOf=k=>{const u=U(k);return u.b?u.b.ch:L[u.id].id;}; // mã chương chứa bài
-const unitType=u=>u.kind==='exercise'?'Bài tập':u.kind==='review'?'Ôn tập':'Video';
+const unitType=u=>u.kind==='exercise'?'Bài tập':u.kind==='review'?'Ôn tập':u.kind==='text'?'Văn bản':'Video';
+const unitIcon=u=>u.kind==='exercise'?'file':u.kind==='review'?'book':u.kind==='text'?'news':'play'; // biểu tượng loại bài
 function unitLabel(u){return u.b?`${chLabel(L[u.b.ch])} · Bài ${u.b.i+1}`:`Ôn tập ${chLabel(L[u.id])}`;}
 function unitTitle(u){return u.b?u.b.t:`Ôn tập: ${L[u.id].title}`;}
-function unitLine(u){return {icon:u.kind==='exercise'?'file':u.kind==='review'?'book':'video',t:unitTitle(u)};}
+function unitLine(u){return {icon:u.kind==='video'?'video':unitIcon(u),t:unitTitle(u)};}
 const chUnits=id=>L[id].items.map(b=>b.key);
 function unitsOf(items){return items.flatMap(it=>chUnits(it.id).map(U));}
 // Số ngày nhiều hơn số phần nội dung: chèn bài "Ôn tập & liên hệ công ty" để mỗi ngày vẫn có 1 bài
@@ -44,7 +45,7 @@ function partition(units,N){
   const groupsAfter=N-groups.length-1,unitsLeft=units.length-i-1;
   if(groupsAfter<=0)continue;
   const target=(total-closed)/(N-groups.length),next=units[i+1];
-  const boundary=u.kind!=='video';
+  const boundary=u.kind!=='video'&&u.kind!=='text';
   const want=sum>=target||(boundary&&sum>=target*0.75)||(next&&sum+next.m>target*1.25&&sum>=target*0.6);
   if(unitsLeft===groupsAfter||(want&&unitsLeft>=groupsAfter)){groups.push(cur);closed+=sum;cur=[];sum=0;}
  }
@@ -91,8 +92,9 @@ function finalize(p,items,skipped,summary,source,reply){
  let warning=null;
  if(total>cap*1.2){const needLessons=Math.ceil(total/p.minPerSession);
   warning={needDays:needLessons,needMin:PACES.find(m=>m>p.minPerSession&&total<=N*m*1.2)||null,perLesson:Math.round(total/N)};}
- const units=addReviews(unitsOf(items),N);
- const lessons=partition(units,N).map(g=>g.map(u=>u.key));
+ // Ngày 1 = 5 bài Chương 0 cho mọi học viên; Chương 1 → Kết chia vào N − 1 ngày còn lại
+ const units=addReviews(unitsOf(items.filter(i=>i.id!=='C0')),N-1);
+ const lessons=[C0_KEYS(),...partition(units,Math.max(1,N-1)).map(g=>g.map(u=>u.key))];
  const lt=lessonMin(lessons.flat());
  skipped=dedupe(skipped).filter(s=>!items.find(i=>i.id===s.id));
  return {items,skipped,lessons,summary:summary||summaryRule(p,lessons.length,lt),source,reply:reply||'',warning,note:'',start:(S.plan&&S.plan.start)||Date.now(),profile:{days:p.days,minPerSession:p.minPerSession},version:((S.plan&&S.plan.version)||0)+1,accepted:false};
@@ -176,6 +178,7 @@ async function generate(request){
   S.profile=p;S.plan=plan;
   if(request)S.adjustLog.push({role:'bot',text:plan.reply||describeChanges(p0,p)});
   toast(request?`Đã cập nhật lộ trình: ${plan.lessons.length} ngày học`:`Đã tạo lộ trình ${plan.lessons.length} ngày học`);
+  if(!request&&S.ob&&S.ob.msgs)S.ob.msgs.push({role:'bot',seg:'C0-5',text:`Lộ trình đã sẵn sàng: **${plan.lessons.length} ngày học**, Ngày 1 là Chương 0 anh/chị vừa học. Anh/chị bấm **Xem lộ trình của anh/chị** nhé.`});
  }catch(e){
   console.error('Tạo lộ trình lỗi:',e);
   if(request)S.adjustLog.push({role:'bot',text:'Em chưa điều chỉnh được lộ trình. Anh/chị thử lại với yêu cầu khác nhé.'});
@@ -184,18 +187,34 @@ async function generate(request){
 }
 
 /* ---------- tiến độ theo lộ trình ---------- */
-const lessons=()=>S.plan?S.plan.lessons:[];
+// Chương 0 (onboarding) luôn là Ngày 1 của lộ trình; chưa có lộ trình thì chỉ có Ngày 1 = Chương 0 (PLAN_Onboarding.md)
+const C0_KEYS=()=>chUnits('C0');
+const lessons=()=>S.plan?S.plan.lessons:[C0_KEYS()];
+const c0Started=()=>!!(S.ob&&S.ob.msgs&&S.ob.msgs.length)||C0_KEYS().some(k=>S.done[k]);
+const c0Done=()=>C0_KEYS().every(k=>S.done[k]);
+// chưa mua khóa: chỉ học được Chương 0; Chương 1 → Kết khóa "Mở khi đăng ký khóa học"
+const paidLock=k=>!S.enrolled&&chOf(k)!=='C0';
 const lessonDone=i=>lessons()[i].every(k=>S.done[k]);
 function nextLesson(){const i=lessons().findIndex((_,j)=>!lessonDone(j));return i;}
-// Học tuần tự: chỉ mở các bài đã học và bài đang học; bài sau mở khi học xong bài trước
-function lessonOpen(i){const n=nextLesson();return n<0||i<=n;}
-const lockMsg=i=>`Ngày ${i+1} sẽ mở sau khi anh/chị học xong các bài của Ngày ${nextLesson()+1}.`;
-// theo từng bài: bài đang học = bài đầu tiên chưa xong theo thứ tự lộ trình; bài mở khi ngày học chứa nó đã mở
+// Mở khóa theo chương (user 22/10/2026): học xong chương trước mới mở chương sau; trong chương đã mở thì mọi bài đều mở.
+// Học tới đâu mở tới đó: chương đã mở thì giữ mở kể cả khi bỏ tick bài trước (mốc xa nhất S.reachCh).
+const planChs=()=>{const u=planUnits();return LIB.map(x=>x.id).filter(id=>u.some(k=>chOf(k)===id));};
+const chapterDone=id=>planUnits().filter(k=>chOf(k)===id).every(k=>S.done[k]);
+const firstOpenCh=()=>planChs().find(id=>!chapterDone(id))||null; // chương đang học
+function chapterOpen(id){const cs=planChs(),f=cs.findIndex(c=>!chapterDone(c));if(f<0)return true;const r=S.reachCh?cs.indexOf(S.reachCh):-1;return cs.indexOf(id)<=Math.max(f,r);}
+// ghi lại chương xa nhất đã mở mỗi khi có bài hoàn thành
+function updateReach(){if(!S.plan)return;const cs=planChs(),f=cs.findIndex(c=>!chapterDone(c)),id=f<0?cs[cs.length-1]:cs[f];if(id&&(!S.reachCh||cs.indexOf(S.reachCh)<cs.indexOf(id)))S.reachCh=id;}
+// ngày học mở khi có ít nhất 1 bài trong ngày đã mở
+function lessonOpen(i){return (lessons()[i]||[]).some(k=>unitOpen(k));}
+// lý do khóa: chương liền trước chương của bài chưa xong
+const chLockText=id=>{const cs=planChs(),p=cs[cs.indexOf(id)-1];return p?`mở sau khi anh/chị học xong ${chLabel(L[p])}`:'';};
+const lockMsg=i=>{const k=(lessons()[i]||[]).find(x=>!unitOpen(x));return k?`Các bài của Ngày ${i+1} ${chLockText(chOf(k))}.`:'';};
+// theo từng bài: bài đang học = bài đầu tiên chưa xong theo thứ tự lộ trình; bài mở khi chương chứa nó đã mở
 const planUnits=()=>lessons().flat();
 const curUnit=()=>planUnits().find(k=>!S.done[k])||null;
-const unitOpen=k=>{const d=lessonOfUnit(k);return d>=0&&lessonOpen(d);};
-function unitState(k){if(S.done[k])return 'done';if(k===curUnit())return 'doing';return unitOpen(k)?'next':'locked';}
-const unitLockMsg=k=>`Bài này thuộc ${dayLabel(lessonOfUnit(k))}, mở sau khi anh/chị học xong các bài của ${dayLabel(nextLesson())}.`;
+const unitOpen=k=>lessonOfUnit(k)>=0&&chapterOpen(chOf(k));
+function unitState(k){if(S.done[k])return 'done';if(paidLock(k))return 'paid';if(k===curUnit())return 'doing';return unitOpen(k)?'next':'locked';}
+const unitLockMsg=k=>paidLock(k)?'Bài này mở khi anh/chị đăng ký khóa học. Chương 0 học miễn phí.':`Bài này thuộc ${chLabel(L[chOf(k)])}, ${chLockText(chOf(k))}.`;
 function lessonOfUnit(key){return lessons().findIndex(ks=>ks.includes(key));}
 function reasonsFor(keys){const ids=[...new Set(keys.map(k=>U(k).id))];return ids.map(id=>{const it=S.plan.items.find(i=>i.id===id);return it?it.reason:'';}).filter(Boolean);}
 function planStats(){const ls=lessons();const all=ls.flat();const mods=LIB.filter(x=>x.type==='module');const ud=all.filter(k=>S.done[k]).length;

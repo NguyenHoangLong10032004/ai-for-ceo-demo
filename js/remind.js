@@ -109,9 +109,11 @@ function weekDays(){
  return ['T2','T3','T4','T5','T6','T7','CN'].map((lb,i)=>{const t=mon+i*DAY;return {t,lb,on:learned.has(dayKey(t)),today:t===today,future:t>today};});
 }
 // thẻ trên trang Khóa học: trạng thái nhắc lịch học (đã bỏ phần chuỗi ngày học theo yêu cầu user)
-function remindCard(){
+function remindCard(){return `<div class="card pad rm-card">${remindRow()}</div>`;}
+// 1 dòng trạng thái nhắc lịch học (dùng trong khung gộp với Lối tắt ở trang vào học)
+function remindRow(){
  const r=S.remind;
- return `<div class="card pad rm-card"><div class="rm-state">${ic('bell',18)}<span><b>Nhắc lịch học</b><small>${r.on?`${r.time} · ${daysText(r.days)} · ${[r.email&&'Email',r.zalo&&'Zalo'].filter(Boolean).join(' + ')}`:'Chưa đặt lịch nhắc'}</small></span><button class="btn btn-line btn-sm" data-a="remindOpen">${r.on?'Sửa':'Đặt lịch'}</button></div></div>`;
+ return `<div class="rm-state">${ic('bell',18)}<span><b>Nhắc lịch học</b><small>${r.on?`${r.time} · ${daysText(r.days)} · ${[r.email&&'Email',r.zalo&&'Zalo'].filter(Boolean).join(' + ')}`:'Chưa đặt lịch nhắc'}</small></span><button class="btn btn-line btn-sm" data-a="remindOpen">${r.on?'Sửa':'Đặt lịch'}</button></div>`;
 }
 // lời mời bật nhắc (hiện 1 lần ở trang Khóa học, giống Duolingo hỏi sau khi đặt mục tiêu)
 function remindAsk(){

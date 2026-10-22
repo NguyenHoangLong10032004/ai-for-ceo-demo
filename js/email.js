@@ -36,7 +36,6 @@ const PRELAUNCH_STEPS=[['Truy cập tài khoản Học viện','Anh/chị có th
 const ACADEMY_SITE='https://www.sieutangtruong.com/';
 const ACCESS_STEPS=[['Truy cập website Học viện',`Truy cập website Học viện Siêu Tăng Trưởng tại: <a href="${ACADEMY_SITE}" style="color:#1747C9">${ACADEMY_SITE}</a>`],
  ['Đăng nhập & Truy cập khóa học','Đăng nhập bằng email đã đăng ký, sau đó vào mục <b>Khóa học của tôi</b> và chọn <b>AI for CEO</b>.'],
- ['Thiết lập lộ trình học cá nhân hóa','Dành khoảng 3 phút trao đổi cùng Trợ lý lộ trình AI để chia sẻ thông tin doanh nghiệp, lĩnh vực quan tâm và thời gian học mong muốn.'],
  ['Bắt đầu hành trình học tập','Xem lộ trình được cá nhân hóa theo nhu cầu của anh/chị và bắt đầu bài học đầu tiên.']];
 const ACCESS_CLOSE=['Học viện Siêu Tăng Trưởng hy vọng khóa học sẽ mang đến những kiến thức và góc nhìn thiết thực, giúp anh/chị từng bước ứng dụng AI hiệu quả vào hoạt động doanh nghiệp.','Chúc anh/chị có một hành trình học tập hiệu quả!'];
 function confirmEmail(o,opt={}){
@@ -57,11 +56,11 @@ function confirmEmail(o,opt={}){
  <table role="presentation" width="100%" cellpadding="0" cellspacing="0">${row('Khóa học','AI for CEO')}${row('Tài khoản đăng nhập',esc(o.email))}${row('Trạng thái','<span style="color:#15803D">Đã kích hoạt</span>')}</table>
  ${h('Hướng dẫn bắt đầu học')}
  <table role="presentation" width="100%" cellpadding="0" cellspacing="0">${ACCESS_STEPS.map(([t,d],i)=>`<tr><td style="vertical-align:top;padding:10px 12px 6px 0;width:28px"><span style="display:inline-block;width:26px;height:26px;line-height:26px;text-align:center;border-radius:50%;background:#EEF2FC;color:#1747C9;font-weight:700;font-size:13px">${i+1}</span></td><td style="padding:12px 0 6px;font-size:15px;line-height:1.6;color:#2B3240"><b style="color:#141A26">${t}</b><br>${d}</td></tr>`).join('')}</table>
- <div style="height:14px"></div>${ACCESS_CLOSE.map(p).join('')}`:`
+ <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:22px 0 8px"><tr><td align="center"><a href="${url}" ${opt.ctaAttr||''} style="display:inline-block;background:#1747C9;color:#FFFFFF;text-decoration:none;font-weight:700;font-size:15px;padding:14px 30px;border-radius:10px">Vào học ngay &rarr;</a></td></tr></table>`:`
  ${p(`Học viện Siêu Tăng Trưởng xác nhận anh/chị đã <b>đăng ký và thanh toán thành công</b> khóa học <b>AI for CEO</b>. Cảm ơn anh/chị đã tin tưởng đồng hành cùng Học viện.`)}
  ${h('Thông tin đăng ký')}
  <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
-  ${row('Khóa học','AI for CEO · Trọn khóa')}${row('Mã đơn',esc(o.code))}${row('Ngày đăng ký',esc(o.paidAt||''))}${row('Phương thức thanh toán',esc(PAY_METHODS[o.method]||''))}${row('Học phí',money(COURSE.list))}${row(esc(COURSE.promo),'−'+money(SAVE))}${row('Số tiền đã thanh toán',money(COURSE.price),true)}
+  ${row('Khóa học','AI for CEO')}${row('Mã đơn',esc(o.code))}${row('Ngày đăng ký',esc(o.paidAt||''))}${row('Phương thức thanh toán',esc(PAY_METHODS[o.method]||''))}${row('Học phí',money(COURSE.list))}${row('Ưu đãi','−'+money(SAVE))}${row('Số tiền đã thanh toán',money(COURSE.price),true)}
  </table>${part==='prelaunch'?`
  ${h('Bước tiếp theo')}
  <table role="presentation" width="100%" cellpadding="0" cellspacing="0">${PRELAUNCH_STEPS.map(([t,d],i)=>`<tr><td style="vertical-align:top;padding:10px 12px 6px 0;width:28px"><span style="display:inline-block;width:26px;height:26px;line-height:26px;text-align:center;border-radius:50%;background:#EEF2FC;color:#1747C9;font-weight:700;font-size:13px">${i+1}</span></td><td style="padding:12px 0 6px;font-size:15px;line-height:1.6;color:#2B3240"><b style="color:#141A26">${t}</b><br>${d}</td></tr>`).join('')}</table>`:''}`;
@@ -79,36 +78,41 @@ function confirmEmail(o,opt={}){
  </td></tr></table>
  ${p('')}
 </td></tr>
-${emailFooter({logo,url:opt.url,reason:`Anh/chị nhận email này vì đã đăng ký khóa học AI for CEO (mã đơn ${esc(o.code)}) tại ${ACADEMY.name}.`})}
+${emailFooter({logo,url:opt.url,reason:`Anh/chị nhận email này vì đã đăng ký khóa học AI for CEO tại ${ACADEMY.name}.`})}
 </table></div>`;
  // bản chữ thuần cho trình đọc email không hiển thị HTML (email thật nên gửi kèm)
  const support=['CẦN HỖ TRỢ?',`Email: ${ACADEMY.support} · Hotline: ${ACADEMY.hotline} · Zalo: ${ACADEMY.zalo}`,`Giờ hỗ trợ: ${ACADEMY.hours}. Vui lòng cung cấp mã đơn ${o.code} khi liên hệ.`,'',ACADEMY.name,ACADEMY.address];
  const text=(part==='access'
   ?[`Chào ${o.name?'anh/chị ':''}${name},`,'','Học viện Siêu Tăng Trưởng xin thông báo khóa học AI for CEO đã được kích hoạt thành công trên tài khoản của anh/chị.','',
     'THÔNG TIN KHÓA HỌC','Khóa học: AI for CEO',`Tài khoản đăng nhập: ${o.email}`,'Trạng thái: Đã kích hoạt','',
-    'HƯỚNG DẪN BẮT ĐẦU HỌC',...ACCESS_STEPS.flatMap(([t,d],i)=>[`Bước ${i+1}. ${t}`,d.replace(/<br><br>/g,' ').replace(/<[^>]+>/g,''),'']),...ACCESS_CLOSE,'']
+    'HƯỚNG DẪN BẮT ĐẦU HỌC',...ACCESS_STEPS.flatMap(([t,d],i)=>[`Bước ${i+1}. ${t}`,d.replace(/<br><br>/g,' ').replace(/<[^>]+>/g,''),'']),`Vào học ngay: ${url}`,'']
   :[`Chào ${o.name?'anh/chị ':''}${name},`,'',`Học viện Siêu Tăng Trưởng xác nhận anh/chị đã đăng ký và thanh toán thành công khóa học AI for CEO. Cảm ơn anh/chị đã tin tưởng đồng hành cùng Học viện.`,'',
-    'THÔNG TIN ĐĂNG KÝ',`Khóa học: AI for CEO · Trọn khóa`,`Mã đơn: ${o.code}`,`Ngày đăng ký: ${o.paidAt||''}`,`Phương thức thanh toán: ${PAY_METHODS[o.method]||''}`,`Học phí: ${money(COURSE.list)}`,`${COURSE.promo}: −${money(SAVE)}`,`Số tiền đã thanh toán: ${money(COURSE.price)}`,'',
+    'THÔNG TIN ĐĂNG KÝ',`Khóa học: AI for CEO`,`Mã đơn: ${o.code}`,`Ngày đăng ký: ${o.paidAt||''}`,`Phương thức thanh toán: ${PAY_METHODS[o.method]||''}`,`Học phí: ${money(COURSE.list)}`,`Ưu đãi: −${money(SAVE)}`,`Số tiền đã thanh toán: ${money(COURSE.price)}`,'',
     ...(part==='prelaunch'?['BƯỚC TIẾP THEO',...PRELAUNCH_STEPS.flatMap(([t,d],i)=>[`${i+1}. ${t}`,d.replace(/<br><br>/g,' ').replace(/<[^>]+>/g,''),''])]:[]),
     '']).concat(support).join('\n');
  return {from:`${ACADEMY.name} <${ACADEMY.sender}>`,to:o.email,subject,html,text};
 }
 // tin Zalo OA đi kèm 2 email (cùng nội dung, dạng ngắn; nút bấm dẫn vào khóa học)
 function enrollZaloMsgs(o){
- // nội dung đầy đủ như 2 email (theo yêu cầu user), chia khối: intro · sections [{h, p, rows, steps}] · help (Cần hỗ trợ?)
- const help={lines:[['Email',ACADEMY.support],['Hotline',ACADEMY.hotline],['Zalo',ACADEMY.zalo]],note:`Giờ hỗ trợ: ${ACADEMY.hours}. Vui lòng cung cấp mã đơn ${o.code} khi liên hệ.`,
-  intro:'Nếu gặp vấn đề khi đăng nhập, truy cập khóa học hoặc thanh toán, anh/chị liên hệ:'};
- const inv=o.invoice
-  ?`Hóa đơn điện tử (VAT) sẽ được xuất cho ${o.invName||o.company||''}${o.taxId?`, mã số thuế ${o.taxId}`:''} và gửi bằng email riêng tới ${o.invEmail||o.email}. Cần điều chỉnh thông tin hóa đơn, anh/chị gửi email tới ${ACADEMY.billing} kèm mã đơn ${o.code}.`
-  :`Anh/chị chưa yêu cầu xuất hóa đơn công ty. Nếu cần hóa đơn VAT, anh/chị gửi tên công ty, mã số thuế, địa chỉ và mã đơn ${o.code} tới ${ACADEMY.billing}.`;
- return [{icon:'✅',title:CONFIRM_SUBJECT,intro:`Chào ${o.name?'anh/chị '+o.name:'anh/chị'},\nHọc viện Siêu Tăng Trưởng xác nhận anh/chị đã đăng ký và thanh toán thành công khóa học AI for CEO. Cảm ơn anh/chị đã tin tưởng đồng hành cùng Học viện.`,
-   sections:[{h:'Thông tin đăng ký',rows:[['Khóa học','AI for CEO · Trọn khóa'],['Mã đơn',o.code],['Ngày đăng ký',o.paidAt||''],['Phương thức thanh toán',PAY_METHODS[o.method]||''],['Học phí',money(COURSE.list)],[COURSE.promo,'−'+money(SAVE)],['Số tiền đã thanh toán',money(COURSE.price),1]]},
-    ],help,cta:'Xem khóa học của tôi',ctaTo:'mycourses'},
-  {icon:'🔓',title:ACCESS_SUBJECT,intro:`Chào ${o.name?'anh/chị '+o.name:'anh/chị'},\nHọc viện Siêu Tăng Trưởng xin thông báo khóa học AI for CEO đã được kích hoạt thành công trên tài khoản của anh/chị.`,
-   sections:[{h:'Thông tin khóa học',rows:[['Khóa học','AI for CEO'],['Tài khoản đăng nhập',o.email],['Trạng thái','Đã kích hoạt']]},
-    {h:'Hướng dẫn bắt đầu học',steps:ACCESS_STEPS.map(([t,d])=>`${t}: ${d.replace(/<br><br>/g,' ').replace(/<[^>]+>/g,'')}`)},
-    {p:ACCESS_CLOSE.join(' ')}],
-   help,cta:'Truy cập khóa học',ctaTo:'mycourses'}];
+ // bản rút gọn cho Zalo OA (theo user 10/2026): cùng ý với email nhưng ngắn, chỉ giữ thông tin cần thiết + 1 nút
+ const hi=`Chào ${o.name?'anh/chị '+o.name:'anh/chị'},`,help=[`Hotline ${ACADEMY.hotline}`,`Mã đơn ${o.code}`];
+ return [{icon:'✅',title:CONFIRM_SUBJECT,intro:`${hi}\nAnh/chị đã đăng ký và thanh toán thành công khóa học AI for CEO. Cảm ơn anh/chị đã tin tưởng Học viện.`,
+   rows:[['Mã đơn',o.code],['Ngày đăng ký',o.paidAt||''],['Đã thanh toán',money(COURSE.price),1]],help,cta:'Xem khóa học của tôi',ctaTo:'mycourses'},
+  {icon:'🔓',title:ACCESS_SUBJECT,intro:`${hi}\nKhóa học AI for CEO đã được kích hoạt trên tài khoản ${o.email}.`,
+   sections:[{h:'Bắt đầu học',steps:ZALO_START_STEPS}],help,cta:'Vào học ngay',ctaTo:'mycourses'}];
+}
+const ZALO_START_STEPS=['Truy cập sieutangtruong.com','Đăng nhập, vào Khóa học của tôi → AI for CEO','Xem lộ trình cá nhân hóa và học bài đầu tiên'];
+// tin Zalo OA "Đăng ký thành công trước ngày khai giảng" (bản rút gọn của email prelaunch; demo là tin mẫu)
+function prelaunchZaloMsg(o){
+ return {icon:'📅',kind:'prelaunch',title:PRELAUNCH_SUBJECT,intro:`Chào ${o.name?'anh/chị '+o.name:'anh/chị'},\nAnh/chị đã đăng ký và thanh toán thành công khóa học AI for CEO.`,
+  sections:[{rows:[['Mã đơn',o.code],['Đã thanh toán',money(COURSE.price)],['Khai giảng',OPEN_DATE,1]]},{p:`Khóa học mở từ ngày ${OPEN_DATE}, hiện anh/chị chưa cần vào học. Vào ngày khai giảng, Học viện sẽ gửi hướng dẫn bắt đầu học.`}],
+  help:[`Hotline ${ACADEMY.hotline}`,`Mã đơn ${o.code}`],cta:'Xem khóa học của tôi',ctaTo:'mycourses'};
+}
+function ensureSamplePrelaunchZalo(){
+ if(S.zalo.some(z=>z.msg&&z.msg.kind==='prelaunch'))return;
+ const b=S.order||{},ac=S.account||{};
+ const o={code:b.code||'AICEO-106707',name:b.name||ac.name||SAMPLE_PROFILE.name,email:b.email||ac.email||'',paidAt:b.paidAt||today()};
+ S.zalo.unshift({id:'zp'+Date.now(),sample:true,at:nowStr(),read:false,msg:prelaunchZaloMsg(o)});
 }
 /* ---------- Hộp thư mô phỏng ---------- */
 // Gọi khi thanh toán thành công: lưu email vào hộp thư của học viên (S.mails) và báo cho người dùng
@@ -130,7 +134,7 @@ function sendEnrollZalo(o,at){const ph=o.phone||(S.account&&S.account.phone);if(
    Chỉ gửi khi học viên chọn "Xuất hóa đơn cho công ty". Số hóa đơn, ký hiệu, mã tra cứu, MST bên bán là minh họa;
    hệ thống thật lấy từ nhà cung cấp hóa đơn điện tử (VNPT/Viettel/MISA…) và đính kèm tệp PDF + XML. */
 function invoiceEmail(o,opt={}){
- const logo=opt.logo||'img/logo.png',inv=o.inv||{};
+ const logo=opt.logo||'img/logo.png',inv=o.inv||{},biz=!!o.invoice;
  const subject=`Hóa đơn điện tử số ${inv.no||''} · Khóa học AI for CEO`;
  const row=(k,v,strong)=>`<tr><td style="padding:8px 0;color:#5B6472;font-size:14px;border-top:1px solid #E6E8EC;width:42%">${k}</td><td style="padding:8px 0;font-size:14px;border-top:1px solid #E6E8EC;text-align:right;color:#141A26;${strong?'font-weight:800;font-size:16px':''}">${v}</td></tr>`;
  const h=t=>`<h2 style="margin:24px 0 8px;font-size:16px;line-height:1.4;color:#141A26">${t}</h2>`;
@@ -139,33 +143,35 @@ function invoiceEmail(o,opt={}){
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;margin:0 auto;background:#FFFFFF;border:1px solid #E6E8EC;border-radius:12px;border-collapse:separate">
 <tr><td style="padding:24px 32px;border-bottom:1px solid #E6E8EC"><img src="${logo}" alt="${ACADEMY.name}" width="180" style="display:block;height:auto;max-width:180px"></td></tr>
 <tr><td style="padding:28px 32px 8px">
- <h1 style="margin:0 0 14px;font-size:22px;line-height:1.3;color:#141A26">Kính gửi ${esc(o.invName||o.company||'Quý khách hàng')},</h1>
- ${p(`${ACADEMY.name} gửi Quý công ty hóa đơn điện tử cho đơn đăng ký khóa học <b>AI for CEO</b> của học viên <b>${esc(o.name||'')}</b> (mã đơn <b>${esc(o.code)}</b>).`)}
+ <h1 style="margin:0 0 14px;font-size:22px;line-height:1.3;color:#141A26">${biz?`Kính gửi ${esc(o.invName||o.company||'Quý khách hàng')},`:`Chào anh/chị ${esc(o.name||'')},`}</h1>
+ ${p(biz?`${ACADEMY.name} gửi Quý công ty hóa đơn điện tử cho đơn đăng ký khóa học <b>AI for CEO</b> của học viên <b>${esc(o.name||'')}</b> (mã đơn <b>${esc(o.code)}</b>).`:`${ACADEMY.name} gửi anh/chị hóa đơn điện tử cho đơn đăng ký khóa học <b>AI for CEO</b> (mã đơn <b>${esc(o.code)}</b>).`)}
  ${h('Thông tin hóa đơn')}
  <table role="presentation" width="100%" cellpadding="0" cellspacing="0">${row('Ký hiệu',esc(inv.series||''))}${row('Số hóa đơn',esc(inv.no||''))}${row('Ngày lập',esc(inv.date||''))}${row('Mã tra cứu',esc(inv.lookup||''))}</table>
- ${h('Đơn vị mua hàng')}
- <table role="presentation" width="100%" cellpadding="0" cellspacing="0">${row('Tên công ty',esc(o.invName||''))}${row('Mã số thuế',esc(o.taxId||''))}${row('Địa chỉ',esc(o.invAddr||''))}${row('Người mua hàng',esc(o.name||''))}${row('Hình thức thanh toán','Chuyển khoản')}</table>
+ ${biz?`${h('Đơn vị mua hàng')}
+ <table role="presentation" width="100%" cellpadding="0" cellspacing="0">${row('Tên công ty',esc(o.invName||''))}${row('Mã số thuế',esc(o.taxId||''))}${row('Địa chỉ',esc(o.invAddr||''))}${row('Người mua hàng',esc(o.name||''))}${row('Hình thức thanh toán','Chuyển khoản')}</table>`:`${h('Người mua hàng')}
+ <table role="presentation" width="100%" cellpadding="0" cellspacing="0">${row('Họ tên',esc(o.name||''))}${row('Hình thức thanh toán','Chuyển khoản')}</table>`}
  ${h('Nội dung')}
- <table role="presentation" width="100%" cellpadding="0" cellspacing="0">${row('Khóa học AI for CEO · Trọn khóa (1 học viên)',money(COURSE.list))}${row(esc(COURSE.promo),'−'+money(SAVE))}${row('Tổng tiền thanh toán',money(COURSE.price),true)}</table>
- <p style="margin:8px 0 20px;font-size:12.5px;color:#5B6472">Thuế GTGT áp dụng theo quy định hiện hành.</p>
- ${p(`Tệp đính kèm: hóa đơn bản PDF và XML. Cần điều chỉnh thông tin hóa đơn, Quý công ty vui lòng phản hồi tới <a href="mailto:${ACADEMY.billing}" style="color:#1747C9">${ACADEMY.billing}</a> kèm số hóa đơn.`)}
+ <table role="presentation" width="100%" cellpadding="0" cellspacing="0">${row('Khóa học AI for CEO (1 học viên)',money(COURSE.list))}${row('Ưu đãi','−'+money(SAVE))}${row('Tiền hàng chưa thuế',money(VAT.net))}${row(`Thuế GTGT (${VAT_RATE}%)`,money(VAT.vat))}${row('Tổng tiền thanh toán',money(COURSE.price),true)}</table>
+ <p style="margin:8px 0 20px;font-size:12.5px;color:#5B6472">Giá đã bao gồm thuế GTGT ${VAT_RATE}%.</p>
+ ${p(`Tệp đính kèm: hóa đơn bản PDF và XML. Cần điều chỉnh thông tin hóa đơn, ${biz?'Quý công ty':'anh/chị'} vui lòng phản hồi tới <a href="mailto:${ACADEMY.billing}" style="color:#1747C9">${ACADEMY.billing}</a> kèm số hóa đơn.`)}
 </td></tr>
-${emailFooter({logo,reason:`Quý công ty nhận email này vì là đơn vị mua hàng trên hóa đơn của đơn ${esc(o.code)}.`})}</table></div>`;
- const text=[`Kính gửi ${o.invName||'Quý khách hàng'},`,'',`${ACADEMY.name} gửi hóa đơn điện tử cho đơn ${o.code} (khóa AI for CEO, học viên ${o.name||''}).`,'',
+${emailFooter({logo,reason:biz?`Quý công ty nhận email này vì là đơn vị mua hàng trên hóa đơn của đơn ${esc(o.code)}.`:`Anh/chị nhận email này vì là người mua hàng trên hóa đơn của đơn ${esc(o.code)}.`})}</table></div>`;
+ const text=[biz?`Kính gửi ${o.invName||'Quý khách hàng'},`:`Chào anh/chị ${o.name||''},`,'',`${ACADEMY.name} gửi hóa đơn điện tử cho đơn ${o.code} (khóa AI for CEO, học viên ${o.name||''}).`,'',
   `Ký hiệu: ${inv.series}`,`Số hóa đơn: ${inv.no}`,`Ngày lập: ${inv.date}`,`Mã tra cứu: ${inv.lookup}`,'',
-  `Đơn vị mua: ${o.invName} · MST ${o.taxId}`,`Địa chỉ: ${o.invAddr}`,`Tổng tiền thanh toán: ${money(COURSE.price)}`,'',`Điều chỉnh hóa đơn: ${ACADEMY.billing}`,'',ACADEMY.name].join('\n');
- return {from:`${ACADEMY.name} <${ACADEMY.sender}>`,to:o.invEmail||o.email,subject,html,text};
+  ...(biz?[`Đơn vị mua: ${o.invName} · MST ${o.taxId}`,`Địa chỉ: ${o.invAddr}`]:[`Người mua: ${o.name||''}`]),`Tổng tiền thanh toán: ${money(COURSE.price)}`,'',`Điều chỉnh hóa đơn: ${ACADEMY.billing}`,'',ACADEMY.name].join('\n');
+ return {from:`${ACADEMY.name} <${ACADEMY.sender}>`,to:invTo(o)||o.email,subject,html,text};
 }
 // Gọi sau khi thanh toán thành công (nếu có yêu cầu xuất hóa đơn): xuất hóa đơn và gửi tới email công ty
 // tạo bản hóa đơn chờ xác nhận (có số) ngay khi thanh toán thành công; chưa gửi email
-function prepInvoice(o){if(!o||!o.invoice||o.inv)return;const n=String(Math.floor(100+Math.random()*900)).padStart(8,'0');o.inv={series:SELLER.series,no:n,date:today(),lookup:'STT'+o.code.replace(/\D/g,'')};}
+const invTo=o=>o.invoice?o.invEmail:o.email; // email nhận hóa đơn: doanh nghiệp = email kế toán, khách lẻ = email tài khoản
+function prepInvoice(o){if(!o||o.inv)return;const n=String(Math.floor(100+Math.random()*900)).padStart(8,'0');o.inv={series:SELLER.series,no:n,date:today(),lookup:'STT'+o.code.replace(/\D/g,'')};}
 function sendInvoiceEmail(){
- const o=S.order;if(!o||!o.invoice||!o.invEmail)return;
+ const o=S.order;if(!o||!invTo(o))return;
  if(S.mails.some(m=>m.kind==='invoice'&&!m.sample&&m.code===o.code))return; // mỗi đơn 1 hóa đơn
  prepInvoice(o);
- const m={id:'m'+Date.now()+'i',kind:'invoice',code:o.code,to:o.invEmail,at:nowStr(),read:false,order:{...o}};
+ const m={id:'m'+Date.now()+'i',kind:'invoice',code:o.code,to:invTo(o),at:nowStr(),read:false,order:{...o}};
  S.mails.unshift(m);
- if(realMailOn())sendRealEmail(m);else toast(`Đã xuất hóa đơn điện tử và gửi tới ${o.invEmail}`);
+ if(realMailOn())sendRealEmail(m);else toast(`Đã xuất hóa đơn điện tử và gửi tới ${invTo(o)}`);
 }
 // Email hóa đơn mẫu trong Hộp thư (để xem mẫu dù đơn không chọn xuất hóa đơn): lấy thông tin đơn/tài khoản nếu có, thiếu thì dùng dữ liệu mẫu
 function ensureSampleInvoice(){
@@ -182,6 +188,47 @@ function ensureSamplePrelaunch(){
  const b=S.order||{},ac=S.account||{};
  const o={code:b.code||'AICEO-106707',name:b.name||ac.name||SAMPLE_PROFILE.name,email:b.email||ac.email||'long.nguyen@minhan.vn',paidAt:b.paidAt||today(),method:b.method||'bank'};
  S.mails.push({id:mailId('p'),kind:'prelaunch',sample:true,code:o.code,to:o.email,at:nowStr(),read:false,order:o});
+}
+/* ---------- Email "Đơn đăng ký hết thời hạn thanh toán" (theo nội dung user gửi 10/2026) ----------
+   Gửi khi đơn quá hạn thanh toán (`expires_at`, spec 01 mục 4.4) mà chưa ghi nhận giao dịch. Demo: email mẫu trong Hộp thư (ensureSampleExpired). */
+const EXPIRED_SUBJECT='Đơn đăng ký khóa học AI for CEO đã hết thời hạn thanh toán';
+function expiredEmail(o,opt={}){
+ const logo=opt.logo||'img/logo.png',web='https://sieutangtruong.com'; // theo nội dung user gửi
+ const row=(k,v)=>`<tr><td style="padding:9px 0;color:#5B6472;font-size:14px;border-top:1px solid #E6E8EC;width:44%">${k}</td><td style="padding:9px 0;font-size:14px;border-top:1px solid #E6E8EC;text-align:right;color:#141A26;font-weight:600">${v}</td></tr>`;
+ const h=t=>`<h2 style="margin:28px 0 10px;font-size:16px;line-height:1.4;color:#141A26">${t}</h2>`;
+ const p=t=>`<p style="margin:0 0 12px;font-size:15px;line-height:1.65;color:#2B3240">${t}</p>`;
+ const amt=(o.amount||COURSE.price).toLocaleString('vi-VN');
+ const html=`<div style="background:#F3F4F6;padding:24px 12px;font-family:Roboto,Arial,Helvetica,sans-serif;color:#141A26">
+<span style="display:none;max-height:0;overflow:hidden;opacity:0">Đơn đăng ký ${esc(o.code)} đã hết thời hạn thanh toán, hệ thống chưa ghi nhận giao dịch thành công.</span>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;margin:0 auto;background:#FFFFFF;border:1px solid #E6E8EC;border-radius:12px;border-collapse:separate">
+<tr><td style="padding:24px 32px;border-bottom:1px solid #E6E8EC"><img src="${logo}" alt="${ACADEMY.name}" width="180" style="display:block;height:auto;max-width:180px"></td></tr>
+<tr><td style="padding:32px 32px 8px">
+ <h1 style="margin:0 0 18px;font-size:24px;line-height:1.3;color:#141A26">Kính gửi Anh/Chị ${esc(o.name||'')},</h1>
+ ${p('Cảm ơn Anh/Chị đã quan tâm và đăng ký chương trình <b>AI for CEO</b>.')}
+ ${p('Học viện xin thông báo đơn đăng ký của Anh/Chị đã <b>hết thời hạn thanh toán</b> và hệ thống chưa ghi nhận giao dịch thành công.')}
+ ${h('Thông tin đơn hàng')}
+ <table role="presentation" width="100%" cellpadding="0" cellspacing="0">${row('Chương trình','AI for CEO')}${row('Mã đơn hàng',esc(o.code))}${row('Số tiền',amt+' VNĐ')}${row('Trạng thái','<span style="color:#C2410C">Hết thời hạn thanh toán</span>')}</table>
+ ${h('Hướng dẫn tiếp theo')}
+ ${p(`Nếu vẫn có nhu cầu tham gia khóa học, Anh/Chị vui lòng truy cập <a href="${web}" style="color:#1747C9;font-weight:700">sieutangtruong.com</a>, đăng nhập tài khoản và thực hiện đăng ký, thanh toán lại.`)}
+ <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#FFF7ED;border:1px solid #FED7AA;border-radius:10px;margin:4px 0 14px"><tr><td style="padding:12px 16px;font-size:14px;line-height:1.65;color:#7C2D12"><b>Lưu ý:</b> Thông tin thanh toán của đơn hàng cũ đã hết hiệu lực. Vui lòng không tiếp tục chuyển khoản theo mã QR trước đó.</td></tr></table>
+ ${p(`Nếu Anh/Chị đã chuyển khoản nhưng chưa được hệ thống xác nhận, vui lòng liên hệ <b>${ACADEMY.hotline}</b> và cung cấp mã đơn hàng để được hỗ trợ kiểm tra.`)}
+ <div style="height:6px"></div>
+ ${p('Trân trọng,<br><b>Đội ngũ Học viện Siêu Tăng Trưởng</b>')}
+</td></tr>
+${emailFooter({logo,url:opt.url,reason:`Anh/chị nhận email này vì đã tạo đơn đăng ký khóa học AI for CEO tại ${ACADEMY.name}.`})}
+</table></div>`;
+ const text=[`Kính gửi Anh/Chị ${o.name||''},`,'','Cảm ơn Anh/Chị đã quan tâm và đăng ký chương trình AI for CEO.','Học viện xin thông báo đơn đăng ký của Anh/Chị đã hết thời hạn thanh toán và hệ thống chưa ghi nhận giao dịch thành công.','',
+  'THÔNG TIN ĐƠN HÀNG','Chương trình: AI for CEO',`Mã đơn hàng: ${o.code}`,`Số tiền: ${amt} VNĐ`,'Trạng thái: Hết thời hạn thanh toán','',
+  'HƯỚNG DẪN TIẾP THEO',`Nếu vẫn có nhu cầu tham gia khóa học, Anh/Chị vui lòng truy cập sieutangtruong.com, đăng nhập tài khoản và thực hiện đăng ký, thanh toán lại.`,
+  'Lưu ý: Thông tin thanh toán của đơn hàng cũ đã hết hiệu lực. Vui lòng không tiếp tục chuyển khoản theo mã QR trước đó.',
+  `Nếu Anh/Chị đã chuyển khoản nhưng chưa được hệ thống xác nhận, vui lòng liên hệ ${ACADEMY.hotline} và cung cấp mã đơn hàng để được hỗ trợ kiểm tra.`,'','Trân trọng,','Đội ngũ Học viện Siêu Tăng Trưởng'].join('\n');
+ return {from:`${ACADEMY.name} <${ACADEMY.sender}>`,to:o.email,subject:EXPIRED_SUBJECT,html,text};
+}
+function ensureSampleExpired(){
+ if(S.mails.some(m=>m.kind==='expired'))return;
+ const b=S.order||{},ac=S.account||{};
+ const o={code:b.code||'AICEO-106708',name:b.name||ac.name||SAMPLE_PROFILE.name,email:b.email||ac.email||'long.nguyen@minhan.vn'};
+ S.mails.push({id:mailId('x'),kind:'expired',sample:true,code:o.code,to:o.email,at:nowStr(),read:false,order:o});
 }
 /* ---------- Email xác nhận đăng ký sự kiện (đề xuất mới, CEO AI Community · FR-46) ----------
    Gửi ngay khi học viên bấm "Tham gia" ở tab Sự kiện: thông tin sự kiện, thông tin tham gia (link Zoom hoặc địa điểm),
@@ -246,9 +293,9 @@ function sendEventEmail(i){
 }
 // mã thư không trùng (nhiều thư tạo trong cùng 1 mili giây, vd. lúc khởi động)
 let mailSeq=0;const mailId=s=>'m'+Date.now()+'-'+(++mailSeq)+(s||'');
-const mailSubject=x=>x.kind==='event'?eventSubject(COMM_EVENTS[x.ev]):x.kind==='remind'?x.msg.title:x.kind==='invoice'?`Hóa đơn điện tử số ${(x.order.inv||{}).no||''}`:x.kind==='access'?ACCESS_SUBJECT:x.kind==='prelaunch'?PRELAUNCH_SUBJECT:CONFIRM_SUBJECT;
+const mailSubject=x=>x.kind==='event'?eventSubject(COMM_EVENTS[x.ev]):x.kind==='remind'?x.msg.title:x.kind==='invoice'?`Hóa đơn điện tử số ${(x.order.inv||{}).no||''}`:x.kind==='access'?ACCESS_SUBJECT:x.kind==='prelaunch'?PRELAUNCH_SUBJECT:x.kind==='expired'?EXPIRED_SUBJECT:CONFIRM_SUBJECT;
 // nội dung 1 email trong hộp thư: xác nhận đăng ký, hóa đơn hoặc nhắc lịch học
-function mailContent(m,opt){return m.kind==='event'?eventEmail(COMM_EVENTS[m.ev],m.reg,opt):m.kind==='remind'?{...remindEmail(m.msg,opt),to:m.to}:m.kind==='invoice'?invoiceEmail(m.order,opt):confirmEmail(m.order,{...opt,part:['access','prelaunch'].includes(m.kind)?m.kind:'confirm'});}
+function mailContent(m,opt){return m.kind==='event'?eventEmail(COMM_EVENTS[m.ev],m.reg,opt):m.kind==='remind'?{...remindEmail(m.msg,opt),to:m.to}:m.kind==='invoice'?invoiceEmail(m.order,opt):m.kind==='expired'?expiredEmail(m.order,opt):confirmEmail(m.order,{...opt,part:['access','prelaunch'].includes(m.kind)?m.kind:'confirm'});}
 /* ---------- Gửi email thật qua EmailJS ---------- */
 const realMailOn=()=>!!(EMAILJS.serviceId&&EMAILJS.templateId&&EMAILJS.publicKey);
 // Nạp thư viện EmailJS khi cần (chỉ khi đã cấu hình), không làm chậm lúc mở trang
@@ -265,7 +312,7 @@ async function sendRealEmail(m){
  try{
   const ej=await loadEmailJS();
   await ej.send(EMAILJS.serviceId,EMAILJS.templateId,{to_email:e.to,to_name:(S.order&&S.order.name)||'',subject:e.subject,html:e.html,text:e.text,reply_to:ACADEMY.support,from_name:ACADEMY.name});
-  m.real='sent';if(m.kind!=='remind')toast(`Đã gửi ${m.kind==='invoice'?'email hóa đơn':m.kind==='event'?'email xác nhận sự kiện':m.kind==='access'?'email kích hoạt khóa học':'email xác nhận'} tới ${e.to}. Anh/chị kiểm tra hộp thư (cả mục Spam/Quảng cáo)`);
+  m.real='sent';if(m.kind!=='remind')toast(`Đã gửi ${m.kind==='invoice'?'email hóa đơn':m.kind==='event'?'email xác nhận sự kiện':m.kind==='access'?'email kích hoạt khóa học':m.kind==='expired'?'email hết hạn thanh toán':'email xác nhận'} tới ${e.to}. Anh/chị kiểm tra hộp thư (cả mục Spam/Quảng cáo)`);
  }catch(err){
   m.real='failed';m.err=(err&&(err.text||err.message))||'lỗi không xác định';
   toast(`Chưa gửi được email tới ${e.to}. Email vẫn có trong Hộp thư mô phỏng`,'bad');

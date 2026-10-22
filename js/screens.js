@@ -5,7 +5,7 @@
 
 /* ---------- thành phần dùng chung ---------- */
 function demoBar(){
- const cur=S.screen==='lesson'?'learn':S.screen==='account'?'checkout':S.screen;
+ const cur=S.screen==='course'?'courses':S.screen==='lesson'?(S.unit&&chOf(S.unit)==='C0'?'onboarding':'learn'):S.screen==='account'?'checkout':S.screen;
  return `<div class="demo"><div class="wrap"><span class="demo-tag">Demo</span>
  <nav class="demo-steps" aria-label="Các bước trong luồng">${STAGES.map(([k,l],i)=>`<button class="${cur===k?'on':''}" data-a="jump" data-to="${k}"><b>${i+1}</b>${l}</button>`).join('')}</nav>
  <button class="demo-reset demo-mail" data-a="mailOpen" aria-label="Hộp thư mô phỏng${unreadMails()?`, ${unreadMails()} email chưa đọc`:''}">${ic('mail',13)} Hộp thư${unreadMails()?`<span class="cnt">${unreadMails()}</span>`:''}</button><button class="demo-reset demo-mail" data-a="zaloOpen" aria-label="Zalo mô phỏng${unreadZalo()?`, ${unreadZalo()} tin chưa đọc`:''}"><span class="zalo-ico sm">Z</span> Zalo${unreadZalo()?`<span class="cnt">${unreadZalo()}</span>`:''}</button>${aiDot()}<button class="demo-reset" data-a="reset">${ic('refresh',13)} Làm lại</button></div></div>`;
@@ -15,8 +15,8 @@ function header(){
  const name=S.enrolled?(S.profile.name||(S.order&&S.order.name)||''):S.loggedIn&&S.account?S.account.name:'';
  const inCourse=['mycourses','onboarding','syllabus','learn','lesson','complete','outputs','dashboard'].includes(S.screen);
  return `<header class="hdr"><div class="wrap">
- <button class="logo" data-a="go" data-to="landing" aria-label="Trang chủ"><img class="logo-img" src="img/logo.png" onerror="this.onerror=null;this.src='../Logo.png'" alt="Siêu Tăng Trưởng" width="1725" height="237"></button>
- <nav class="nav">${HIDE_LANDING?'':`<button class="${!inCourse&&!['community','courses'].includes(S.screen)?'on':''}" data-a="go" data-to="landing">AI for CEO</button>`}${V2?'':`<button class="${S.screen==='courses'?'on':''}" data-a="go" data-to="courses"><span class="nav-ic">${ic('bookopen',15)}</span>Khóa học</button>`}<button class="${S.screen==='community'?'on':''}" data-a="openCommunity"><span class="nav-ic">${ic('users',15)}</span>Cộng đồng</button><button data-a="go" data-to="landing"><span class="nav-ic">${ic('trophy',15)}</span>Thử thách</button><button data-a="go" data-to="landing"><span class="nav-ic">${ic('news',15)}</span>Blog / Tin tức</button>${S.enrolled?`<button class="${inCourse?'on':''}" data-a="go" data-to="mycourses"><span class="nav-ic">${ic('book',15)}</span>Khóa học của tôi</button>`:''}</nav>
+ <button class="logo" data-a="go" data-to="home" aria-label="Trang chủ"><img class="logo-img" src="img/logo.png" onerror="this.onerror=null;this.src='../Logo.png'" alt="Siêu Tăng Trưởng" width="1725" height="237"></button>
+ <nav class="nav">${HIDE_LANDING?'':`<button class="${!inCourse&&!['community','courses'].includes(S.screen)?'on':''}" data-a="go" data-to="landing">AI for CEO</button>`}${V2?'':`<button class="${['courses','course'].includes(S.screen)?'on':''}" data-a="go" data-to="courses"><span class="nav-ic">${ic('bookopen',15)}</span>Khóa học</button>`}<button class="${S.screen==='community'?'on':''}" data-a="openCommunity"><span class="nav-ic">${ic('users',15)}</span>Cộng đồng</button><button class="${S.screen==='challenges'?'on':''}" data-a="go" data-to="challenges"><span class="nav-ic">${ic('trophy',15)}</span>Thử thách</button><button class="${S.screen==='library'?'on':''}" data-a="go" data-to="library"><span class="nav-ic">${ic('news',15)}</span>Thư viện</button>${S.enrolled?`<button class="${inCourse?'on':''}" data-a="go" data-to="mycourses"><span class="nav-ic">${ic('book',15)}</span>Khóa học của tôi</button>`:''}</nav>
  <div class="hdr-r">${name?`<button class="me" data-a="go" data-to="${S.enrolled?'mycourses':'landing'}"><span class="avatar">${esc(name.trim().split(/\s+/).pop()[0]||'N')}</span><span class="n">${esc(name)}</span></button>`:`<button class="btn btn-ghost btn-sm" data-a="acOpen" data-v="login">Đăng nhập</button><button class="btn btn-primary btn-sm" data-a="acOpen" data-v="register">Đăng ký</button>`}</div>
  </div></header>`;
 }
@@ -24,7 +24,7 @@ function secHead(eyebrow,title,sub){return `<div class="sec-head"><span class="e
 // chân trang theo mẫu website Siêu Tăng Trưởng: giới thiệu · Khám phá · Liên hệ · Giờ làm việc + Chính sách
 function footer(){const y=new Date().getFullYear();return `<footer class="ftr"><div class="wrap"><div class="ftr-grid">
  <div class="ftr-brand"><img class="ftr-logo" src="img/logo.png" onerror="this.onerror=null;this.src='../Logo.png'" alt="Siêu Tăng Trưởng" width="1725" height="237"><p>${esc(ACADEMY.tagline)}</p></div>
- <div><h4>Khám phá</h4><ul><li><button data-a="go" data-to="landing">Thử thách</button></li><li><button data-a="openCommunity">Cộng đồng</button></li><li><button data-a="go" data-to="landing">Blog / Tin tức</button></li><li><button data-a="openChat" data-v="expert">Hỗ trợ & Tư vấn</button></li></ul></div>
+ <div><h4>Khám phá</h4><ul><li><button data-a="go" data-to="challenges">Thử thách</button></li><li><button data-a="openCommunity">Cộng đồng</button></li><li><button data-a="go" data-to="library">Thư viện</button></li><li><button data-a="openChat" data-v="expert">Hỗ trợ & Tư vấn</button></li></ul></div>
  <div><h4>Liên hệ</h4><ul class="ftr-contact"><li><span>Hotline:</span> <a href="tel:${ACADEMY.hotline.replace(/s/g,'')}">${esc(ACADEMY.hotline)}</a></li><li><span>Email:</span> <a href="mailto:${ACADEMY.support}">${esc(ACADEMY.support)}</a></li><li><span>Địa chỉ:</span> ${esc(ACADEMY.address)}</li></ul></div>
  <div><h4>Giờ làm việc</h4><p class="ftr-hours">${esc(ACADEMY.workDays)}<br>${esc(ACADEMY.workTime)}</p><h4 class="mt">Chính sách</h4><ul><li><button data-a="policy">Điều khoản & Bảo mật</button></li></ul></div>
 </div><div class="ftr-bottom"><span>© ${y} Siêu Tăng Trưởng. Mọi quyền được bảo lưu.</span><span>Made with care · ${ACADEMY.footerWeb}</span></div></div></footer>`;}
@@ -43,7 +43,7 @@ function fab(){
   if(isAI){
    // [nhãn ngắn hiển thị, câu hỏi đầy đủ gửi cho AI]
    const chips=learnMode?[['Giải thích theo góc nhìn CEO','Giải thích phần này theo góc nhìn CEO'],['Áp dụng cho công ty tôi','Năng lực này áp dụng gì cho công ty tôi?'],['Bài tiếp theo','Bài tiếp theo là gì?']]:[['Có phù hợp với tôi?','Khóa học có phù hợp với tôi không?'],['Có dạy prompt không?','Có dạy dùng ChatGPT, viết prompt không?'],['Học phí & ưu đãi','Học phí và ưu đãi thế nào?']];
-   const msgs=S.asst.length?S.asst:[{role:'bot',text:learnMode?`Chào anh/chị ${firstName()}! Em là Trợ lý AI của khóa học. Em trả lời ngay, dựa trên nội dung chính thức của khóa học và hồ sơ công ty anh/chị.`:'Chào anh/chị! Em là Trợ lý AI, có thể giải đáp ngay về khóa AI for CEO: nội dung, cách học, thời gian và học phí.'}];
+   const msgs=S.asst.length?S.asst:[{role:'bot',text:learnMode?`Chào anh/chị ${firstName()}! Em là Trợ lý AI của khóa học. Em trả lời ngay, dựa trên nội dung chính thức của khóa học và hồ sơ công ty anh/chị.${S.profile&&S.profile.decision30?` Em nhớ quyết định anh/chị đang theo đuổi: "${DEC_PREFIX} ${S.profile.decision30}."`:''}`:'Chào anh/chị! Em là Trợ lý AI, có thể giải đáp ngay về khóa AI for CEO: nội dung, cách học, thời gian và học phí.'}];
    body=`<div class="chat-h"><span class="bot-av">${ic('bot')}</span><div><b>Trợ lý AI</b><span>Trả lời ngay · ${T.ai?'bằng AI, dựa trên nội dung chính thức':'theo nội dung soạn sẵn của khóa học'}</span></div></div>
    <div class="chat-log" id="asst-log">${msgs.map((m,i)=>`<div class="msg ${m.role==='user'?'user':'bot'} ${m.pending?'typing':''}" id="am-${i}">${m.pending&&!m.text?'Đang soạn câu trả lời…':fmt(m.text)}</div>${m.handoff?`<div><button class="chip" data-a="toExpert">${ic('headset',14)} Nhắn chuyên gia câu này</button></div>`:''}`).join('')}</div>
    <div class="chips">${chips.map(([t,q])=>`<button class="chip" data-a="asstAsk" data-q="${esc(q)}" title="${esc(q)}">${esc(t)}</button>`).join('')}</div>
@@ -59,6 +59,7 @@ function fab(){
   }
   panel=`<div class="asst" role="dialog" aria-label="${isAI?'Trò chuyện với Trợ lý AI':'Trò chuyện với chuyên gia'}"><div class="card chat ${isAI?'':'is-expert'}">${tabs}${body}</div></div>`;
  }
+ if(HIDE_FAB)return panel; // tạm ẩn 2 nút nổi góc phải dưới (theo user 10/2026); khung chat vẫn mở được từ link khác
  return `${panel}<div class="fab"><button class="main" data-a="openChat" data-v="ai" aria-label="Hỏi Trợ lý AI" title="Hỏi Trợ lý AI">${ic('bot',22)}</button><button data-a="openChat" data-v="expert" aria-label="Nhắn chuyên gia${unread?`, ${unread} tin chưa đọc`:''}" title="Nhắn chuyên gia">${ic('headset',20)}${unread?`<span class="dot">${unread}</span>`:''}</button></div>`;
 }
 
@@ -153,6 +154,7 @@ function checkout(){
   <div class="sum-row"><span class="k">Học phí</span><span class="v tnum">${money(COURSE.list)}</span></div>
   <div class="sum-row disc"><span class="k">Ưu đãi</span><span class="v tnum">−${money(SAVE)}</span></div>
   <div class="sum-row" style="align-items:center"><span class="k">Tổng thanh toán</span><span class="v total tnum">${money(COURSE.price)}</span></div>
+  <p class="hint sum-vat">Giá đã bao gồm VAT ${VAT_RATE}%</p>
   </aside>`;
  let main;
  if(st==='await')main=payView();
@@ -160,24 +162,27 @@ function checkout(){
  else if(st==='failed')main=`<div class="card status"><span class="big bad">${ic('x',28)}</span><h3 class="h3">Chưa nhận được thanh toán</h3><p class="muted" style="max-width:48ch">Hệ thống chưa nhận được tiền chuyển khoản cho đơn <b>${esc(S.order.code)}</b> (mô phỏng). Anh/chị kiểm tra lại số tài khoản, số tiền, nội dung chuyển khoản rồi thử lại, hoặc nhờ hỗ trợ.</p>
   <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center"><button class="btn btn-primary" data-a="payRetry">Xem lại thông tin chuyển khoản</button><button class="btn btn-line" data-a="payChange">Sửa thông tin</button><button class="btn btn-line" data-a="paySupport">${ic('headset',16)} Cần hỗ trợ</button></div>
   ${S.pay.support?`<div class="callout info" style="text-align:left"><b>Hỗ trợ thanh toán</b><span>Đội CSKH đã nhận yêu cầu và sẽ gọi lại trong 15 phút (mô phỏng). Hotline minh họa: <b class="tnum">1900 0000</b>. Mã đơn: <b>${esc(S.order.code)}</b>.</span></div>`:''}</div>`;
- else if(st==='success')main=`<div class="card status"><span class="big ok">${ic('check',30)}</span><h3 class="h2" style="font-size:30px">Đăng ký thành công</h3><p class="muted" style="max-width:50ch">Thanh toán đã được ghi nhận<br>Quyền truy cập khóa <b>AI for CEO</b> đã được kích hoạt cho <b>${esc(S.order.email)}</b>.</p>
+ else if(st==='success')main=`<div class="card status"><span class="big ok">${ic('check',30)}</span><h3 class="h2" style="font-size:30px">Đăng ký thành công</h3><p class="muted" style="max-width:50ch">Thanh toán đã được ghi nhận<br>Quyền truy cập khóa học <b>AI for CEO</b> đã được kích hoạt.</p>
   <div style="width:100%;max-width:420px;text-align:left;border-top:1px solid var(--line)"><div class="sum-row"><span class="k">Mã đơn</span><span class="v tnum">${esc(S.order.code)}</span></div><div class="sum-row"><span class="k">Học viên</span><span class="v">${esc(S.order.name)}</span></div><div class="sum-row"><span class="k">Đã thanh toán</span><span class="v tnum">${money(COURSE.price)}</span></div><div class="sum-row"><span class="k">Trạng thái</span><span class="v"><span class="pill ok">Đã kích hoạt</span></span></div></div>
   <button class="btn btn-primary btn-lg" data-a="go" data-to="mycourses">Vào khóa học ${ic('arrow')}</button>
-  <div class="note-wrap">${(cm=>cm?`<p class="hint mail-note">${ic('mail',14)} Vui lòng kiểm tra email và Zalo để xem xác nhận đăng ký và hướng dẫn truy cập khóa học.</p>`:`<p class="hint mail-note">${ic('mail',14)} Đang gửi email xác nhận tới <b>${esc(S.order.email)}</b>…</p>`)(S.mails.find(m=>m.kind==='confirm'&&m.code===S.order.code))}${S.order.invoice?(o=>o.invConfirmed
+  <div class="note-wrap">${(cm=>cm?`<p class="hint mail-note">${ic('mail',14)} Vui lòng kiểm tra email và Zalo để xem xác nhận đăng ký và hướng dẫn truy cập khóa học.</p>`:`<p class="hint mail-note">${ic('mail',14)} Đang gửi email xác nhận tới <b>${esc(S.order.email)}</b>…</p>`)(S.mails.find(m=>m.kind==='confirm'&&m.code===S.order.code))}${(o=>!o.invoice?(o.invConfirmed&&S.mails.some(m=>m.kind==='invoice'&&!m.sample&&m.code===o.code)
+   ?`<div class="callout info inv-note" role="status"><span class="inv-ico">${ic('file',18)}</span><div><b>Đã xuất hóa đơn điện tử</b><span>Hóa đơn số <b>${esc((o.inv||{}).no||'')}</b> đã được gửi tới <b>${esc(o.email)}</b>.</span><div><button type="button" class="btn btn-line btn-sm inv-open" data-a="invView">${ic('eye',15)} Xem hóa đơn</button></div></div></div>`
+   :`<div class="callout info inv-note" role="status"><span class="inv-ico">${ic('file',18)}</span><div><b>Đang xuất hóa đơn điện tử…</b><span>Hóa đơn sẽ được gửi tới <b>${esc(o.email)}</b>.</span></div></div>`)
+  :o.invConfirmed
    ?`<div class="callout info inv-note" role="status"><span class="inv-ico">${ic('file',18)}</span><div><b>Đã xuất hóa đơn điện tử</b><span>Hóa đơn số <b>${esc((o.inv||{}).no||'')}</b> cho ${esc(o.invName||'')} đã được gửi tới <b>${esc(o.invEmail)}</b>.</span><div><button type="button" class="btn btn-line btn-sm inv-open" data-a="invView">${ic('eye',15)} Xem hóa đơn</button></div></div></div>`
-   :`<div class="callout info inv-note" role="status"><span class="inv-ico">${ic('file',18)}</span><div><b>Xác nhận thông tin hóa đơn</b><span>Vui lòng kiểm tra thông tin hóa đơn số <b>${esc((o.inv||{}).no||'')}</b> của <b>${esc(o.invName||'')}</b> trước khi xác nhận.</span><span>Sau khi xác nhận, hóa đơn điện tử sẽ được gửi đến <b>${esc(o.invEmail)}</b>.</span><div><button type="button" class="btn btn-line btn-sm inv-open" data-a="invView">${ic('eye',15)} Xem và xác nhận hóa đơn</button></div></div></div>`)(S.order):''}</div></div>`;
+   :`<div class="callout info inv-note" role="status"><span class="inv-ico">${ic('file',18)}</span><div><b>Xác nhận thông tin hóa đơn</b><span>Vui lòng kiểm tra thông tin hóa đơn của <b>${esc(o.invName||'')}</b> trước khi xác nhận.</span><span>Sau khi xác nhận, hóa đơn điện tử sẽ được gửi đến <b>${esc(o.invEmail)}</b>.</span><div><button type="button" class="btn btn-line btn-sm inv-open" data-a="invView">${ic('eye',15)} Xem và xác nhận hóa đơn</button></div></div></div>`)(S.order)}</div></div>`;
  else main=`<form class="card form" data-f="checkoutSubmit" novalidate>
   <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><h3 class="h3">Thông tin thanh toán</h3></div>
   <div class="row2"><div class="field"><label for="c-name">Họ và tên <span class="req" aria-hidden="true">*</span></label><input class="inp" id="c-name" name="name" value="${esc(o.name)}" required aria-required="true" autocomplete="name"></div><div class="field"><label for="c-phone">Số điện thoại / Zalo <span class="req" aria-hidden="true">*</span></label><input class="inp" id="c-phone" name="phone" type="tel" value="${esc(o.phone)}" required aria-required="true" autocomplete="tel"></div></div>
-  <div class="row2"><div class="field"><label for="c-email">Email nhận tài khoản <span class="req" aria-hidden="true">*</span></label><input class="inp" id="c-email" name="email" type="email" value="${esc(ac.email||o.email)}" readonly aria-readonly="true" aria-describedby="c-email-h"></div><div class="field"><label for="c-company">Công ty</label><input class="inp" id="c-company" name="company" autocomplete="organization" placeholder="Ví dụ: Công ty CP ABC" value="${esc(o.company===SAMPLE_PROFILE.company?'':(o.company||''))}"></div></div>
+  <div class="row2"><div class="field"><label for="c-email">Email nhận tài khoản <span class="req" aria-hidden="true">*</span></label><input class="inp" id="c-email" name="email" type="email" value="${esc(ac.email||o.email)}" readonly aria-readonly="true" aria-describedby="c-email-h"></div><div class="field"><label for="c-company">Công ty</label><input class="inp" id="c-company" name="company" autocomplete="organization" placeholder="Nhập tên công ty" value="${esc(o.company===SAMPLE_PROFILE.company?'':(o.company||''))}"></div></div>
   <p class="hint ck-acc" id="c-email-h"><button type="button" class="btn-link" data-a="acSwitch">Dùng tài khoản khác</button></p>
   <label class="opt" for="c-inv" style="justify-self:start"><input type="checkbox" id="c-inv" name="invoice" ${o.invoice?'checked':''} data-a="invToggle"><span>Xuất hóa đơn doanh nghiệp</span></label>
-  <div class="row2" id="inv-box" ${o.invoice?'':'hidden'}><div class="field"><label for="c-tax">Mã số thuế doanh nghiệp <span class="req" aria-hidden="true">*</span></label><div class="tax-in"><input class="inp" id="c-tax" name="taxId" aria-required="true" inputmode="numeric" placeholder="Ví dụ: 0100109106" aria-describedby="c-tax-st" value="${esc(o.taxId||'')}"><button type="button" class="tax-btn" data-a="taxLookup">${ic('search',16)} Kiểm tra</button></div><p class="hint tax-st" id="c-tax-st" role="status" aria-live="polite">Nhập mã số thuế rồi bấm Kiểm tra, tên và địa chỉ doanh nghiệp sẽ tự điền.</p></div><div class="field"><label for="c-invname">Tên doanh nghiệp <span class="req" aria-hidden="true">*</span></label><input class="inp" id="c-invname" name="invName" aria-required="true" value="${esc(o.invName||'')}"></div><div class="field" style="grid-column:1/-1"><label for="c-invaddr">Địa chỉ doanh nghiệp <span class="req" aria-hidden="true">*</span></label><input class="inp" id="c-invaddr" name="invAddr" aria-required="true" value="${esc(o.invAddr||'')}"></div><div class="field" style="grid-column:1/-1"><label for="c-invemail">Email nhận hóa đơn <span class="req" aria-hidden="true">*</span></label><input class="inp" id="c-invemail" name="invEmail" aria-required="true" type="email" value="${esc(o.invEmail||'')}" placeholder="Ví dụ: ketoan@congty.vn" autocomplete="email"></div></div>
+  <div class="row2" id="inv-box" ${o.invoice?'':'hidden'}><div class="field"><label for="c-tax">Mã số thuế doanh nghiệp <span class="req" aria-hidden="true">*</span></label><div class="tax-in"><input class="inp" id="c-tax" name="taxId" aria-required="true" inputmode="numeric" placeholder="Nhập mã số thuế" aria-describedby="c-tax-st" value="${esc(o.taxId||'')}"><button type="button" class="tax-btn" data-a="taxLookup">${ic('search',16)} Kiểm tra</button></div><p class="hint tax-st" id="c-tax-st" role="status" aria-live="polite">Nhập mã số thuế rồi bấm Kiểm tra, tên và địa chỉ doanh nghiệp sẽ tự điền.</p></div><div class="field"><label for="c-invname">Tên doanh nghiệp <span class="req" aria-hidden="true">*</span></label><input class="inp" id="c-invname" name="invName" aria-required="true" value="${esc(o.invName||'')}"></div><div class="field" style="grid-column:1/-1"><label for="c-invaddr">Địa chỉ doanh nghiệp <span class="req" aria-hidden="true">*</span></label><input class="inp" id="c-invaddr" name="invAddr" aria-required="true" value="${esc(o.invAddr||'')}"></div><div class="field" style="grid-column:1/-1"><label for="c-invemail">Email nhận hóa đơn <span class="req" aria-hidden="true">*</span></label><input class="inp" id="c-invemail" name="invEmail" aria-required="true" type="email" value="${esc(o.invEmail||'')}" placeholder="Nhập email nhận hóa đơn" autocomplete="email"></div></div>
   <fieldset><legend>Phương thức thanh toán</legend><div class="opt-grid">${Object.entries(PAY_METHODS).map(([v,l],i)=>`<label class="opt" for="pm-${i}"><input type="radio" id="pm-${i}" name="method" value="${v}" ${S.pay.method===v?'checked':''}><span>${l}</span></label>`).join('')}<label class="opt opt-off" for="pm-card" aria-disabled="true"><input type="radio" id="pm-card" name="method" value="card" disabled><span class="opt-txt"><span>Thẻ thanh toán</span><small>Tạm thời chưa hỗ trợ</small></span><span class="card-brands" aria-hidden="true"><i class="cb-visa">VISA</i><i class="cb-mc"><b></b><b></b></i><i class="cb-jcb">JCB</i><i class="cb-amex">AMEX</i></span></label></div></fieldset>
   <div class="ck-terms"><label class="ck-agree" for="c-agree"><input type="checkbox" id="c-agree" name="agree" ${o.agree?'checked':''} aria-required="true" ${T.err.field==='c-agree'?'aria-invalid="true"':''}><span>Tôi đã đọc và đồng ý với <button type="button" class="btn-link" data-a="policy">Điều khoản &amp; quy định</button>. <span class="req" aria-hidden="true">*</span></span></label></div>
   ${T.err.checkout?`<p class="err">${T.err.checkout}</p>`:''}
   <div class="form-foot"><span></span><button class="btn btn-primary btn-lg">Tiếp tục thanh toán ${ic('arrow')}</button></div></form>`;
- return `<section class="wrap page"><div class="crumbs"><button data-a="go" data-to="${V2?'courses':'landing'}">${V2?'Cộng đồng · Khóa học':HIDE_LANDING?'Khóa học':'AI for CEO'}</button><span>/</span><span>Đăng ký & thanh toán</span></div>${stepper}<div class="two"><div>${main}</div>${summary}</div></section>`;
+ return `<section class="wrap page"><div class="crumbs"><button data-a="go" data-to="courses">Khóa học</button><span>/</span><button data-a="crsOpen" data-v="aiceo">AI for CEO</button><span>/</span><span>Đăng ký & thanh toán</span></div>${stepper}<div class="two"><div>${main}</div>${summary}</div></section>`;
 }
 
 /* ---------- Màn thanh toán: chuyển khoản ngân hàng (theo yêu cầu user) ----------
@@ -195,14 +200,14 @@ function invoicePaper(o){
  
  <header class="iv-top"><div class="iv-title"><h2>HÓA ĐƠN GIÁ TRỊ GIA TĂNG</h2><p class="iv-en">(VAT INVOICE)</p><p class="iv-date">Ngày <i>(Date)</i> <u>${d[0]||''}</u> tháng <i>(month)</i> <u>${d[1]||''}</u> năm <i>(year)</i> <u>${d[2]||''}</u></p></div>
   <div class="iv-serial"><p>Ký hiệu <i>(Serial)</i>: ${SELLER.series}</p><p>Số <i>(No.)</i>: <b class="iv-no">${inv.no?esc(inv.no):'Chưa cấp số'}</b></p></div></header>
- <section class="iv-seller"><div>${ln('Đơn vị bán hàng','Seller',`<span class="iv-red">${SELLER.name}</span>`)}${ln('Mã số thuế','Tax code',`<span class="iv-tax">${SELLER.taxId.split('').join(' ')}</span>`)}${ln('Địa chỉ','Address',SELLER.address)}</div><div class="iv-qr">${fakeQR(o.code||'INV')}</div></section>
- <section class="iv-buyer">${ln('Họ tên người mua hàng','Buyer',esc(o.name||''),'dot')}${ln('Tên đơn vị','Company name',esc(o.invName||o.company||''),'dot')}${ln('Mã số thuế','Tax code',esc(o.taxId||''),'dot')}${ln('Địa chỉ','Address',esc(o.invAddr||''),'dot')}
+ <section class="iv-seller"><div>${ln('Đơn vị bán hàng','Seller',`<span class="iv-red">${SELLER.name}</span>`)}${ln('Mã số thuế','Tax code',`<span class="iv-tax">${SELLER.taxId.split('').join(' ')}</span>`)}${ln('Địa chỉ','Address',SELLER.address)}</div></section>
+ <section class="iv-buyer">${ln('Họ tên người mua hàng','Buyer',esc(o.name||''),'dot')}${ln('Tên đơn vị','Company name',esc(o.invoice?(o.invName||o.company||''):''),'dot')}${ln('Mã số thuế','Tax code',esc(o.invoice?(o.taxId||''):''),'dot')}${ln('Địa chỉ','Address',esc(o.invoice?(o.invAddr||''):''),'dot')}
   <div class="iv-2">${ln('Hình thức thanh toán','Payment method','Chuyển khoản','dot')}${ln('Số tài khoản','A/C No.','','dot')}</div></section>
  <table class="iv-tb"><thead><tr><th>STT<br><i>(No.)</i></th><th>Tên hàng hóa, dịch vụ<br><i>(Name of goods, services)</i></th><th>Đơn vị tính<br><i>(Unit)</i></th><th>Số lượng<br><i>(Quantity)</i></th><th>Đơn giá<br><i>(Unit price)</i></th><th>Thành tiền<br><i>(Amount)</i></th></tr>
   <tr class="iv-no-r"><td>(1)</td><td>(2)</td><td>(3)</td><td>(4)</td><td>(5)</td><td>(6)=(4)x(5)</td></tr></thead>
-  <tbody><tr><td>1</td><td class="l">Khóa học AI for CEO · Trọn khóa</td><td>Khóa</td><td>1</td><td class="r">${amt.toLocaleString('vi-VN')}</td><td class="r">${amt.toLocaleString('vi-VN')}</td></tr>${'<tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>'.repeat(rows-1)}</tbody>
-  <tfoot><tr><td colspan="3" class="l">Tỷ giá <i>(Exchange rate)</i>:</td><td colspan="2" class="r">Cộng tiền hàng <i>(Sub total)</i>:</td><td class="r">${amt.toLocaleString('vi-VN')}</td></tr>
-   <tr><td colspan="3" class="l">Thuế suất GTGT <i>(VAT rate)</i>:</td><td colspan="2" class="r">Tiền thuế GTGT <i>(VAT amount)</i>:</td><td class="r"></td></tr>
+  <tbody><tr><td>1</td><td class="l">Khóa học AI for CEO</td><td>Khóa</td><td>1</td><td class="r">${VAT.net.toLocaleString('vi-VN')}</td><td class="r">${VAT.net.toLocaleString('vi-VN')}</td></tr>${'<tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>'.repeat(rows-1)}</tbody>
+  <tfoot><tr><td colspan="3" class="l nbr">Tỷ giá <i>(Exchange rate)</i>:</td><td colspan="2" class="r nbl">Cộng tiền hàng <i>(Sub total)</i>:</td><td class="r">${VAT.net.toLocaleString('vi-VN')}</td></tr>
+   <tr><td colspan="3" class="l nbr">Thuế suất GTGT <i>(VAT rate)</i>: ${VAT_RATE}%</td><td colspan="2" class="r nbl">Tiền thuế GTGT <i>(VAT amount)</i>:</td><td class="r">${VAT.vat.toLocaleString('vi-VN')}</td></tr>
    <tr><td colspan="5" class="r">Tổng cộng tiền thanh toán <i>(Total payment)</i>:</td><td class="r"><b>${amt.toLocaleString('vi-VN')}</b></td></tr>
    <tr><td colspan="6" class="l">Số tiền viết bằng chữ <i>(Amount in words)</i>: <b>${vnMoneyWords(amt)}</b></td></tr></tfoot></table>
  <section class="iv-sign"><div><b>Người mua hàng <i>(Buyer)</i></b></div><div><b>Người bán hàng <i>(Seller)</i></b><div class="iv-stamp"><b>${o.invConfirmed?'Signature Valid':'Mẫu:'}</b><span>Ký bởi: ${SELLER.name}</span><span>Ký ngày: ${o.invConfirmed?esc(inv.date||''):''}</span></div></div></section>
@@ -210,13 +215,13 @@ function invoicePaper(o){
  <p class="iv-prov">${SELLER.provider}</p></article>`;
 }
 function invoiceView(){
- if(!T.invView||!S.order||!S.order.invoice)return '';
- const o=S.order,ok=!!o.invConfirmed,oo=o;
+ if(!T.invView||!S.order)return '';
+ const o=S.order,ok=!!o.invConfirmed,oo=o,to=invTo(o);
  return `<div class="mail-ov iv-ov" role="presentation"><div class="iv-dlg" role="dialog" aria-modal="true" aria-label="Xem trước hóa đơn">
-  <div class="iv-bar"><div><b>${ok?'Hóa đơn GTGT':'Xác nhận thông tin hóa đơn'}</b><span>${ok?`Hóa đơn số ${esc((o.inv||{}).no||'')} đã gửi tới ${esc(o.invEmail)}`:`Kiểm tra thông tin rồi bấm Xác nhận. Hóa đơn sẽ được gửi tới ${esc(o.invEmail)}`}</span></div>
+  <div class="iv-bar"><div><b>${ok?'Hóa đơn GTGT':'Xác nhận thông tin hóa đơn'}</b><span>${ok?`Hóa đơn số ${esc((o.inv||{}).no||'')} đã gửi tới ${esc(to)}`:`Kiểm tra thông tin rồi bấm Xác nhận. Hóa đơn sẽ được gửi tới ${esc(to)}`}</span></div>
    <div class="iv-act"><button class="btn btn-line btn-sm" data-a="invPrint">${ic('download',15)} In / Lưu PDF</button><button class="x" data-a="invClose" aria-label="Đóng">${ic('x')}</button></div></div>
   <div class="iv-scroll">${invoicePaper(oo)}</div>
-  <div class="iv-foot"><p class="hint">${ic('info',14)} Kiểm tra tên đơn vị, mã số thuế, địa chỉ. Cần điều chỉnh, anh/chị gửi email tới <b>${ACADEMY.billing}</b> kèm mã đơn <b>${esc(o.code)}</b>.</p>${ok?'':`<div class="iv-foot-act"><button class="btn btn-primary" data-a="invConfirm">${ic('check',16)} Xác nhận hóa đơn</button></div>`}</div></div></div>`;
+  <div class="iv-foot"><p class="hint">${ic('info',14)} ${o.invoice?'Kiểm tra tên đơn vị, mã số thuế, địa chỉ.':'Kiểm tra họ tên người mua.'} Cần điều chỉnh, anh/chị gửi email tới <b>${ACADEMY.billing}</b> kèm mã đơn <b>${esc(o.code)}</b>.</p>${ok?'':`<div class="iv-foot-act"><button class="btn btn-primary" data-a="invConfirm">${ic('check',16)} Xác nhận hóa đơn</button></div>`}</div></div></div>`;
 }
 function fakeQR(seed){
  const n=29,cell=(x,y)=>{let h=2166136261;const k=seed+'|'+x+'|'+y;for(let i=0;i<k.length;i++){h^=k.charCodeAt(i);h=Math.imul(h,16777619);}return (h>>>0)%100<47;};
@@ -310,21 +315,28 @@ function eventsCard(){
 /* ---------- 3. Khóa học của tôi ---------- */
 function mycourses(){
  const started=S.ob.done&&S.plan&&(S.plan.accepted||S.plan.wasActive);const st=started?planStats():null;
- const fresh=!S.ob.flow.length&&!S.ob.done;
- const status=fresh?['Chưa bắt đầu','wait']:!S.ob.done?['Đang onboarding','blue']:!started?['Chờ xác nhận lộ trình','blue']:st.unitsDone===st.units&&subsCount()===Object.keys(TASKS).length?['Đã hoàn thành','ok']:['Đang học','blue'];
- const cta=fresh?'Bắt đầu khóa học':!S.ob.done?'Tiếp tục onboarding':!started?'Xem & xác nhận lộ trình':st.unitsDone===0&&subsCount()===0?'Bắt đầu học':'Học tiếp'; // 0 bài học + 0 bài tập = Bắt đầu học, từ 1 bài trở đi = Học tiếp (theo yêu cầu user)
+ const fresh=!c0Started();
+ const status=fresh?['Chưa bắt đầu','wait']:!S.ob.done?['Đang học Chương 0','blue']:!started?['Chờ xác nhận lộ trình','blue']:st.unitsDone===st.units&&subsCount()===Object.keys(TASKS).length?['Đã hoàn thành','ok']:['Đang học','blue'];
+ const cta=fresh?'Bắt đầu Chương 0':!S.ob.done?'Tiếp tục Chương 0':!started?'Xem lộ trình của anh/chị':st.unitsDone===0&&subsCount()===0?'Bắt đầu học':'Học tiếp'; // 0 bài học + 0 bài tập = Bắt đầu học, từ 1 bài trở đi = Học tiếp (theo yêu cầu user)
  const cu=started?curUnit():null;
- return `<section class="wrap page">
- <div class="page-head"><span class="eyebrow">Tài khoản học viên</span><h2 class="h2">Khóa học của tôi</h2><p class="sub">Khóa học đã đăng ký.</p></div>
+ const head=listHead('pur','book','Khóa học của tôi','Tiếp tục hành trình học AI của anh/chị','Các khóa học anh/chị đã đăng ký tại Học viện Siêu Tăng Trưởng.');
+ // chưa đăng ký khóa nào (vào từ thẻ Khóa học của tôi ở trang chủ)
+ // chưa mua nhưng đã học thử Chương 0: thẻ "Đang học thử" (PLAN_Onboarding.md mục 3)
+ if(!S.enrolled&&c0Started()){const n=C0_KEYS().filter(k=>S.done[k]).length,N=C0_KEYS().length,dn=c0Done();
+  return `<section class="wrap page crs list-page">${head}<div class="grid g2" style="align-items:start"><article class="card course"><button class="course-thumb" data-a="trialStart" aria-label="Mở Chương 0 khóa AI for CEO">${COURSE.cover?`<img class="crs-cover" src="${esc(COURSE.cover)}" alt="">`:''}<span class="k">Khóa học trọng tâm</span><span class="n">AI for <b>CEO</b></span><span class="s">${LIB.length} chương · ${ALL_BAI.length} bài</span></button>
+   <div class="pad" style="display:grid;gap:14px"><div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap"><h3 class="h3">AI for CEO</h3><span class="pill wait">Đang học thử</span></div>
+    <div style="display:grid;gap:6px"><div style="display:flex;align-items:center;gap:10px"><div class="bar" style="flex:1"><i style="width:${Math.round(n/N*100)}%"></i></div><b class="tnum" style="font-size:14px;color:var(--blue)">${n}/${N}</b></div><p class="crs-meta">${ic('bookopen',15)} Chương 0 miễn phí · ${N} bài</p></div>
+    ${dn?`<button class="btn btn-primary btn-lg btn-block" data-a="go" data-to="checkout">Đăng ký để học tiếp ${ic('arrow')}</button><button class="btn btn-line btn-block" data-a="trialStart">Xem lộ trình của anh/chị</button>`:`<button class="btn btn-primary btn-lg btn-block" data-a="trialStart">Tiếp tục Chương 0 ${ic('arrow')}</button>`}</div></article></div></section>`;}
+ if(!S.enrolled)return `<section class="wrap page crs list-page">${head}<div class="card my-empty"><span class="my-empty-ic">${ic('book',26)}</span><h2>Anh/chị chưa đăng ký khóa học nào</h2><p>Chọn một khóa học để bắt đầu hành trình học AI cùng Học viện.</p><button class="btn btn-primary" data-a="go" data-to="courses">Xem các khóa học ${ic('arrow',16)}</button></div></section>`;
+ return `<section class="wrap page crs list-page">${head}
  <div class="grid g2" style="align-items:start">
   <article class="card course"><button class="course-thumb" data-a="openCourse" aria-label="Mở khóa AI for CEO">${COURSE.cover?`<img class="crs-cover" src="${esc(COURSE.cover)}" alt="">`:''}<span class="k">Khóa học trọng tâm</span><span class="n">AI for <b>CEO</b></span><span class="s">${LIB.length} chương · ${ALL_BAI.length} bài</span></button>
    <div class="pad" style="display:grid;gap:14px">
     <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap"><h3 class="h3">AI for CEO</h3><span class="pill ${status[1]}">${status[0]}</span></div>
-    ${(pc=>`<div style="display:grid;gap:6px"><div style="display:flex;align-items:center;gap:10px"><div class="bar" style="flex:1"><i style="width:${pc}%"></i></div><b class="tnum" style="font-size:14px;color:var(--blue)">${pc}%</b></div><span class="hint tnum">${started?st.unitsDone:0}/${ALL_BAI.length} bài học · ${started?subsCount():0}/${Object.keys(TASKS).length} bài tập</span></div>`)(started?st.upct:0)}
+    ${(pc=>`<div style="display:grid;gap:6px"><div style="display:flex;align-items:center;gap:10px"><div class="bar" style="flex:1"><i style="width:${pc}%"></i></div><b class="tnum" style="font-size:14px;color:var(--blue)">${pc}%</b></div><p class="crs-meta">${ic('bookopen',15)} ${ALL_BAI.length} bài học</p></div>`)(started?st.upct:0)}
     <div class="kv"><div><span>Ngày kích hoạt</span><b>${esc((S.order&&S.order.paidAt)||today())}</b></div><div><span>Mã đơn</span><b class="tnum">${esc((S.order&&S.order.code)||'')}</b></div><div><span>Thời hạn truy cập</span><b>1 năm</b></div></div>
     <button class="btn btn-primary btn-lg btn-block" data-a="openCourse">${cta} ${ic('arrow')}</button>
    </div></article>
-  <article class="card pad" style="display:grid;gap:10px;align-content:start;border-style:dashed"><h3 class="h3">Khám phá thêm</h3><p class="muted">Thử thách, khóa chuyên đề, cộng đồng.</p><div><button class="btn btn-line btn-sm" data-a="go" data-to="courses">Xem khóa học ${ic('arrow',15)}</button></div></article>
  </div></section>`;
 }
 
@@ -356,7 +368,7 @@ function onboarding(){
 // Theo ai_for_ceo_lo_trinh_khoa_hoc_ui_redesign.md: chương thu gọn mặc định; mỗi bài chỉ hiện tên, thời lượng, năng lực, trạng thái, CTA.
 // Bấm vào bài mới mở chi tiết (nội dung video/bài tập, ngày học, vì sao phù hợp). Logic mở khóa bài giữ nguyên (lessonOpen).
 function lessonState(i){const ni=nextLesson();if(lessonDone(i))return 'done';if(i===ni)return 'doing';/* bài hiện tại luôn là "Đang học", kể cả chưa bắt đầu */return lessonOpen(i)?'next':'locked';}
-const STATE_LABEL={done:'Hoàn thành',doing:'Đang học',next:'Chưa học',locked:'Chưa mở'};
+const STATE_LABEL={done:'Hoàn thành',doing:'Đang học',next:'Chưa học',locked:'Chưa mở',paid:'Mở khi đăng ký khóa học'};
 // năng lực chính của 1 bài (module đầu tiên trong bài) → tên + màu
 function lessonCap(ks){const m=ks.map(k=>L[U(k).id]).find(x=>x.type==='module')||L[U(ks[0]).id];const ci=CAP_MAP.findIndex(c=>c.id===m.id);return {name:m.cap||m.title,color:ci>=0?CAP_MAP[ci].color:PHASE_COLOR[m.phase],label:ci>=0?`Năng lực ${capNo(ci)}`:m.cap};}
 // năng lực AI của 1 bài: bỏ mã số đầu ("01 + 02 — Hiểu…" → "Hiểu…")
@@ -364,7 +376,7 @@ const capName=c=>String(c||'').replace(/^[\d\s+–-]+—\s*/,'');
 function courseList(key,{cta=true,why=false}={}){ // cta: cho phép mở bài (lộ trình đã xác nhận)
  const cu=curUnit(),all=planUnits();
  const ch=LIB.map((x,pi)=>{const ks=all.filter(k=>chOf(k)===x.id),dn=ks.filter(k=>S.done[k]).length;
-  return {x,pi,ks,dn,state:ks.length&&dn===ks.length?'done':ks.includes(cu)||ks.some(k=>!S.done[k]&&unitOpen(k))?'cur':'locked'};}).filter(c=>c.ks.length);
+  return {x,pi,ks,dn,state:ks.length&&dn===ks.length?'done':(ks.includes(cu)&&!paidLock(cu))||ks.some(k=>!S.done[k]&&unitOpen(k)&&!paidLock(k))?'cur':'locked'};}).filter(c=>c.ks.length);
  if(!T.cx[key]){const c=ch.find(c=>c.ks.includes(cu));T.cx[key]=key==='learn'&&c?[c.pi]:[];}
  // vừa quay lại từ 1 bài: mở sẵn chương chứa bài đó để cuộn tới
  if(T.focusLesson!=null){const fc=ch.find(c=>c.ks.includes(T.focusLesson));if(fc&&!T.cx[key].includes(fc.pi))T.cx[key]=[...T.cx[key],fc.pi];}
@@ -381,17 +393,19 @@ function courseList(key,{cta=true,why=false}={}){ // cta: cho phép mở bài (l
    ${isOpen?`${rs?`<p class="cl-why cl-chwhy">${ic('spark',13)}<span>${esc(rs)}</span></p>`:''}<ol class="cl-ls">${c.ks.map(k=>unitRow(k,key,{cta,openDetail:T.clAll[key]||lx===k})).join('')}</ol>`:''}</section>`;}).join('')}</div>`;
 }
 // nút "Xem chi tiết tất cả / Thu gọn tất cả" cho danh sách chương
-const clToggleBtn=key=>`<button class="btn btn-ghost btn-sm cl-all" data-a="clAll" data-k="${key}" aria-pressed="${!!T.clAll[key]}">${ic(T.clAll[key]?'x':'chev',14)} ${T.clAll[key]?'Thu gọn tất cả':'Xem chi tiết tất cả'}</button>`;
+const clToggleBtn=key=>`<button class="btn btn-ghost btn-sm cl-all" data-a="clAll" data-k="${key}" aria-pressed="${!!T.clAll[key]}">${ic(T.clAll[key]?'x':'chev',14)} ${T.clAll[key]?'Thu gọn tất cả':key==='learn'?'Mở tất cả chương':'Xem chi tiết tất cả'}</button>`;
 // 1 dòng bài: số bài · loại (Video / Bài tập) · số phút · ngày học, tên bài, trạng thái; bấm vào mở chi tiết (mục tiêu, năng lực, đầu ra, nút học)
 function unitRow(k,key,{cta,openDetail}){
+ const direct=key==='learn';if(direct)openDetail=false; // trang vào học: bấm là vào bài luôn
  const u=U(k),s=unitState(k),b=u.b,isEx=u.kind==='exercise',d=lessonOfUnit(k);
- const right=`<span class="cl-st ${s}" ${s==='locked'?`title="${esc(unitLockMsg(k))}"`:''}>${s==='done'?ic('check',12)+' ':s==='locked'?ic('lock',12)+' ':''}${STATE_LABEL[s]}</span>`;
+ const lk=s==='locked'||s==='paid',rowCta=cta||chOf(k)==='C0';
+ const right=`<span class="cl-st ${s}" ${lk?`title="${esc(unitLockMsg(k))}"`:''}>${s==='done'?ic('check',12)+' ':lk?ic('lock',12)+' ':''}${STATE_LABEL[s]}</span>`;
  const detail=openDetail?`<div class="cl-detail">
    <dl class="cl-kv">${b?`<div><dt>Mục tiêu</dt><dd>${esc(b.goal)}</dd></div><div><dt>Năng lực AI</dt><dd>${esc(capName(b.cap))}</dd></div><div><dt>${isEx?'Bài tập':'Đầu ra'}</dt><dd>${esc(b.out)}</dd></div>`:`<div><dt>Nội dung</dt><dd>Nhìn lại các đầu ra của ${esc(chLabel(L[u.id]))} và liên hệ với công ty.</dd></div>`}</dl>
-   ${s!=='locked'&&cta?`<div><button class="btn btn-line btn-sm" data-a="openUnit" data-v="${k}">${s==='done'?'Xem lại':isEx?(S.subs[u.id]?'Xem bài tập':'Làm bài tập'):'Xem video'} ${ic('arrow',14)}</button></div>`:''}</div>`:'';
+   ${!lk&&rowCta?`<div><button class="btn btn-line btn-sm" data-a="openUnit" data-v="${k}">${s==='done'?'Xem lại':isEx?(S.subs[u.id]?'Xem bài tập':'Làm bài tập'):'Xem video'} ${ic('arrow',14)}</button></div>`:''}</div>`:'';
  return `<li class="cl-l ${s} ${openDetail?'open':''} ${isEx?'is-ex':''}" id="lr-${key}-${k}"><div class="cl-row">
-  <span class="cl-dot">${s==='done'?ic('check',12):s==='locked'?ic('lock',12):b?b.i+1:'·'}</span>
-  <button class="cl-name" data-a="lxToggle" data-k="${key}" data-v="${k}" aria-expanded="${!!openDetail}"><small><span class="cl-ty ${isEx?'isx':''}">${ic(isEx?'file':u.kind==='review'?'book':'play',12)} ${unitType(u)}</span> · ${b?'Bài '+(b.i+1)+' · ':''}${u.m} phút · ${esc(dayLabel(d))}</small><b>${esc(unitTitle(u))}</b></button>
+  <span class="cl-dot">${b?b.i+1:'·'}</span>
+  <button class="cl-name" ${direct?`data-a="openUnit" data-v="${k}"`:`data-a="lxToggle" data-k="${key}" data-v="${k}" aria-expanded="${!!openDetail}"`}><small><span class="cl-ty ${isEx?'isx':u.kind==='text'?'ist':''}">${ic(unitIcon(u),12)} ${unitType(u)}</span> · ${b?'Bài '+(b.i+1)+' · ':''}${u.m} phút · ${esc(dayLabel(d))}</small><b>${esc(unitTitle(u))}</b></button>
   ${right}</div>${detail}</li>`;
 }
 
@@ -402,7 +416,7 @@ function drawerView(){
  if(T.drawer==='why'){
   title='Vì sao tôi nhận lộ trình này?';
   const mods=P.items.filter(it=>L[it.id].type==='module'&&it.reason),extras=P.items.filter(it=>L[it.id].type!=='module');
-  body=`<div class="dw-sec"><h4>Dựa trên</h4><dl class="dw-kv">${[['Mục tiêu học tập',goalsText(p.goals)],['Mức độ AI hiện tại',LEVELS[p.level]],['Bối cảnh doanh nghiệp',[p.industry,p.size,p.problem].filter(Boolean).join(' · ')],['Quỹ thời gian',`${p.days} ngày · ${p.minPerSession} phút/ngày`],['Nhịp học','Học mỗi ngày']].map(([k,v])=>`<div><dt>${k}</dt><dd>${esc(v||'—')}</dd></div>`).join('')}</dl></div>
+  body=`<div class="dw-sec"><h4>Dựa trên</h4><dl class="dw-kv">${(p.role||p.decision30||p.aiNow?[...c0Parts().map(([a,b])=>[a,b||'Cần bổ sung']),['Lịch học',`${p.days} ngày · ${p.minPerSession} phút/ngày`]]:[['Mục tiêu học tập',goalsText(p.goals)],['Mức độ AI hiện tại',LEVELS[p.level]],['Bối cảnh doanh nghiệp',[p.industry,p.size,p.problem].filter(Boolean).join(' · ')],['Quỹ thời gian',`${p.days} ngày · ${p.minPerSession} phút/ngày`],['Nhịp học','Học mỗi ngày']]).map(([k,v])=>`<div><dt>${k}</dt><dd>${esc(v||'—')}</dd></div>`).join('')}</dl></div>
    <div class="dw-sec"><h4>Hệ thống đã điều chỉnh</h4><p>${fmt(P.summary)}</p>
     <ul class="dw-list"><li><b>Thứ tự bài học</b><span>Giữ đủ ${LIB.length} chương, ${ALL_BAI.length} bài, đúng thứ tự</span></li><li><b>Bài tập</b><span>${Object.keys(TASKS).length} bài áp dụng cho công ty</span></li><li><b>Lịch học</b><span>${lessons().length} ngày · khoảng ${Math.max(1,Math.round(planUnits().length/lessons().length))} bài, ${Math.round(planStats().min/lessons().length)} phút mỗi ngày</span></li></ul></div>
    ${mods.length?`<div class="dw-sec"><h4>Nội dung từng chương</h4><ul class="dw-why">${mods.map(it=>`<li><span class="no">${modNo(L[it.id])}</span><div><b>${esc(chLabel(L[it.id])+': '+L[it.id].title)}</b><span>${esc(it.reason)}</span></div></li>`).join('')}</ul></div>`:''}
@@ -425,18 +439,19 @@ function syllabus(){
   <ol><li>${ic('check',16)} Đọc hồ sơ của anh/chị</li><li>${ic('check',16)} Giữ đủ ${LIB.length} chương, ${ALL_BAI.length} bài</li><li>${ic('check',16)} Chia bài vào ${lessonsOf(p)} ngày học</li></ol></div></section>`;
  if(!S.plan)return `<section class="wrap narrow page"><div class="card gen"><h2 class="h3">Hồ sơ đã sẵn sàng</h2>${T.err.gen?`<p class="err">${esc(T.err.gen)}</p>`:''}<button class="btn btn-primary btn-lg" data-a="genPlan">${ic('spark')} Tạo lộ trình</button></div></section>`;
  const P=S.plan,st=planStats(),ni=nextLesson(),cu=curUnit(),avg=Math.round(st.min/st.n),perDay=Math.max(1,Math.round(st.units/st.n));
- const cta=!P.accepted?`<button class="btn btn-primary btn-lg" data-a="acceptPlan" ${P.warning?'disabled':''}>${P.wasActive?'Lưu lộ trình':'Bắt đầu học'} ${ic('arrow',16)}</button>`
+ const cta=!S.enrolled?(!c0Done()?`<button class="btn btn-primary btn-lg" data-a="trialStart">Tiếp tục Chương 0 ${ic('arrow',16)}</button>`:!S.loggedIn?`<button class="btn btn-primary btn-lg" data-a="saveRoute">Lưu lộ trình ${ic('arrow',16)}</button>`:`<button class="btn btn-primary btn-lg" data-a="go" data-to="checkout">Đăng ký để học tiếp ${ic('arrow',16)}</button>`)
+  :!P.accepted?`<button class="btn btn-primary btn-lg" data-a="acceptPlan" ${P.warning?'disabled':''}>${P.wasActive?'Lưu lộ trình':c0Done()?'Bắt đầu Chương 1':'Bắt đầu học'} ${ic('arrow',16)}</button>`
   :cu?`<button class="btn btn-primary btn-lg" data-a="openUnit" data-v="${cu}">${st.unitsDone===0&&subsCount()===0?'Bắt đầu học':'Học tiếp'} ${ic('arrow',16)}</button>`:`<button class="btn btn-primary btn-lg" data-a="go" data-to="complete">Nhận chứng nhận ${ic('arrow',16)}</button>`;
  const head=`<section class="card cl-hero"><div class="cl-hero-l">
    <h1>Lộ trình của anh/chị</h1>
    <p class="cl-sum">${st.units} bài · ${st.n} ngày · ~${perDay} bài, ${avg} phút mỗi ngày</p>
    <p class="cl-sub">${ic('spark',14)} <button class="btn-link" data-a="drawerOpen" data-v="why">Vì sao tôi nhận lộ trình này?</button></p>
-   <div class="cl-bar"><span><i style="width:${st.upct}%"></i></span><b>${st.upct}% hoàn thành</b></div></div>
+   <div class="cl-bar"><span><i style="width:${st.upct}%"></i></span><b>${st.upct}% hoàn thành</b></div>${!S.enrolled?`<p class="cl-free">${ic('lock',13)} Anh/chị đã học xong Chương 0 miễn phí. ${S.loggedIn?'Đăng ký khóa học để mở Chương 1 → Kết theo lộ trình này.':'Tạo tài khoản miễn phí để lưu lộ trình, rồi đăng ký khóa học để học tiếp.'}</p>`:''}</div>
   <div class="cl-hero-r">${cta}<button class="btn btn-line" data-a="drawerOpen" data-v="adjust">${ic('refresh',15)} Điều chỉnh lộ trình</button></div></section>`;
  const warn=P.warning?`<div class="callout warn cl-warn"><b>Mỗi bài khoảng ${P.warning.perLesson} phút, vượt ${P.profile.minPerSession} phút/ngày</b><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-primary btn-sm" data-a="fixDays" data-v="${Math.min(P.warning.needDays,MAX_DAYS)}">Học trong ${Math.min(P.warning.needDays,MAX_DAYS)} ngày</button>${P.warning.needMin?`<button class="btn btn-line btn-sm" data-a="fixPace" data-v="${P.warning.needMin}">Học ${P.warning.needMin} phút/ngày</button>`:''}</div></div>`:'';
  const cards=[[st.units,'Bài học','var(--blue)','book'],[CAP_MAP.length,'Năng lực AI','var(--teal)','spark'],[Object.keys(TASKS).length,'Bài tập','var(--purple)','file'],[`${st.n} ngày`,'Lộ trình','var(--orange)','cal']];
  const cardHTML=`<div class="dh-kpis cl-kpis">${cards.map(([v,l,c,i])=>`<div class="dh-kpi" style="--c:${c}"><span class="ico">${ic(i,18)}</span><b>${v}</b><span>${l}</span></div>`).join('')}</div>`;
- return `<section class="wrap page cl-page"><div class="crumbs"><button data-a="go" data-to="mycourses">Khóa học của tôi</button><span>/</span><button data-a="go" data-to="${P.wasActive?'learn':'onboarding'}">AI for CEO</button><span>/</span><span>Lộ trình</span></div>
+ return `<section class="wrap page cl-page"><div class="crumbs">${S.enrolled?`<button data-a="go" data-to="mycourses">Khóa học của tôi</button><span>/</span><button data-a="go" data-to="${P.wasActive?'learn':'onboarding'}">AI for CEO</button>`:`<button data-a="go" data-to="home">Trang chủ</button><span>/</span><span>AI for CEO</span>`}<span>/</span><span>Lộ trình</span></div>
  ${head}${warn}${cardHTML}<section class="cl-sec"><div class="cl-sec-h"><h2 class="h3">Lộ trình của anh/chị</h2><div class="cl-sec-r"><span class="hint">${LIB.length} chương · ${st.units} bài</span>${clToggleBtn('syl')}</div></div>${courseList('syl',{cta:!!(P.accepted||P.wasActive),why:true})}</section></section>`;
 }
 
@@ -451,19 +466,19 @@ function learn(){
  if(cu){const u=U(cu),d=lessonOfUnit(cu),ks=P.lessons[d],dn=ks.filter(k=>S.done[k]).length;
   next=`<section class="cl-next"><div class="cl-next-b"><span class="cl-next-l">Đang học</span><h2>${esc(unitTitle(u))}</h2>
    <span class="cl-next-m">${esc(unitLabel(u))} · ${unitType(u)} · ${u.m} phút</span>
-   <span class="cl-next-day">${ic('cal',14)} ${esc(dayLabel(d))}: ${dn}/${ks.length} bài</span></div>
+${(c=>c?`<button class="cl-dec" data-a="decOpen" data-v="${c}">${ic('chat',14)} ${esc(chLabel(L[c]))}: xem lại quyết định 30 ngày</button>`:'')(decPending())}</div>
    <button class="btn btn-primary btn-lg" data-a="openUnit" data-v="${cu}">${st.unitsDone===0&&subsCount()===0?'Bắt đầu học':'Học tiếp'} ${ic('arrow',16)}</button></section>`;}
  else next=`<section class="cl-next done"><div class="cl-next-b"><span class="cl-next-l">Hoàn thành</span><h2>Anh/chị đã học hết ${st.units} bài</h2></div><button class="btn btn-primary btn-lg" data-a="go" data-to="complete">Nhận chứng nhận ${ic('arrow',16)}</button></section>`;
- const side=`<aside class="sticky cl-side">${remindCard()}
-  <div class="card pad cl-links"><b>Lối tắt</b>
+ const side=`<aside class="sticky cl-side">
+  <div class="card pad cl-links cl-panel"><div class="rm-card cl-panel-rm">${remindRow()}</div><b>Lối tắt</b>
    <button data-a="go" data-to="outputs">${ic('file',16)}<span>Bài tập của tôi</span><small>${subsCount()}/${Object.keys(TASKS).length}</small></button>
    <button data-a="go" data-to="dashboard">${ic('chart',16)}<span>Dashboard</span></button>
    <button data-a="openCommunity" data-v="aiceo">${ic('users',16)}<span>Cộng đồng</span></button>
    <button data-a="go" data-to="complete">${ic('award',16)}<span>Điều kiện hoàn thành</span></button></div>
   ${eventsCard()}</aside>`;
  return `<section class="wrap page cl-page"><div class="crumbs"><button data-a="go" data-to="mycourses">Khóa học của tôi</button><span>/</span><span>AI for CEO</span></div>
- ${head}<div class="two"><div style="display:grid;gap:20px;align-content:start">${remindAsk()}${next}
-  <section class="cl-sec"><div class="cl-sec-h"><h2 class="h3">Lộ trình của tôi</h2><div class="cl-sec-r"><span class="hint">${LIB.length} chương · ${st.units} bài</span>${clToggleBtn('learn')}</div></div>${courseList('learn')}</section>
+ ${head}<div class="two"><div style="display:grid;gap:20px;align-content:start">${next}
+  <section class="cl-sec"><div class="cl-sec-h"><h2 class="h3">Danh sách bài học</h2><div class="cl-sec-r"><span class="hint">${LIB.length} chương · ${st.units} bài</span>${clToggleBtn('learn')}</div></div>${courseList('learn')}</section>
   <div class="demo-box"><span class="t">Công cụ demo</span><div><button class="btn btn-line btn-sm" data-a="simulateAll">Mô phỏng: học xong toàn bộ</button></div></div></div>${side}</div></section>`;
 }
 
@@ -473,7 +488,8 @@ function unitContent(u){
  const p=S.profile,x=L[u.id],b=u.b;
  if(u.kind==='review')return `<div class="take"><span class="t">Ôn tập ${esc(chLabel(x))}</span><p class="big">${esc(x.take)}</p><div><b style="font-size:15px">Nhìn lại các đầu ra của chương và liên hệ với công ty</b><ol style="margin-top:8px">${x.items.map(i=>`<li>${esc(i.out)}</li>`).join('')}</ol></div><p class="hint">Ở công ty ${esc(String(p.industry||'').toLowerCase())}, anh/chị có thể bắt đầu từ việc ${esc((IND[p.industry]||IND['Khác']).general)}.</p></div>`;
  if(u.kind==='exercise')return exerciseView(u.id);
- return `<div class="ls-info">
+ const tb=u.kind==='text'&&TEXT_BODY[u.key];
+ return `${tb?`<article class="ls-read"><p class="ls-lead">${esc(tb.lead)}</p>${tb.secs.map(x=>`<h3>${esc(x.h)}</h3><p>${esc(x.p)}</p>`).join('')}<div class="ls-chk"><b>${ic('check',16)} ${esc(tb.list.h)}</b><ul>${tb.list.items.map(i=>`<li>${esc(i)}</li>`).join('')}</ul></div></article>`:''}<div class="ls-info">
   <div class="block"><span class="t">Mục tiêu bài học</span><p class="ls-goal">${esc(b.goal)}</p></div>
   <div class="ls-2"><div class="block"><span class="t">Năng lực AI</span><p><span class="ls-cap" style="--c:${PHASE_COLOR[b.ch]}">${esc(capName(b.cap))}</span></p></div>
    <div class="block"><span class="t">Đầu ra</span><p>${esc(b.out)}</p></div></div>
@@ -500,6 +516,7 @@ function reviewHTML(id,f){
   <div class="rv-2"><div class="rv-good"><h5>Điểm tốt</h5><ul>${f.good.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>${f.fix.length?`<div class="rv-fix"><h5>Nên bổ sung</h5><ul>${f.fix.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>`:''}</div>
   ${f.ask?`<p class="rv-ask">${ic('chat',15)}<span><b>Câu hỏi nên hỏi đội ngũ:</b> ${esc(f.ask)}</span></p>`:''}</section>`;}
 function exerciseView(id){
+ if(OB_SEG[id])return obExView(id);
  const t=TASKS[id],s0=S.subs[id],edit=!s0||T.editEx===id,b=exBrief(t),m=exMode(t),sl=submitLabel(t),req=k=>m.need.includes(k)?' <span class="req">*</span>':'';
  const brief=`<section class="ex-brief" aria-labelledby="exb-${id}"><h4 id="exb-${id}">${ic('file',17)} Đề bài</h4><p>${esc(b.intro)}</p><ol>${b.items.map(x=>`<li>${esc(x)}</li>`).join('')}</ol>
   <dl class="ex-req"><div><dt>${ic('upload',15)} Hình thức nộp</dt><dd>${sl.main}${sl.opt?`<small>${sl.opt}</small>`:''}${t.linkHint&&m.allow.includes('link')?`<small>Link: ${esc(t.linkHint)}</small>`:''}${t.fileHint&&m.allow.includes('file')?`<small>Tệp: ${esc(t.fileHint)}</small>`:''}</dd></div><div><dt>${ic('spark',15)} Cách chấm</dt><dd>AI chấm tự động, thang 10 điểm, từ ${EX_PASS} điểm là Đạt<small>Tiêu chí: ${EX_CRIT.map(c=>c[1]).join(' · ')}. Có nhận xét từng câu.</small></dd></div></dl></section>`;
@@ -527,7 +544,80 @@ function exerciseView(id){
   ${T.err.ex?`<p class="err" id="ex-err" role="alert">${T.err.ex}</p>`:''}
   <div class="form-foot"><span></span><div style="display:flex;gap:8px">${s0?`<button type="button" class="btn btn-ghost" data-a="cancelEdit">Hủy</button>`:''}<button class="btn btn-primary">${ic('send',15)} ${s0?'Nộp lại':'Nộp bài tập'}</button></div></div></form>`;
 }
-/* ---------- thanh điều khiển video (mô phỏng): âm lượng, cài đặt, cửa sổ riêng, toàn màn hình ----------
+// Bài tập Chương 0 (bản 2, PLAN_Onboarding.md): nội dung bài ở trên, khung trò chuyện với Trợ lý lộ trình ở dưới
+const c0Chip=(k,v,l,m)=>{const f=T.c0f||{},on=m?(f[k]||[]).includes(v):f[k]===v;return `<button type="button" class="chip ${on?'on':''}" data-a="c0Pick" data-k="${k}" data-v="${esc(v)}"${m?` data-m="${m}"`:''} aria-pressed="${on}">${esc(l)}</button>`;};
+const c0Row=(lab,html,req)=>`<div class="c0-row"><span class="c0-lab">${lab}${req?' <span class="req">*</span>':''}</span><div class="chips">${html}</div></div>`;
+const c0In=(n,lab,ph)=>`<label class="c0-row"><span class="c0-lab">${lab}</span><input class="inp" name="${n}" value="${esc((T.c0f||{})['_'+n]||'')}" placeholder="${esc(ph)}" autocomplete="off"></label>`;
+// giá trị sẵn có khi vào 1 nhóm (để sửa lại từ bản tổng hợp)
+function c0Prefill(g){const p=S.profile;return ({1:{industry:p.industry,model:p.model,size:p.size,_products:p.products||'',_customers:p.customers||'',_branches:p.branches||''},2:{role:p.role,roleMode:p.roleMode,roleDepts:(p.roleDepts||[]).slice()},3:{depts:(p.depts||[]).slice(),focus:p.focusDept},
+ 4:{problems:(p.problems||[]).filter(x=>OB_PROBLEMS.includes(x)),_other:(p.problems||[]).filter(x=>!OB_PROBLEMS.includes(x)).join('; ')},5:{aiNow:p.aiNow},6:{keep:p.decision30?null:'adj',_dec:p.decision30||''},7:{limits:(p.limits||[]).slice()},9:{days:String(p.days&&[15,30].includes(p.days)?p.days:p.days?'custom':30),_custom:p.days&&![15,30].includes(p.days)?String(p.days):'',min:String(p.minPerSession||20)}})[g]||{};}
+function c0GroupForm(g){
+ if(T.c0fG!==g){T.c0f=c0Prefill(g);T.c0fG=g;}const f=T.c0f;let body='';
+ if(g===1)body=c0Row('Ngành',INDUSTRIES.map(x=>c0Chip('industry',x,x)).join(''),1)+c0Row('Mô hình kinh doanh',OB_MODELS.map(x=>c0Chip('model',x,x)).join(''),1)+c0Row('Quy mô nhân sự',SIZES.map(x=>c0Chip('size',x,x)).join(''),1)
+  +`<div class="c0-2">${c0In('products','Sản phẩm/dịch vụ chính','Ví dụ: hàng tiêu dùng nhanh')}${c0In('customers','Khách hàng chính','Ví dụ: đại lý, người tiêu dùng')}</div>${c0In('branches','Số chi nhánh / địa điểm (nếu có)','Ví dụ: 3')}`;
+ if(g===2)body=c0Row('Vai trò',OB_ROLES.map(x=>c0Chip('role',x,x)).join(''),1)+c0Row('Cách anh/chị điều hành',OB_ROLEMODES.map(x=>c0Chip('roleMode',x,x)).join(''),1)+c0Row('Bộ phận anh/chị đang theo sát nhất',Object.entries(DEPTS).map(([k,v])=>c0Chip('roleDepts',k,v,9)).join(''));
+ if(g===3)body=c0Row('Doanh nghiệp có những bộ phận nào?',Object.entries(DEPTS).map(([k,v])=>c0Chip('depts',k,v,9)).join(''),1)+c0Row('Bộ phận đang khiến anh/chị quan tâm nhất',(f.depts||[]).length?f.depts.map(k=>c0Chip('focus',k,DEPTS[k])).join(''):'<span class="hint">Chọn các bộ phận ở trên trước</span>',1);
+ if(g===4)body=c0Row(`Chọn tối đa 3 vấn đề (${(f.problems||[]).length}/3)`,OB_PROBLEMS.map(x=>c0Chip('problems',x,x,3)).join(''),1)+c0In('other','Vấn đề khác (không bắt buộc)','Mô tả ngắn, cách nhau bằng dấu ;');
+ if(g===5)body=c0Row('Hiện trạng AI',Object.entries(OB_AINOW).map(([k,v])=>c0Chip('aiNow',k,v[0])).join(''),1);
+ if(g===6)body=(S.profile.decision30?c0Row('Quyết định của anh/chị',c0Chip('keep','keep','Giữ nguyên')+c0Chip('keep','adj','Điều chỉnh'),1):'')
+  +(!S.profile.decision30||f.keep==='adj'?`<label class="c0-row"><span class="c0-lab dec-pre">${DEC_PREFIX}…</span><textarea class="inp" name="dec" rows="2" placeholder="Ví dụ: đâu là ba quy trình đầu tiên đáng thử nghiệm AI">${esc(f._dec||'')}</textarea></label>`:'');
+ if(g===7)body=c0Row('Giới hạn, điều kiện cần lưu ý',OB_LIMITS.map(x=>c0Chip('limits',x,x,9)).join('')+c0Chip('limits','__none','Chưa có giới hạn đặc biệt',9),1);
+ if(g===9)body=c0Row('Hoàn thành chương trình trong',[['30','30 ngày'],['15','15 ngày'],['custom','Tự nhập']].map(([v,l])=>c0Chip('days',v,l)).join(''),1)+(f.days==='custom'?c0In('custom','Số ngày (từ 7 đến '+MAX_DAYS+')','Ví dụ: 45'):'')+c0Row('Mỗi ngày khoảng',[['20','20 phút'],['30','30 phút'],['60','1 giờ']].map(([v,l])=>c0Chip('min',v,l)).join(''),1);
+ return `<form class="c0-form" id="c0-form" data-f="${g===9?'c0Sched':'c0Group'}" novalidate>${body}${T.err.c0?`<p class="err" role="alert">${esc(T.err.c0)}</p>`:''}<div class="c0-acts"><button class="btn btn-primary">${g===9?`${ic('spark',15)} Tạo lộ trình`:S.ob.b5.edit.length||S.ob.b5.fromSum?'Lưu và quay lại bản tổng hợp':g===7?'Xem bản tổng hợp':'Tiếp tục'} ${ic('arrow',15)}</button></div></form>`;}
+// bảng hồ sơ 6 phần (+ lịch học); có nút Sửa từng phần
+function c0PartsHTML(edit){const p=S.profile,n=(p.decHist||[]).filter(h=>h.act==='edit').length;
+ return `<dl class="ob-sum c0-parts">${c0Parts().map(([a,b,g])=>`<div class="${b?'':'need'}"><dt>${a}${edit?`<button class="btn-link" data-a="c0Edit" data-v="${g}">Sửa</button>`:''}</dt><dd>${b?esc(b):'Cần bổ sung'}${a.startsWith('Quyết định')&&n?`<small>Đã điều chỉnh ${n} lần</small>`:''}</dd></div>`).join('')}
+  ${p.days?`<div><dt>Lịch học${edit&&S.done['E:C0-5']?`<button class="btn-link" data-a="c0Edit" data-v="9">Sửa</button>`:''}</dt><dd>${p.days} ngày · ${p.minPerSession} phút/ngày</dd></div>`:''}</dl>`;}
+function obExView(id){
+ if(!S.ob||S.ob.v!==2)startOb();
+ const t=TASKS[id],done=!!S.done['E:'+id],body=C0_BODY[id],b4=S.ob.b4,b5=S.ob.b5;
+ if(id==='C0-4')c0Start4();else c0Start5();
+ const msgs=S.ob.msgs.filter(m=>m.seg===id);
+ const content=body?`<details class="card c0-body"${done?'':' open'}><summary>${ic('book',16)} Nội dung bài · ${body.read}</summary><div class="c0-body-in"><p class="c0-intro">${esc(body.intro)}</p><ol>${body.points.map(([h,x])=>`<li><b>${esc(h)}</b><span>${esc(x)}</span></li>`).join('')}</ol><div class="c0-rem">${ic('spark',15)}<span><b>CEO cần ghi nhớ.</b> ${esc(body.remember)}</span></div></div></details>`:'';
+ // giống khung trò chuyện onboarding cũ: tin nhắn, lựa chọn nhanh, ô gõ + nút gửi
+ let chips='',input=false,ph='Hoặc gõ câu trả lời…',step='',extra='';
+ if(id==='C0-4'){
+  step=b4.step==='done'?`${ic('check',14)} Đã xong`:'Câu quyết định';
+  if(b4.step==='ask'){chips=DEC_SAMPLES.map(([l],i)=>`<button class="chip" data-a="c4Pick" data-v="${i}">${esc(l)}</button>`).join('');input=true;ph='Gõ tiếp câu: …quyết định điều gì?';}
+  if(b4.step==='review'){chips=`<button class="chip cta" data-a="c0UseSugg">Dùng câu gợi ý</button><button class="chip" data-a="c0KeepMine">Giữ câu của tôi</button><button class="chip" data-a="c0DecEdit">Sửa lại</button>`;input=true;ph='Hoặc gõ lại câu của anh/chị…';}
+ }else{
+  const st=c5Cur(),q=st&&Q5[st];
+  step=b5.ph==='done'?`${ic('check',14)} Đã xong`:b5.ph==='sum'?'Tổng hợp hồ sơ':st==='days'||st==='min'?'Lịch học':q?`Nhóm ${q.g}/7`:'';
+  if(q&&!T.obTyping){chips=q.chips().map(([v,l])=>q.multi?`<button class="chip ${b5.multi.includes(v)?'on':''}" data-a="c5Toggle" data-v="${esc(v)}" aria-pressed="${b5.multi.includes(v)}">${esc(l)}</button>`:`<button class="chip" data-a="c5Chip" data-v="${esc(v)}" data-l="${esc(l)}">${esc(l)}</button>`).join('')+(q.multi?`<button class="chip cta" data-a="c5Done" ${b5.multi.length?'':'disabled'}>Xong${b5.multi.length?` (${b5.multi.length})`:''}</button>`:'');input=true;ph=q.ph||'Hoặc gõ câu trả lời…';}
+  if(b5.ph==='sum'){extra=`<div class="msg bot c0-summsg">${c0PartsHTML(true)}</div>`;if(!T.obTyping){chips=`<button class="chip cta" data-a="c0Confirm">${ic('check',14)} Xác nhận hồ sơ</button>`;input=true;ph='Hoặc nhắn cho em điều cần chỉnh…';}}
+ }
+ const sum=id==='C0-4'&&b4.step==='done'&&S.profile.decision30?`<div class="c0-done"><div class="c0-done-h"><b>Quyết định mục tiêu 30 ngày</b><button class="btn-link" data-a="c0DecEdit">Sửa</button></div><p class="c0-dec">${DEC_PREFIX} ${esc(S.profile.decision30)}.</p></div>`
+  :id==='C0-5'&&b5.ph==='done'?`<div class="c0-done"><div class="c0-done-h"><b>Hồ sơ CEO & doanh nghiệp</b><span class="hint">Đã xác nhận · sửa được bất cứ lúc nào</span></div>${c0PartsHTML(true)}</div>`:'';
+ return `<div class="c0-wrap">${content}<div class="ex card ob-ex"><div class="ex-h"><div><span class="t">Bài tập · Chương 0 · Bài ${t.i+1} · trò chuyện với Trợ lý lộ trình · khoảng ${t.min} phút</span><h3 class="h3">${esc(t.title)}</h3></div>${done?`<span class="pill ok">${ic('check',12)} Đã hoàn thành</span>`:''}</div>
+  <div class="card chat ob-chat"><div class="chat-h"><span class="bot-av">${ic('bot')}</span><div><b>Trợ lý lộ trình</b><span>AI Support của khóa học</span></div><span class="step-count" aria-live="polite">${step}</span></div>
+   <div class="chat-log" id="ob-log" role="log">${msgs.map(m=>`<div class="msg ${m.role}">${fmt(m.text)}</div>`).join('')}${extra}${T.obTyping?'<div class="msg bot typing">Đang soạn…</div>':''}</div>
+   ${chips?`<div class="chips">${chips}</div>`:''}
+   ${input?`<form class="chat-in" data-f="${id==='C0-4'?'c4Send':'c5Send'}"><input class="inp" id="ob-in" name="t" autocomplete="off" aria-label="Tin nhắn cho Trợ lý lộ trình" placeholder="${esc(ph)}"><button class="send" aria-label="Gửi tin nhắn">${ic('send')}</button></form>`:''}
+  </div>${sum}</div></div>`;
+}
+/* ---------- Hỏi lại quyết định 30 ngày cuối Chương 1 → 6 (PLAN_Onboarding.md mục 2.4) ---------- */
+const DEC_CH=['C1','C2','C3','C4','C5','C6'];
+const chKeys=id=>planUnits().filter(x=>chOf(x)===id);
+const chLastUnit=id=>{const ks=chKeys(id);return ks[ks.length-1];};
+const chAllDone=id=>{const ks=chKeys(id);return ks.length>0&&ks.every(x=>S.done[x]);};
+const decAnswered=id=>((S.profile&&S.profile.decHist)||[]).some(h=>h.ch===id);
+// chương mới nhất đã học xong mà chưa trả lời (chỉ nhắc khi chương sau chưa xong, không nhắc dồn)
+function decPending(){for(let i=DEC_CH.length-1;i>=0;i--){const c=DEC_CH[i];if(chAllDone(c))return decAnswered(c)?null:c;}return null;}
+const DEC_ACT={keep:'Giữ nguyên',edit:'Điều chỉnh',note:'Ghi lại suy nghĩ'};
+const decHistHTML=()=>{const h=(S.profile.decHist||[]);return h.length?`<ol class="dec-hist">${h.map(x=>`<li><b>${x.ch==='C0'?'Chương 0':esc(chLabel(L[x.ch]))}</b><span>${DEC_ACT[x.act]||''}${x.act==='edit'?`: "${esc(x.after)}"`:x.note?`: ${esc(x.note)}`:''}</span><small>${esc(x.at||'')}</small></li>`).join('')}</ol>`:'';};
+function decCard(ch){const p=S.profile,x=L[ch],m=(T.decMode||{})[ch];
+ const head=`<div class="dec-h"><span class="bot-av">${ic('bot',16)}</span><div><b>Trợ lý AI</b><small>AI Support của khóa học</small></div><button class="btn-link" data-a="decLater" data-v="${ch}">Để sau</button></div>`;
+ if(!p.decision30)return `<section class="card dec-card" id="dec-${ch}">${head}<p>Anh/chị vừa học xong <b>${esc(chLabel(x))}: ${esc(x.title)}</b>. Anh/chị chưa có quyết định mục tiêu 30 ngày, viết luôn bây giờ nhé:</p><form class="c0-form" data-f="decSave" data-ch="${ch}" data-m="new" novalidate><label class="c0-row"><span class="c0-lab dec-pre">${DEC_PREFIX}…</span><textarea class="inp" name="t" rows="2"></textarea></label><div class="c0-acts"><button class="btn btn-primary btn-sm">Lưu quyết định</button></div></form></section>`;
+ return `<section class="card dec-card" id="dec-${ch}">${head}<p>Anh/chị vừa học xong <b>${esc(chLabel(x))}: ${esc(x.title)}</b>. Quyết định anh/chị đang theo đuổi:</p><blockquote>${DEC_PREFIX} ${esc(p.decision30)}.</blockquote><p>Những gì vừa học có làm anh/chị nhìn quyết định này khác đi không?</p>
+  ${m==='edit'?`<form class="c0-form" data-f="decSave" data-ch="${ch}" data-m="edit" novalidate><label class="c0-row"><span class="c0-lab dec-pre">${DEC_PREFIX}…</span><textarea class="inp" name="t" rows="2">${esc(p.decision30)}</textarea></label><div class="c0-acts"><button type="button" class="btn btn-ghost btn-sm" data-a="decMode" data-v="${ch}" data-k="">Hủy</button><button class="btn btn-primary btn-sm">Lưu quyết định mới</button></div></form>`
+  :m==='note'?`<form class="c0-form" data-f="decSave" data-ch="${ch}" data-m="note" novalidate><label class="c0-row"><span class="c0-lab">Suy nghĩ của anh/chị sau chương này</span><textarea class="inp" name="t" rows="2" placeholder="Ví dụ: dữ liệu bán hàng chưa sẵn sàng, cần chuẩn bị trước"></textarea></label><div class="c0-acts"><button type="button" class="btn btn-ghost btn-sm" data-a="decMode" data-v="${ch}" data-k="">Hủy</button><button class="btn btn-primary btn-sm">Lưu ghi chú</button></div></form>`
+  :`<div class="c0-acts dec-acts"><button class="btn btn-line btn-sm" data-a="decKeep" data-v="${ch}">${ic('check',14)} Vẫn giữ nguyên</button><button class="btn btn-line btn-sm" data-a="decMode" data-v="${ch}" data-k="edit">Điều chỉnh quyết định</button><button class="btn btn-line btn-sm" data-a="decMode" data-v="${ch}" data-k="note">Ghi lại suy nghĩ</button></div>`}</section>`;}
+// trên trang bài học: thẻ cuối chương (bài cuối Chương 1–6) + nhắc lại quyết định ở đầu Chương Kết
+function lessonDecHTML(k,ch,u){
+ if(DEC_CH.includes(ch.id)&&k===chLastUnit(ch.id)&&chAllDone(ch.id)&&!decAnswered(ch.id)&&!((S.decLater||{})[ch.id]))return decCard(ch.id);
+ if(ch.id==='CK'&&u.b&&u.b.i===0&&S.profile.decision30)return `<section class="card dec-card dec-recap"><div class="dec-h"><span class="bot-av">${ic('flag',16)}</span><div><b>Quyết định anh/chị mang theo suốt chương trình</b><small>Dùng khi chọn cơ hội ưu tiên ở chương này</small></div></div><blockquote>${DEC_PREFIX} ${esc(S.profile.decision30)}.</blockquote>${decHistHTML()}</section>`;
+ return '';}
+/* ---------- thanh điều khiển video (mô phỏng)/* ---------- thanh điều khiển video (mô phỏng): âm lượng, cài đặt, cửa sổ riêng, toàn màn hình ----------
    thao tác sửa DOM trực tiếp (vpSync), không render() lại, để không bị thoát toàn màn hình */
 const VP_OPTS={speed:{label:'Tốc độ phát',opts:[[0.5,'0,5×'],[0.75,'0,75×'],[1,'Bình thường'],[1.25,'1,25×'],[1.5,'1,5×'],[2,'2×']]},
  quality:{label:'Chất lượng',opts:[['auto','Tự động'],['1080','1080p'],['720','720p'],['480','480p']]},
@@ -541,30 +631,32 @@ const vpControls=()=>{const v=T.vp,vol=v.muted?0:v.vol,fs=!!document.fullscreenE
  <button class="vp-b" data-a="vpFull" aria-label="${fs?'Thoát toàn màn hình':'Toàn màn hình'}" title="${fs?'Thoát toàn màn hình':'Toàn màn hình'}">${ic(fs?'fullx':'full',19)}</button></div>`;};
 const vpMenu=()=>`<div class="vp-menu" role="menu" aria-label="Cài đặt video" hidden>${Object.entries(VP_OPTS).map(([k,g])=>`<div class="vp-g"><small>${g.label}</small><div>${g.opts.map(([val,l])=>`<button role="menuitemradio" aria-checked="${T.vp[k]===val}" data-a="vpSet" data-k="${k}" data-v="${val}">${l}</button>`).join('')}</div></div>`).join('')}</div>`;
 function lesson(){
- const P=S.plan;if(!P||!P.lessons.length){S.screen='learn';return learn();}
+ const P={lessons:lessons()};
  const all=planUnits();let k=S.unit;
  if(!k||!all.includes(k))k=(P.lessons[S.lesson]||[]).find(x=>!S.done[x])||(P.lessons[S.lesson]||[])[0]||curUnit()||all[0];
  if(!unitOpen(k))k=curUnit()||all[0];
+ if(paidLock(k))k=curUnitC0(); // chưa mua: chỉ mở được Chương 0
  S.unit=k;S.lesson=lessonOfUnit(k);
  const u=U(k),b=u.b,li=S.lesson,isEx=u.kind==='exercise',ch=L[chOf(k)],pos=all.indexOf(k),prev=all[pos-1],next=all[pos+1];
  const dks=P.lessons[li],ddn=dks.filter(x=>S.done[x]).length,needArt=isEx&&!S.subs[u.id],back=lessonBack();
  const vt=unitTitle(u),lab=unitLabel(u);
- const player=isEx?'':`<div class="player" data-title="${esc(vt)}" data-label="${esc(lab)}"><div class="center"><button class="play" data-a="playUnit" aria-label="Phát video">${ic('play',26)}</button><span class="t">${esc(lab)}</span><h3>${esc(vt)}</h3></div><div class="bottom"><span>${S.done[k]?'Đã xem':'0:00'}</span><span class="track"><i style="width:${S.done[k]?100:0}%"></i></span><span class="tnum">${u.m}:00</span><span class="vp-speed" ${T.vp.speed===1?'hidden':''}>${String(T.vp.speed).replace('.',',')}×</span>${vpControls()}</div>${vpMenu()}${T.vp.cc?`<p class="vp-cc">${esc(vt)}</p>`:''}</div>`;
+ const player=isEx||u.kind==='text'?'':`<div class="player" data-title="${esc(vt)}" data-label="${esc(lab)}"><div class="center"><button class="play" data-a="playUnit" aria-label="Phát video">${ic('play',26)}</button><span class="t">${esc(lab)}</span><h3>${esc(vt)}</h3></div><div class="bottom"><span>${S.done[k]?'Đã xem':'0:00'}</span><span class="track"><i style="width:${S.done[k]?100:0}%"></i></span><span class="tnum">${u.m}:00</span><span class="vp-speed" ${T.vp.speed===1?'hidden':''}>${String(T.vp.speed).replace('.',',')}×</span>${vpControls()}</div>${vpMenu()}${T.vp.cc?`<p class="vp-cc">${esc(vt)}</p>`:''}</div>`;
  // cột phải: các bài của chương đang học
  const cks=all.filter(x=>chOf(x)===ch.id),cdn=cks.filter(x=>S.done[x]).length;
- const list=`<div class="ulist">${cks.map(x=>{const v=U(x),st=unitState(x),lock=st==='locked';return `<button class="${x===k?'on':''} ${S.done[x]?'done':''} ${lock?'locked':''}" ${lock?`disabled title="${esc(unitLockMsg(x))}"`:`data-a="openUnit" data-v="${x}"`}><span class="st">${ic(lock?'lock':'check',12)}</span><span><small>${v.b?'Bài '+(v.b.i+1)+' · ':''}${unitType(v)} · ${esc(dayLabel(lessonOfUnit(x)))}</small><b>${esc(unitTitle(v))}</b></span><span class="mn tnum">${v.m}′</span></button>`;}).join('')}</div>`;
- const nextOpen=next&&unitOpen(next);
- const nextBtn=needArt?`<p class="hint">Nộp bài tập ở trên để hoàn thành bài này.</p>`:
-  `<button class="btn btn-primary btn-lg" data-a="markNext">${!next?(S.done[k]?'Xem kết quả hoàn thành':'Hoàn thành khóa học'):S.done[k]?'Bài tiếp theo':isEx?'Tiếp tục · Bài tiếp theo':'Hoàn thành · Bài tiếp theo'} ${ic('arrow')}</button>`;
+ const list=`<div class="ulist">${cks.map(x=>{const v=U(x),st=unitState(x),lock=st==='locked'||st==='paid';return `<button class="${x===k?'on':''} ${S.done[x]?'done':''} ${lock?'locked':''}" ${lock?`disabled title="${esc(unitLockMsg(x))}"`:`data-a="openUnit" data-v="${x}"`}>${lock?`<span class="st">${ic('lock',12)}</span>`:v.kind==='exercise'?`<span class="st" title="${S.done[x]?'Bài tập hoàn thành khi đã nộp bài':'Nộp bài tập để hoàn thành'}">${ic('check',12)}</span>`:`<span class="st st-tick" role="button" tabindex="0" data-a="unitTick" data-v="${x}" title="${S.done[x]?'Bỏ đánh dấu hoàn thành':'Đánh dấu hoàn thành'}" aria-label="${S.done[x]?'Bỏ đánh dấu hoàn thành':'Đánh dấu hoàn thành'}: ${esc(unitTitle(v))}">${ic('check',12)}</span>`}<span><small>${v.b?'Bài '+(v.b.i+1)+' · ':''}${unitType(v)} · ${esc(dayLabel(lessonOfUnit(x)))}</small><b>${esc(unitTitle(v))}</b></span><span class="mn tnum">${v.m}′</span></button>`;}).join('')}</div>`;
+ const nextOpen=next&&unitOpen(next)&&!paidLock(next);
+ const c0End=ch.id==='C0'&&(!next||chOf(next)!=='C0'); // bài cuối Chương 0 → sang trang Lộ trình
+ const nextBtn=needArt?`<p class="hint">${OB_SEG[u.id]?'Trả lời Trợ lý lộ trình ở trên để hoàn thành bài này.':'Nộp bài tập ở trên để hoàn thành bài này.'}</p>`:
+  `<button class="btn btn-primary btn-lg" data-a="markNext">${c0End?'Xem lộ trình của anh/chị':!next?(S.done[k]?'Xem kết quả hoàn thành':'Hoàn thành khóa học'):S.done[k]?'Bài tiếp theo':isEx?'Tiếp tục · Bài tiếp theo':'Hoàn thành · Bài tiếp theo'} ${ic('arrow')}</button>`;
  return `<section class="wrap page lesson">
  <div class="lsn-top"><button class="btn btn-line btn-sm" data-a="${back.a}">${ic('back',15)} ${back.t}</button>
-  <div class="crumbs"><button data-a="go" data-to="mycourses">Khóa học của tôi</button><span>/</span><button data-a="backToList">AI for CEO</button><span>/</span>${S.from==='outputs'?`<button data-a="backToOutputs">Bài tập của tôi</button><span>/</span>`:''}<span>${esc(lab)}</span></div></div>
- <div style="display:grid;gap:12px;margin-bottom:24px"><div class="meta"><span class="ty">${esc(lab)}/${ch.items.length}</span><span class="ls-type ${isEx?'isx':''}">${ic(isEx?'file':u.kind==='review'?'book':'video',14)} ${unitType(u)}</span><span>${ic('clock',14)} ${u.m} phút</span><span>${ic('cal',14)} ${esc(dayLabel(li))} · ${ddn}/${dks.length} bài</span></div><h1>${esc(vt)}</h1></div>
+  <div class="crumbs">${S.enrolled?`<button data-a="go" data-to="mycourses">Khóa học của tôi</button>`:`<button data-a="go" data-to="home">Trang chủ</button>`}<span>/</span><button data-a="backToList">AI for CEO</button><span>/</span>${S.from==='outputs'?`<button data-a="backToOutputs">Bài tập của tôi</button><span>/</span>`:''}<span>${esc(lab)}</span></div></div>
+ <div style="display:grid;gap:12px;margin-bottom:24px"><div class="meta"><span class="ty">${esc(lab)}/${ch.items.length}</span><span class="ls-type ${isEx?'isx':u.kind==='text'?'ist':''}">${ic(u.kind==='video'?'video':unitIcon(u),14)} ${unitType(u)}</span><span>${ic('clock',14)} ${u.m} phút</span><span>${ic('cal',14)} ${esc(dayLabel(li))} · ${ddn}/${dks.length} bài</span></div><h1>${esc(vt)}</h1>${!S.enrolled&&ch.id==='C0'?`<p class="c0-free">${ic('spark',14)} <b>Chương 0 miễn phí</b> · ${cks.length} bài · khoảng ${cks.reduce((s,x)=>s+U(x).m,0)} phút</p>`:''}</div>
  <div class="lsn">
-  <div style="display:grid;gap:24px">${player}${unitContent(u)}<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">${nextBtn}<button class="btn btn-line" data-a="asstLesson">${ic('bot',16)} Hỏi Trợ lý AI</button></div></div>
+  <div style="display:grid;gap:24px">${player}${unitContent(u)}<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">${nextBtn}<button class="btn btn-line" data-a="asstLesson">${ic('bot',16)} Hỏi Trợ lý AI</button></div>${lessonDecHTML(k,ch,u)}</div>
   <aside class="sticky" style="display:grid;gap:14px"><div><small class="hint">${esc(chLabel(ch))}</small><b style="font-size:15px;display:block">${esc(ch.title)}</b><p class="hint">${cdn}/${cks.length} bài đã hoàn thành</p></div>${list}
    <div style="display:flex;justify-content:space-between;gap:8px">${prev?`<button class="btn btn-ghost btn-sm" data-a="openUnit" data-v="${prev}">${ic('back',15)} Bài trước</button>`:'<span></span>'}${next?(nextOpen?`<button class="btn btn-ghost btn-sm" data-a="openUnit" data-v="${next}">Bài tiếp theo ${ic('arrow',15)}</button>`:`<button class="btn btn-ghost btn-sm" disabled title="${esc(unitLockMsg(next))}">${ic('lock',14)} Bài tiếp theo</button>`):''}</div>
-   ${next&&!nextOpen?`<p class="hint">${ic('lock',13)} Bài tiếp theo thuộc ${esc(dayLabel(lessonOfUnit(next)))}, mở sau khi anh/chị học xong các bài hôm nay.</p>`:''}</aside>
+   ${next&&!nextOpen&&!c0End?`<p class="hint">${ic('lock',13)} Bài tiếp theo thuộc ${esc(chLabel(L[chOf(next)]))}, mở sau khi anh/chị học xong ${esc(chLabel(ch))}.</p>`:''}</aside>
  </div></section>`;
 }
 
@@ -661,28 +753,84 @@ function courses(){
  </section>`;
 }
 // lưới thẻ khóa học: AI for CEO + các khóa minh họa
+/* ---------- Trang Chi tiết khóa học (PLAN_Chi tiet Khoa hoc.md, 22/10/2026) ----------
+   Dùng lại giao diện sẵn có: đầu trang kiểu khối AI for CEO trang chủ, thẻ "Bản đồ cơ hội AI", lưới 10 năng lực, thẻ chương, thẻ mua giống trang Khóa học.
+   Mọi khóa dùng chung 1 mẫu; khối nào chưa có dữ liệu thì ẩn (2 khóa minh họa chỉ có đầu trang + thẻ mua). */
+const HAS_C0=typeof c0Started==='function'; // bản 1: onboarding = Chương 0 học thử; bản 2: onboarding cũ
+function cdState(){ // nút theo trạng thái người xem (PLAN mục 5)
+ const st=S.enrolled&&S.plan?planStats():null,learnTxt=st&&(st.unitsDone>0||subsCount()>0)?'Học tiếp':'Vào học';
+ if(S.enrolled)return {main:`<button class="btn btn-primary btn-lg btn-block" data-a="openCourse">${learnTxt} ${ic('arrow')}</button>`,sub:'',note:`<p class="cd-own">${ic('check',15)} Anh/chị đã sở hữu khóa học này</p>`,price:false};
+ const buy=l=>`<button class="btn btn-lg btn-block crs-buy" data-a="go" data-to="checkout">${ic('cart',18)} ${l}</button>`;
+ if(HAS_C0){
+  if(c0Done()&&S.plan)return {main:buy('ĐĂNG KÝ ĐỂ HỌC TIẾP'),sub:`<button class="btn btn-line btn-block" data-a="go" data-to="syllabus">Xem lộ trình của anh/chị</button>`,note:`<p class="cd-own">${ic('spark',15)} Lộ trình ${S.plan.lessons.length} ngày của anh/chị đã sẵn sàng</p>`,price:true};
+  if(c0Started())return {main:buy('MUA KHÓA'),sub:`<button class="btn btn-line btn-block" data-a="trialStart">${ic('play',14)} HỌC THỬ MIỄN PHÍ</button>`,note:'',price:true};
+  return {main:buy('MUA KHÓA'),sub:`<button class="btn btn-line btn-block" data-a="trialStart">${ic('play',14)} HỌC THỬ MIỄN PHÍ</button>`,note:'',price:true};}
+ const obDone=S.ob&&S.ob.done;
+ return {main:buy('MUA KHÓA'),sub:`<button class="btn btn-line btn-block" data-a="trialStart">${ic(obDone?'spark':'play',14)} ${obDone?'Xem lộ trình của anh/chị':'HỌC THỬ MIỄN PHÍ'}</button>`,note:'',price:true};}
+function course(){
+ const id=T.crsId==null?'aiceo':T.crsId,isAI=id==='aiceo',oc=isAI?null:OTHER_COURSES[+id];
+ if(!isAI&&!oc){S.screen='courses';return courses();}
+ const name=isAI?'AI for CEO':oc.title,crumbs=`<div class="crumbs"><button data-a="go" data-to="courses">Khóa học</button><span>/</span><span>${esc(name)}</span></div>`;
+ const thumb=isAI?`<div class="crs-thumb cd-thumb">${COURSE.cover?`<img class="crs-cover" src="${esc(COURSE.cover)}" alt="">`:''}<span class="k">Khóa học trọng tâm</span><span class="n">AI for <b>CEO</b></span><span class="s">${LIB.length} chương · ${CAP_MAP.length} năng lực AI</span></div>`
+  :`<div class="crs-thumb cd-thumb" style="background:${oc.bg}">${oc.cover?`<img class="crs-cover" src="${esc(oc.cover)}" alt="">`:''}<span class="k">${oc.k}</span><span class="n">${oc.n}</span></div>`;
+ // thẻ mua
+ const stt=isAI?cdState():{main:`<button class="btn btn-lg btn-block crs-buy" data-a="crsDemo">${ic('cart',18)} MUA KHÓA</button>`,sub:'',note:'',price:true};
+ const priceHTML=!stt.price?'':isAI?`<div class="cd-price"><b class="tnum">${money(COURSE.price)}</b><span class="strike tnum">${money(COURSE.list)}</span><span class="crs-off">−${OFF}%</span></div>`:`<div class="cd-price"><b class="tnum">${money(oc.price)}</b></div>`;
+ const buyCard=`<aside class="cd-buy"><div class="card cd-buy-c">${thumb}<div class="cd-buy-b">${priceHTML}${stt.note}<div class="cd-btns">${stt.main}${stt.sub}</div>
+  ${isAI?`<div class="cd-inc"><b>Khóa học bao gồm</b><ul>${COURSE_INFO.includes.map(x=>`<li>${ic('check',14)}<span>${esc(x)}</span></li>`).join('')}</ul></div>
+  <p class="cd-small">Giá đã bao gồm VAT ${VAT_RATE}% · Có xuất hóa đơn doanh nghiệp</p>`:''}<p class="cd-small">${ic('headset',14)} Cần tư vấn: <b>${esc(ACADEMY.hotline)}</b></p></div></div></aside>`;
+ const mbar=`<div class="cd-mbar">${stt.price?`<div class="cd-mbar-p"><b class="tnum">${money(isAI?COURSE.price:oc.price)}</b>${isAI?`<span class="strike tnum">${money(COURSE.list)}</span>`:''}</div>`:''}<div class="cd-mbar-b">${stt.main}</div></div>`;
+ // đầu trang
+ const CI=COURSE_INFO,stats=isAI?[[LIB.length,'chương'],[ALL_BAI.length,'bài học'],[`${String(CI.rating).replace('.',',')}<i class="cd-star" aria-hidden="true">★</i>`,`${CI.ratings.toLocaleString('vi-VN')} đánh giá`,`Điểm đánh giá ${String(CI.rating).replace('.',',')}/5 từ ${CI.ratings} đánh giá`],[CI.students.toLocaleString('vi-VN'),'học viên']]:[[oc.lessons,'bài học']];
+ const head=`<section class="card cd-head"><span class="cd-pill"><i></i>KHÓA HỌC${isAI&&typeof OPEN_DATE!=='undefined'?` · Khai giảng ${OPEN_DATE}`:''}</span>
+  <h1>${esc(isAI?COURSE.name:oc.title)}</h1>
+  <p class="cd-desc">${esc(isAI?COURSE.desc:oc.desc||'Khóa học minh họa. Thông tin chi tiết sẽ được cập nhật.')}</p>
+  <div class="cd-stats">${stats.map(([n,l,t])=>`<div${t?` title="${t}"`:''}><b class="tnum">${n}</b><span>${l}</span></div>`).join('')}</div></section>`;
+ if(!isAI)return `<section class="wrap page cd">${crumbs}<div class="cd-grid"><div class="cd-main">${head}</div>${buyCard}</div>${mbar}</section>`;
+ // "Anh/chị sẽ học được gì" (tham khảo khối What you'll learn của Coursera)
+ const learn=`<section class="cd-sec cd-learn"><h2 class="cd-t">Anh/chị sẽ học được gì?</h2><ul class="cd-learn-l">${COURSE_INFO.learn.map(x=>`<li>${ic('check',18)}<span>${esc(x)}</span></li>`).join('')}</ul></section>`;
+ // nội dung khóa học
+ const open=T.cdOpen||(T.cdOpen=['C0']),all=open.length===LIB.length;
+ const chs=LIB.map((x,pi)=>{const items=x.items||[],nEx=items.filter(b=>b.ex).length,min=items.reduce((a,b)=>a+(b.ex?((TASKS[b.ex]||{}).min||5):b.m||0),0),isOpen=open.includes(x.id),free=HAS_C0&&x.id==='C0'&&!S.enrolled;
+  const st='cur'; // trang chi tiết chỉ để xem: không đánh dấu hoàn thành, chưa mua cũng không hiện khóa
+  return `<section class="cl-ch ${st} ${isOpen?'open':''}" style="--c:${PHASE_COLOR[x.id]}">
+   <button class="cl-head" data-a="cdCh" data-v="${x.id}" aria-expanded="${isOpen}">
+    <span class="cl-ico cd-no" aria-hidden="true">${ic('bookopen',18)}</span>
+    <span class="cl-t"><small>${esc(chLabel(x))}</small><b>${esc(x.title)}</b></span>
+    <span class="cl-meta">${items.length} bài${nEx?` · ${nEx} bài tập`:''} · ${min} phút</span>
+    <span class="chev">${ic('chev',16)}</span></button>
+   ${isOpen?`<ol class="cl-ls">${items.map(b=>{const isEx=!!b.ex,m=isEx?((TASKS[b.ex]||{}).min||5):b.m,s2='next';
+     const right=''; // đã bỏ nhãn "Học thử miễn phí" và link "Xem thử" (theo user 22/10/2026)
+     return `<li class="cl-l ${s2} ${isEx?'is-ex':''}"><div class="cl-row"><span class="cl-dot">${b.i+1}</span>
+      <div class="cl-name cd-name"><small><span class="cl-ty ${isEx?'isx':b.text?'ist':''}">${ic(isEx?'file':b.text?'news':'play',12)} ${isEx?'Bài tập':b.text?'Văn bản':'Video'}</span> · Bài ${b.i+1} · ${m} phút</small><b>${esc(b.t)}</b></div>${right}</div></li>`;}).join('')}</ol>`:''}</section>`;}).join('');
+ const content=`<section class="cl-sec"><div class="cl-sec-h"><h2 class="h3">Nội dung khóa học</h2><div class="cl-sec-r"><span class="hint">${LIB.length} chương · ${ALL_BAI.length} bài</span><button class="btn btn-ghost btn-sm cl-all" data-a="cdAll" aria-pressed="${!!all}">${ic(all?'x':'chev',14)} ${all?'Thu gọn tất cả':'Mở tất cả chương'}</button></div></div><div class="cl">${chs}</div></section>`;
+ // đã bỏ mục "Cách học" và 2 ô Dành cho / Chưa phù hợp (theo user 22/10/2026)
+ const faq=`<section class="cd-sec"><h2 class="cd-t">Câu hỏi thường gặp</h2><div class="cd-faq">${COURSE_INFO.faq.map(([q,a])=>`<details><summary>${esc(q)}</summary><p>${esc(a)}</p></details>`).join('')}</div></section>`;
+ return `<section class="wrap page cd">${crumbs}<div class="cd-grid"><div class="cd-main">${head}${learn}${content}${faq}</div>${buyCard}</div>${mbar}</section>`;
+}
 function courseCards(){
  const enr=S.enrolled;
  // đã mua khóa: chỉ còn nút "Vào học" ở cuối thẻ (rộng hết thẻ); chưa mua: giá + nút "Đăng ký"
  const cta=enr?`<button class="btn btn-primary btn-lg" data-a="openCourse">Vào học ${ic('arrow')}</button>`
   :`<button class="btn btn-lg crs-buy" data-a="go" data-to="checkout">${ic('cart',18)} MUA KHÓA</button>`;
  return `<div class="crs-grid"><article class="card crs-feat">
-  <button class="crs-thumb" data-a="go" data-to="landing" aria-label="Xem giới thiệu khóa AI for CEO">${COURSE.cover?`<img class="crs-cover" src="${esc(COURSE.cover)}" alt="">`:''}<span class="k">Khóa học trọng tâm</span><span class="n">AI for <b>CEO</b></span><span class="s">${LIB.length} chương · ${CAP_MAP.length} năng lực</span></button>
+  <button class="crs-thumb" data-a="crsOpen" data-v="aiceo" aria-label="Xem chi tiết khóa AI for CEO">${COURSE.cover?`<img class="crs-cover" src="${esc(COURSE.cover)}" alt="">`:''}<span class="k">Khóa học trọng tâm</span><span class="n">AI for <b>CEO</b></span><span class="s">${LIB.length} chương · ${CAP_MAP.length} năng lực</span></button>
   <div class="crs-body">
    
-   <h2 class="crs-name">AI for CEO</h2>
-   <p class="crs-desc">Khóa cập nhật năng lực AI dành cho CEO qua các ví dụ thực tế. Không học tool, không học prompt: tận mắt thấy AI đã làm được gì.</p>
+   <h2 class="crs-name"><button class="crs-name-l" data-a="crsOpen" data-v="aiceo">${esc(COURSE.name)}</button></h2>
+   <p class="crs-desc">${esc(COURSE.desc)}</p>
    <p class="crs-meta">${ic('bookopen',15)} ${ALL_BAI.length} bài học</p>
+   ${enr?'':`<button class="btn-link crs-try" data-a="trialStart">${ic('play',13)} ${c0Done()&&S.plan?'Xem lộ trình của anh/chị':c0Started()?'Tiếp tục Chương 0 miễn phí':'Học thử Chương 0 miễn phí'}</button>`}
    <div class="crs-foot${enr?' enr':''}">
     ${enr?''
      :`<div class="crs-price" title="${esc(COURSE.promo)}"><b class="tnum">${money(COURSE.price)}</b><span class="crs-old"><span class="strike tnum">${money(COURSE.list)}</span><span class="crs-off">−${OFF}%</span></span></div>`}
     <div class="crs-cta">${cta}</div>
    </div>
   </div>
- </article>${(V2?[]:OTHER_COURSES).map(c=>`<article class="card crs-feat crs-oth">
-  <button class="crs-thumb" data-a="crsDemo" style="background:${c.bg}" aria-label="${esc(c.title)}">${c.cover?`<img class="crs-cover" src="${esc(c.cover)}" alt="">`:''}<span class="k">${c.k}</span><span class="n">${c.n}</span></button>
+ </article>${(V2?[]:OTHER_COURSES).map((c,ci)=>`<article class="card crs-feat crs-oth">
+  <button class="crs-thumb" data-a="crsOpen" data-v="${ci}" style="background:${c.bg}" aria-label="${esc(c.title)}">${c.cover?`<img class="crs-cover" src="${esc(c.cover)}" alt="">`:''}<span class="k">${c.k}</span><span class="n">${c.n}</span></button>
   <div class="crs-body">
-   <div class="crs-oh"><h2 class="crs-name" title="${esc(c.title)}">${esc(c.title)}</h2><span class="crs-medal" title="Có chứng nhận hoàn thành">${ic('medal',16)}</span></div>
+   <div class="crs-oh"><h2 class="crs-name" title="${esc(c.title)}"><button class="crs-name-l" data-a="crsOpen" data-v="${ci}">${esc(c.title)}</button></h2><span class="crs-medal" title="Có chứng nhận hoàn thành">${ic('medal',16)}</span></div>
    ${c.desc?`<p class="crs-desc">${esc(c.desc)}</p>`:''}
    <p class="crs-meta">${ic('bookopen',15)} ${c.lessons} bài học</p>
    <div class="crs-foot"><div class="crs-price"><b class="tnum">${money(c.price)}</b></div><div class="crs-cta"><button class="btn btn-lg crs-buy" data-a="crsDemo">${ic('cart',18)} MUA KHÓA</button></div></div>
@@ -690,4 +838,123 @@ function courseCards(){
  </article>`).join('')}</div>`;
 }
 
-const SCREENS={courses,landing,account,checkout,mycourses,onboarding,syllabus,learn,lesson,complete,outputs,dashboard,community};
+/* ---------- Trang chủ (đề xuất mới theo bố cục user gửi 10/2026, cả 2 bản) ----------
+   Bấm logo Siêu Tăng Trưởng → trang này. Thứ tự: [Khóa học của tôi | Cộng đồng CEO] → AI for CEO (trải nghiệm onboarding
+   miễn phí, chưa cần thanh toán) → Thử thách → Thư viện (bài viết). Thử thách, bài viết là minh họa (CHALLENGES, ARTICLES trong data.js). */
+const homeHead=(cls,icon,label,title,sub)=>`<div class="home-head"><span class="home-pill ${cls}">${ic(icon,15)} ${label}</span><h2>${title}</h2><p>${sub}</p></div>`;
+const chalCard=c=>`<article class="card home-card" data-a="homeDemo" role="button" tabindex="0" aria-label="${esc(c.title)}">${c.cover?`<div class="home-cover has-img"><img src="${c.cover}" alt="" loading="lazy"></div>`:`<div class="home-cover" style="background:${c.bg}"><span class="k">${c.k}</span><span class="n">${c.n}</span></div>`}
+   <div class="home-body"><h3 class="home-t2">${esc(c.title)}</h3><div class="home-meta"><span>${ic('clock',14)} ${c.days} ngày</span><b class="home-price">${money(c.price)}</b></div>
+    <span class="home-join">${ic('trophy',15)} Tham gia thử thách ${ic('arrow',14)}</span></div></article>`;
+const ART_CAT={'AI quản lý dự án':'pm','AI marketing':'mkt','AI Website':'web','AI bán hàng':'sales','AI cho CEO':'ceo','AI vận hành':'ops'}; // màu theo chủ đề bài viết (trang chủ)
+const artCard=a=>`<article class="card home-card cat-${ART_CAT[a.cat]||'x'}" data-a="homeDemo" role="button" tabindex="0" aria-label="${esc(a.title)}">${a.cover?`<div class="home-cover art has-img"><img src="${a.cover}" alt="" loading="lazy"></div>`:`<div class="home-cover art"><span class="k">Blog guide</span><span class="n">${a.n}</span></div>`}
+   <div class="home-body"><span class="home-cat">${esc(a.cat)}</span><h3 class="home-t2">${esc(a.title)}</h3><p class="home-desc">${esc(a.desc)}</p><div class="home-meta2">${esc(a.date)} <span class="dot">·</span> ${ic('eye',14)} ${a.views||0}</div></div></article>`;
+// Nền khối AI for CEO: theo phong cách landing page sieutangtruong.com/lp/ai-for-ceo (user 10/2026): nền sáng, chòm sao mờ xanh + vài chấm cam
+const HM_DECO=(()=>{ // chòm sao thưa (theo user 21/10/2026: giảm mật độ, rồi tăng lại 20%: 17 chấm · 14 đường), chủ yếu ở viền khối, tránh vùng chữ
+ const N=[[40,40],[230,70],[440,30],[660,20],[900,60],[1150,30],[1290,120],[1300,420],[1240,600],[960,620],[700,600],[420,620],[150,600],[30,330],[620,170],[720,360],[560,600]];
+ const ORG=[3,13];
+ const E=[[0,1],[1,2],[3,4],[4,5],[5,6],[7,8],[8,9],[10,11],[11,12],[12,13],[3,14],[14,15],[15,10],[16,10]];
+ const lines=E.map(([i,j])=>`<line x1="${N[i][0]}" y1="${N[i][1]}" x2="${N[j][0]}" y2="${N[j][1]}"/>`).join('');
+ const dots=N.map(([x,y],i)=>`<circle cx="${x}" cy="${y}" r="${ORG.includes(i)?3.5:2.6}"${ORG.includes(i)?' class="org"':''}/>`).join('');
+ return `<svg class="hm-deco" viewBox="0 0 1320 640" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><g class="hm-net">${lines}</g><g class="hm-nodes">${dots}</g></svg>`;})();
+function home(){
+ // Trang chủ làm đẹp lại (theo user 10/2026), GIỮ BỐ CỤC CŨ: [Khóa học của tôi | Cộng đồng CEO] → khối AI for CEO (2 cột: lời mời + khung minh họa lộ trình) → Thử thách → Thư viện (đầu mục căn giữa)
+ const login=S.loggedIn&&S.account,enr=S.enrolled,st=enr&&S.plan?planStats():null,obDone=S.ob&&S.ob.done;
+ const myDesc=enr?'Tiếp tục các khóa học anh/chị đã đăng ký':'Các khóa học và tiến độ học của anh/chị';
+ const myAct='data-a="myCourses"'; // luôn mở trang Khóa học của tôi (chưa đăng nhập thì đăng nhập trước), theo user 10/2026
+ // 2 thẻ lối tắt cao (bố cục user gửi): thêm hình nền mờ bên phải + hàng thông tin ở đáy để bớt khoảng trắng
+ const tile=(act,icon,cls,t,d,foot,go)=>`<button class="card hm-tile ${cls}" ${act}><span class="hm-tile-art" aria-hidden="true">${ic(icon,120)}</span><span class="hm-tile-ic ${cls}">${ic(icon,20)}</span><span class="hm-tile-t"><b>${t}</b><small>${d}</small></span><span class="hm-tile-foot">${foot}<span class="hm-tile-link">${go} ${ic('arrow',15)}</span></span></button>`;
+ // đáy thẻ: ô bìa nhỏ các khóa xếp chồng (giống ảnh đại diện thẻ Cộng đồng). Đã mua = các khóa của tôi + số đang học / đã hoàn thành (dùng chung khi có nhiều khóa); chưa mua = các khóa đang mở đăng ký
+ const crsStack=(cs,txt)=>`<span class="hm-avs hm-crs">${cs.map(c=>`<span style="background:${c.bg}${c.muted?';color:#64748B':''}">${c.t.startsWith('icon:')?ic(c.t.slice(5),14):c.t}</span>`).join('')}<small>${txt}</small></span>`;
+ const mine=enr?[{bg:'linear-gradient(135deg,#1D4ED8,#7C3AED)',t:'AI',done:!!(st&&st.unitsDone===st.units&&subsCount()===Object.keys(TASKS).length)}]:[];
+ const nDone=mine.filter(c=>c.done).length;
+ const myFoot=enr?crsStack(mine,`${mine.length-nDone} khóa đang học · ${nDone} đã hoàn thành`)
+  :login&&c0Started()?crsStack([{bg:'linear-gradient(135deg,#1D4ED8,#7C3AED)',t:'AI'}],`Đang học thử AI for CEO · Chương 0 ${C0_KEYS().filter(k=>S.done[k]).length}/${C0_KEYS().length}`)
+  :login?crsStack([{bg:'#E2E8F0',t:'icon:book',muted:1}],'Chưa có khóa học nào · chọn khóa để bắt đầu')
+  :crsStack([{bg:'#E2E8F0',t:'icon:lock',muted:1}],'Đăng nhập để xem các khóa học của anh/chị');
+ const AV=[['MT','#2563EB'],['HL','#0891B2'],['QA','#7C3AED'],['TN','#F97316']];
+ const commFoot=`<span class="hm-avs">${AV.map(([n,c])=>`<span style="background:${c}">${n}</span>`).join('')}<small>+${COMM.members} thành viên</small></span>`;
+ const tiles=`<div class="hm-tiles">${tile(myAct,'book','blu','Khóa học của tôi',esc(myDesc),myFoot,login?'Xem khóa học của tôi':'Đăng nhập')}${tile('data-a="openCommunity" data-v="aiceo"','users','grn','Cộng đồng CEO','Cộng đồng chia sẻ use case AI dành cho CEO và Chủ doanh nghiệp',commFoot,'Vào cộng đồng')}</div>`;
+ const cta=enr?`<button class="btn hm-btn" data-a="openCourse">Vào học ${ic('arrow',16)}</button>`
+  :`<button class="btn hm-btn" data-a="trialStart">${c0Done()&&S.plan?'Xem lộ trình của anh/chị':c0Started()?'Tiếp tục Chương 0':'Trải nghiệm miễn phí'} ${ic('arrow',16)}</button><button class="btn hm-btn-line" data-a="crsOpen" data-v="aiceo">Xem khóa học</button>`;
+ // khung bên phải khối AI for CEO (theo user 10/2026):
+ // chưa mua → minh họa "Trò chuyện 3 phút với Trợ lý → Lộ trình 30 ngày" (đúng những gì xảy ra khi bấm Trải nghiệm miễn phí)
+ // đã mua → tiến độ THẬT theo chương
+ let mock;
+ if(enr&&S.plan){const all=planUnits(),cu=curUnit();
+  const chs=LIB.map(x=>{const ks=all.filter(k=>chOf(k)===x.id),dn=ks.filter(k=>S.done[k]).length;return {x,ks,dn,k:ks.length&&dn===ks.length?'ok':ks.includes(cu)?'cur':'lock'};}).filter(c=>c.ks.length);
+  const ci=Math.max(0,chs.findIndex(c=>c.k==='cur')),from=Math.max(0,Math.min(ci-1,chs.length-4));
+  const rows=chs.slice(from,from+4).map(c=>`<li class="hm-r ${c.k}"><span class="hm-r-ic">${c.k==='ok'?ic('check',13):c.k==='cur'?ic('play',12):ic('lock',12)}</span><span class="hm-r-t"><small>${esc(chLabel(c.x))} · ${c.dn}/${c.ks.length} bài</small><b>${esc(c.x.title)}</b></span>${c.k==='cur'?'<em>Đang học</em>':''}</li>`).join('');
+  mock=`<div class="hm-mock" aria-hidden="true"><div class="hm-mock-card"><div class="hm-mock-h"><span class="hm-bot">${ic('bot',18)}</span><div><b>Lộ trình của anh/chị</b><small>${S.plan.lessons.length} ngày · ${S.profile.minPerSession||20} phút/ngày</small></div></div>
+   <div class="hm-mock-p"><span>Tiến độ</span><b>${st.upct}%</b></div><div class="hm-mock-bar"><i style="width:${st.upct}%"></i></div>
+   <ul class="hm-rows">${rows}</ul></div></div>`;}
+ else{
+  // chưa mua: thẻ "Bản đồ cơ hội AI" theo landing page sieutangtruong.com/lp/ai-for-ceo (user 10/2026; hệ thống thật chưa có onboarding nên hình nói về đầu ra khóa học)
+  const steps=[['01','Nhận diện cơ hội','Bài toán doanh nghiệp × năng lực AI'],['02','Lựa chọn 3 use case','Đánh giá theo giá trị và tính khả thi'],['03','Chuẩn bị bước thử nghiệm','Mục tiêu, dữ liệu, điểm kiểm soát']];
+  mock=`<div class="hm-mock hm-opp" aria-hidden="true"><div class="hm-mock-card">
+   <div class="hm-opp-bar"><span class="dots"><i></i><i></i><i></i></span><span>Từ năng lực đến quyết định</span></div>
+   <div class="hm-opp-b"><small class="hm-opp-k">Bản đồ cơ hội AI</small><h3 class="hm-opp-t">Doanh nghiệp nên bắt đầu từ đâu?</h3>
+    <ol class="hm-opp-l">${steps.map(([n,t,d],i)=>`<li class="${i===2?'last':''}"><span class="no">${n}</span><span><b>${t}</b><small>${d}</small></span></li>`).join('')}</ol>
+    <div class="hm-opp-goal"><small>Đích đến</small><b>Có cơ sở để quyết định việc đáng làm tiếp theo.</b></div></div>
+  </div></div>`;
+  }
+ const stats=[[LIB.length,'chương'],[ALL_BAI.length,'bài học'],[CAP_MAP.length,'năng lực AI'],[3,'use case']].map(([n,l])=>`<div><b>${n}</b><span>${l}</span></div>`).join('');
+ const sparks=[1,4].map(i=>`<span class="hm-spark s${i}" aria-hidden="true">${ic('spark',18)}</span>`).join('');
+ const hero=`<section class="hm-hero">${HM_DECO}<div class="hm-hero-b">
+  <span class="hm-eyebrow">${ic('spark',14)} ${enr?'Khóa học của anh/chị':'Khóa học'}</span>
+  <div class="hm-brand"><b>AI for <em>CEO</em></b></div>
+  <h1 class="hm-h1s">${enr?'Tiếp tục hành trình học AI theo lộ trình của anh/chị':'Hiểu AI đủ sâu để <span>ra quyết định</span><br>cho doanh nghiệp'}</h1>
+  <p>${enr?'Học tiếp theo lộ trình cá nhân hóa của anh/chị, mỗi ngày một ít.':'Dành 3 phút trò chuyện cùng Trợ lý lộ trình AI để khám phá lộ trình học phù hợp với mục tiêu, bối cảnh doanh nghiệp và quỹ thời gian của anh/chị. Bắt đầu ngay, chưa cần thanh toán.'}</p>
+  <div class="hm-cta">${cta}</div>
+  <div class="hm-stats">${stats}</div></div>${mock}</section>`;
+ const head=(cls,icon,label,title,sub)=>`<div class="hm-head"><span class="home-pill ${cls}">${ic(icon,14)} ${label}</span><h2>${title}</h2><p>${sub}</p></div>`;
+ const more=(to,t)=>`<div class="hm-more-row"><button class="hm-more" data-a="go" data-to="${to}">${t} ${ic('arrow',15)}</button></div>`;
+ const chal=`<section class="hm-sec" id="home-challenges">${head('yel','trophy','Thử thách','Vượt qua thử thách, nhận thưởng lớn','Hoàn thành thử thách, nhận phần thưởng vô cùng hấp dẫn.')}
+  <div class="home-grid">${CHALLENGES.slice(0,3).map(chalCard).join('')}</div>${more('challenges','Xem tất cả thử thách')}</section>`;
+ const lib=`<section class="hm-sec" id="home-library">${head('blu','news','Thư viện','Bài viết & kiến thức mới nhất','Xu hướng AI, hướng dẫn thực chiến và case study từ cộng đồng.')}
+  <div class="home-grid">${ARTICLES.slice(0,3).map(artCard).join('')}</div>${more('library','Xem tất cả bài viết')}</section>`;
+ return `<section class="wrap page home hm">${tiles}${hero}${chal}${lib}</section>`;
+}
+
+/* ---------- Trang Thử thách & Thư viện (đề xuất mới theo yêu cầu user 10/2026, cả 2 bản) ----------
+   Cùng kiểu trang Khóa học: đầu trang căn trái (nhãn pill + tiêu đề + mô tả), bộ lọc dạng chip, lưới 3 thẻ/hàng (dùng chung chalCard / artCard với Trang chủ).
+   Dữ liệu minh họa: CHALLENGES, ARTICLES (data.js); bấm thẻ chỉ hiện thông báo. */
+const listHead=(cls,icon,label,title,sub)=>`<div class="page-head crs-head list-head"><span class="crs-tagline ${cls}">${ic(icon,15)} ${label}</span><h1 class="h2">${title}</h1><p class="sub">${sub}</p></div>`;
+const chips=(key,opts)=>{const v=T[key]||'all';return `<div class="list-chips" role="tablist">${opts.map(([k,l,n])=>`<button role="tab" aria-selected="${v===k}" class="${v===k?'on':''}" data-a="listFilter" data-k="${key}" data-v="${k}">${l}<small>${n}</small></button>`).join('')}</div>`;};
+function challenges(){
+ const list=CHALLENGES;
+ return `<section class="wrap page crs list-page">${listHead('yel','trophy','Thử thách','Tham gia thử thách, nhận phần thưởng lớn','Hoàn thành thử thách ngắn ngày để áp dụng AI ngay vào công việc và nhận phần thưởng hấp dẫn.')}
+  <div class="home-grid">${list.map(chalCard).join('')}</div></section>`;
+}
+// Trang Thư viện (user duyệt 21/10/2026): 3 tab Kiến thức · Tài liệu · Case study, ô tìm kiếm + lọc chủ đề dùng chung; mỗi tab một kiểu thẻ
+const LIB_ORDER=['AI Website','AI quản lý dự án','AI marketing'];
+const libLabel=c=>c.replace('AI quản lý dự án','AI Quản lý dự án').replace('AI marketing','AI Marketing');
+const DOC_IC={PDF:['#DC2626','PDF'],Excel:['#15803D','XLS'],Word:['#1D4ED8','DOC'],Slide:['#EA580C','PPT']};
+const docCard=d=>`<article class="card lib-doc"><span class="lib-doc-ic" style="--c:${DOC_IC[d.kind][0]}">${ic('file',22)}<b>${DOC_IC[d.kind][1]}</b></span>
+ <div class="lib-doc-b"><span class="home-cat cat-${ART_CAT[d.cat]||'x'}">${esc(d.cat)}</span><h3>${esc(d.title)}</h3><p>${esc(d.desc)}</p><small>${d.kind} · ${d.pages} trang · ${ic('download',13)} ${d.dl} lượt tải</small></div>
+ <button class="btn ${S.loggedIn?'btn-primary':'btn-line'} btn-sm lib-dl" data-a="${S.loggedIn?'libDl':'acOpen'}" data-v="${S.loggedIn?'':'login'}">${ic(S.loggedIn?'download':'lock',15)} ${S.loggedIn?'Tải về':'Đăng nhập để tải'}</button></article>`;
+const caseCard=c=>`<article class="card lib-case" style="--c:${c.color}" data-a="homeDemo" role="button" tabindex="0" aria-label="${esc(c.co)}">
+ <div class="lib-case-h"><span class="lib-case-av">${esc(c.co.split(' ').slice(-2).map(w=>w[0]).join(''))}</span><div><b>${esc(c.co)}</b><small>${esc(c.ind)} · ${esc(c.size)}</small></div><span class="home-cat cat-${ART_CAT[c.cat]||'x'}">${esc(c.cat)}</span></div>
+ <div class="lib-case-m"><b>${esc(c.metric)}</b><span>${esc(c.metricL)}</span></div>
+ <dl class="lib-case-s"><div><dt>Bài toán</dt><dd>${esc(c.problem)}</dd></div><div><dt>Giải pháp AI</dt><dd>${esc(c.solution)}</dd></div></dl>
+ <span class="lib-case-go">Xem chi tiết ${ic('arrow',14)}</span></article>`;
+function library(){
+ const tab=T.libTab||'know',f=T.libF||'all',q=(T.libQ||'').trim().toLowerCase();
+ const SRC={know:ARTICLES,docs:DOCS,cases:CASES},txt={know:a=>a.title+' '+a.desc,docs:d=>d.title+' '+d.desc+' '+d.kind,cases:c=>[c.co,c.ind,c.problem,c.solution,c.metricL].join(' ')};
+ const cats=[...new Set([...ARTICLES,...DOCS,...CASES].map(a=>a.cat))].sort((x,y)=>(LIB_ORDER.indexOf(x)+99)%99-(LIB_ORDER.indexOf(y)+99)%99);
+ const list=SRC[tab].filter(a=>(f==='all'||a.cat===f)&&(!q||(txt[tab](a)+' '+a.cat).toLowerCase().includes(q)));
+ const tabs=[['know','Kiến thức','bookopen'],['docs','Tài liệu','download'],['cases','Case study','chart']].map(([k,l,i])=>`<button class="lib-tab${tab===k?' on':''}" data-a="listFilter" data-k="libTab" data-v="${k}" role="tab" aria-selected="${tab===k}">${ic(i,17)} ${l} <span>${SRC[k].length}</span></button>`).join('');
+ const chip=(v,l,cls)=>`<button class="lib-chip ${cls}${f===v?' on':''}" data-a="listFilter" data-k="libF" data-v="${esc(v)}" aria-pressed="${f===v}">${esc(l)}</button>`;
+ let body='';
+ if(!list.length)body='<p class="list-empty">Không tìm thấy nội dung phù hợp.</p>';
+ else if(tab==='know'){const feat=list[0];
+  body=`<article class="card lib-feat cat-${ART_CAT[feat.cat]||'x'}" data-a="homeDemo" role="button" tabindex="0" aria-label="${esc(feat.title)}">${feat.cover?`<div class="lib-feat-img"><img src="${feat.cover}" alt="" loading="lazy"></div>`:`<div class="lib-feat-img ph">${ic('news',30)}</div>`}
+  <div class="lib-feat-b"><span class="home-cat">${esc(feat.cat)}</span><h2>${esc(feat.title)}</h2><p>${esc(feat.desc)}</p><div class="home-meta2">${esc(feat.date)} <span class="dot">·</span> ${ic('eye',14)} ${feat.views||0}</div></div></article>
+  ${list.length>1?`<div class="home-grid lib-grid">${list.slice(1).map(artCard).join('')}</div>`:''}`;}
+ else if(tab==='docs')body=`${S.loggedIn?'':`<p class="lib-note">${ic('lock',15)} Tài liệu miễn phí cho tài khoản Học viện. Anh/chị đăng nhập để tải về.</p>`}<div class="lib-docs">${list.map(docCard).join('')}</div>`;
+ else body=`<div class="lib-cases">${list.map(caseCard).join('')}</div>`;
+ return `<div class="lib-band"><div class="wrap"><label class="lib-search">${ic('search',18)}<input id="lib-q" type="search" placeholder="Tìm bài viết, tài liệu, case study..." value="${esc(T.libQ||'')}" aria-label="Tìm trong Thư viện"></label>
+  <div class="lib-tabs" role="tablist" aria-label="Loại nội dung">${tabs}</div></div></div>
+ <section class="wrap page lib-page"><div class="lib-chips" role="group" aria-label="Lọc theo chủ đề">${chip('all','Tất cả','all')}${cats.map(c=>chip(c,libLabel(c),'cat cat-'+(ART_CAT[c]||'x'))).join('')}</div>${body}</section>`;
+}
+function obRedirect(){S.screen='lesson';S.unit=curUnitC0();S.lesson=0;return lesson();}
+const SCREENS={home,course,challenges,library,courses,landing,account,checkout,mycourses,onboarding:obRedirect,syllabus,learn,lesson,complete,outputs,dashboard,community};
