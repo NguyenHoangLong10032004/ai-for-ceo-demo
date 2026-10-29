@@ -65,7 +65,7 @@ function achievements(){
   {k:'first',icon:'play',t:'Khởi động',d:'Xong bài đầu tiên',on:d.lessonsDone>=1},
   {k:'streak',icon:'flame',t:'3 ngày liên tiếp',d:'Học 3 ngày liền',on:best>=3},
   {k:'cap5',icon:'spark',t:'5 năng lực',d:'Mở khóa 5 năng lực',on:d.caps>=5},
-  {k:'ex6',icon:'file',t:'Người thực hành',d:'Nộp 6 bài tập',on:d.subs>=6},
+  {k:'ex6',icon:'write',t:'Người thực hành',d:'Nộp 6 bài tập',on:d.subs>=6},
   {k:'comm',icon:'users',t:'Kết nối',d:'Tham gia cộng đồng',on:!!(S.comm&&S.comm.joined)},
   {k:'finish',icon:'award',t:'Về đích',d:'Hoàn thành khóa học',on:d.allDone}];
 }

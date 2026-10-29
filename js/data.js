@@ -6,12 +6,16 @@
 
 /* ---------- icon (SVG inline) ---------- */
 const I={
+aichip:'<rect x="4" y="4" width="16" height="16" rx="2.8"/><path d="M9 1.5V4M15 1.5V4M9 20v2.5M15 20v2.5M1.5 9H4M1.5 15H4M20 9h2.5M20 15h2.5"/><text x="12" y="15.1" text-anchor="middle" font-size="8.4" font-weight="800" font-family="Inter,Arial,sans-serif" fill="currentColor" stroke="none">AI</text>',
+// biểu tượng duotone (nét + mảng nhạt 20%), dùng cho ô biểu tượng lớn ở trang chủ
+dtCap:'<path d="M22 9 12 4 2 9l10 5 10-5Z" fill="currentColor" stroke="none" opacity=".18"/><path d="M22 9 12 4 2 9l10 5 10-5Z"/><path d="M6 11.2V16c0 1.7 2.7 3 6 3s6-1.3 6-3v-4.8"/><path d="M22 9v6"/>',
+dtUsers:'<circle cx="9" cy="8" r="3.5" fill="currentColor" stroke="none" opacity=".18"/><path d="M3 20a6 6 0 0 1 12 0Z" fill="currentColor" stroke="none" opacity=".18"/><circle cx="9" cy="8" r="3.5"/><path d="M3 20a6 6 0 0 1 12 0"/><path d="M15.5 4.6a3.5 3.5 0 0 1 0 6.8"/><path d="M17.5 14.3A6 6 0 0 1 21 20"/>',
 users:'<path d="M16 19v-1a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v1"/><circle cx="9" cy="7" r="3.5"/><path d="M22 19v-1a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
 spark:'<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3Z"/>',
 chat:'<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.4A8 8 0 1 1 21 12Z"/>',
 bell:'<path d="M6 8a6 6 0 1 1 12 0c0 7 3 8 3 8H3s3-1 3-8"/><path d="M10 20a2 2 0 0 0 4 0"/>',
 check:'<path d="M5 12.5l4.5 4.5L19 7.5"/>',
-x:'<path d="M6 6l12 12M18 6L6 18"/>',
+x:'<path d="M6 6l12 12M18 6L6 18"/>',menu:'<path d="M4 6h16M4 12h16M4 18h16"/>',
 arrow:'<path d="M5 12h14M13 6l6 6-6 6"/>',
 back:'<path d="M19 12H5M11 6l-6 6 6 6"/>',
 clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
@@ -31,6 +35,7 @@ mail:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>'
 eye:'<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/>',
 image:'<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-9 9"/>',
 eyeoff:'<path d="M10.6 5.1A10.6 10.6 0 0 1 12 5c6.4 0 10 7 10 7a17.6 17.6 0 0 1-2.7 3.6M6.6 6.6A17.5 17.5 0 0 0 2 12s3.6 7 10 7a9.9 9.9 0 0 0 5.4-1.6"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2M3 3l18 18"/>',
+write:'<path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.4 2.6a2.1 2.1 0 0 1 3 3l-9 9a2 2 0 0 1-.85.5l-2.9.85a.5.5 0 0 1-.6-.62l.84-2.87a2 2 0 0 1 .5-.85z"/>', // bài tập: cầm viết làm bài
 pen:'<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>',
 search:'<circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/>',
 code:'<path d="m8 8-5 4 5 4M16 8l5 4-5 4M14 4l-4 16"/>',
@@ -42,7 +47,8 @@ chart:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
 flag:'<path d="M5 21V4M5 4h11l-2 4 2 4H5"/>',
 download:'<path d="M12 4v11M7 10l5 5 5-5M5 20h14"/>',
 upload:'<path d="M12 15V4M7 9l5-5 5 5M5 20h14"/>',
-cart:'<circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 3h3l2.6 12.2a1.5 1.5 0 0 0 1.5 1.2h8.6a1.5 1.5 0 0 0 1.5-1.1L21 8H6.2"/>',bookopen:'<path d="M2 4h6a4 4 0 0 1 4 4v13a3 3 0 0 0-3-3H2z"/><path d="M22 4h-6a4 4 0 0 0-4 4v13a3 3 0 0 1 3-3h7z"/>',medal:'<circle cx="12" cy="15" r="6"/><path d="M8.5 10.2 6 3h4l2 5 2-5h4l-2.5 7.2"/><path d="m12 12.5.9 1.8 2 .3-1.45 1.4.35 2-1.8-.95-1.8.95.35-2-1.45-1.4 2-.3z"/>',trophy:'<path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>',news:'<path d="M15 18h-5"/><path d="M18 14h-8"/><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-4 0v-11a2 2 0 0 1 2-2h2"/><rect width="8" height="4" x="10" y="6" rx="1"/>',copy:'<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h8"/>',info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>',alert:'<path d="M12 3 2 20h20z"/><path d="M12 10v4M12 17h.01"/>',clip:'<path d="m21 11-8.6 8.6a5 5 0 0 1-7-7L14 4a3.4 3.4 0 0 1 4.9 4.9l-8.6 8.6a1.8 1.8 0 0 1-2.6-2.6L15.4 7"/>',
+filter:'<path d="M3 5h18M6 12h12M10 19h4"/>',
+ cart:'<circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 3h3l2.6 12.2a1.5 1.5 0 0 0 1.5 1.2h8.6a1.5 1.5 0 0 0 1.5-1.1L21 8H6.2"/>',bookopen:'<path d="M2 4h6a4 4 0 0 1 4 4v13a3 3 0 0 0-3-3H2z"/><path d="M22 4h-6a4 4 0 0 0-4 4v13a3 3 0 0 1 3-3h7z"/>',medal:'<circle cx="12" cy="15" r="6"/><path d="M8.5 10.2 6 3h4l2 5 2-5h4l-2.5 7.2"/><path d="m12 12.5.9 1.8 2 .3-1.45 1.4.35 2-1.8-.95-1.8.95.35-2-1.45-1.4 2-.3z"/>',trophy:'<path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>',news:'<path d="M15 18h-5"/><path d="M18 14h-8"/><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-4 0v-11a2 2 0 0 1 2-2h2"/><rect width="8" height="4" x="10" y="6" rx="1"/>',copy:'<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h8"/>',info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>',alert:'<path d="M12 3 2 20h20z"/><path d="M12 10v4M12 17h.01"/>',clip:'<path d="m21 11-8.6 8.6a5 5 0 0 1-7-7L14 4a3.4 3.4 0 0 1 4.9 4.9l-8.6 8.6a1.8 1.8 0 0 1-2.6-2.6L15.4 7"/>',
 share:'<circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="m8.2 10.8 7.6-4.4M8.2 13.2l7.6 4.4"/>',
 fb:'<path d="M14 8h3V4h-3a4 4 0 0 0-4 4v3H7v4h3v7h4v-7h3l1-4h-4V8Z" fill="currentColor" stroke="none"/>',
 star:'<path d="M12 2.8l2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.2l-5.6 3 1.1-6.3-4.6-4.4 6.3-.9L12 2.8Z" fill="currentColor" stroke="none"/>',
@@ -233,7 +239,7 @@ const ALL_BAI=LIB.flatMap(x=>x.items); // 38 bài theo thứ tự
 // Trang Chi tiết khóa học (22/10/2026): quyền lợi, đối tượng, câu hỏi thường gặp; người dẫn / video / đánh giá / hoàn tiền: chưa có, khối tự ẩn
 const COURSE_INFO={access:'1 năm',
  // xếp hạng + số học viên: MINH HỌA, thay bằng số thật khi có
- rating:4.8,ratings:384,students:3560,
+ rating:4.8,ratings:384,students:3560,trustReal:true, // số MINH HỌA, user vẫn muốn hiện (28/10/2026); đặt false để ẩn dòng đánh giá + học viên
  // "Anh/chị sẽ học được gì" (What you'll learn)
  learn:['Hiểu AI hiện nay đã làm được gì qua 10 năng lực, xem tận mắt bằng demo thực tế',
   'Biết khi nào nên tin kết quả của AI, khi nào cần kiểm chứng trước khi dùng cho quyết định',
@@ -241,16 +247,20 @@ const COURSE_INFO={access:'1 năm',
   'Xác định mức tự động hóa và mức quyền phù hợp khi giao việc cho AI và Agent',
   'Chọn 3 cơ hội AI ưu tiên dựa trên giá trị kinh doanh, tính khả thi và rủi ro',
   'Chốt 1 thử nghiệm AI đầu tiên với mục tiêu, người phụ trách và chỉ số theo dõi rõ ràng'],
- includes:['37 bài: video, bài đọc và bài tập áp dụng','Lộ trình học cá nhân hóa theo doanh nghiệp','Trợ lý AI hỗ trợ trong lúc học','Cộng đồng CEO AI','Chứng nhận hoàn thành','Truy cập 1 năm'],
+ includes:['37 bài: video, bài đọc và bài tập áp dụng','Trợ lý AI hỗ trợ trong lúc học','Cộng đồng CEO AI','Chứng nhận hoàn thành','Truy cập 1 năm'],
  forWho:['CEO, Founder, chủ doanh nghiệp muốn hiểu AI để ra quyết định','Lãnh đạo cần chọn đúng nơi đầu tư AI, tránh dàn trải','Người bận rộn, cần học ngắn mỗi ngày theo lịch riêng'],
  notFor:['Muốn học viết code hoặc lập trình AI','Muốn học thao tác chi tiết từng công cụ, từng câu lệnh (prompt)','Chỉ cần nghe tin tức AI, không có quyết định cần đưa ra'],
- faq:[['Học mất bao lâu?','Anh/chị tự chọn số ngày hoàn thành và số phút mỗi ngày, ví dụ 30 ngày, mỗi ngày 20 phút. Hệ thống chia 37 bài theo lịch đó.'],
+ updated:'10/2026', // "Cập nhật" trên trang chi tiết (MINH HỌA, Admin cập nhật khi đổi nội dung)
+ faq:[['Có cần biết lập trình không?','Không cần. Chương trình tập trung vào năng lực, điều kiện và giới hạn của AI để CEO ra quyết định, không dạy viết code.'],
+  ['Ai phát triển và giảng dạy?','Học viện Siêu Tăng Trưởng phát triển chương trình. Anh/chị học qua video soạn sẵn, bài đọc và bài tập; Trợ lý AI hỗ trợ trong lúc học.'],
+  ['Khóa học giúp doanh nghiệp tăng trưởng thế nào?','Khóa học giúp anh/chị nhận diện cơ hội và chọn 3 use case đáng thử. Kết quả thực tế phụ thuộc vào việc doanh nghiệp triển khai và đo lường.'],
+  ['Học mất bao lâu?','Anh/chị tự chọn số ngày hoàn thành và số phút mỗi ngày, ví dụ 30 ngày, mỗi ngày 20 phút. Hệ thống chia 37 bài theo lịch đó.'],
   ['Bận đột xuất thì sao?','Anh/chị điều chỉnh lộ trình bất cứ lúc nào, tiến độ đã học được giữ nguyên.'],
   ['Học trên điện thoại được không?','Được. Video, bài tập và Trợ lý AI đều dùng được trên điện thoại.'],
   ['Truy cập khóa học bao lâu?','1 năm kể từ ngày kích hoạt.'],
   ['Có xuất hóa đơn công ty không?','Có. Giá đã bao gồm VAT 8%, anh/chị chọn "Xuất hóa đơn doanh nghiệp" khi đăng ký.']]};
 const COURSE={// tên + mô tả khóa học: Admin cấu hình, dùng chung thẻ trang Khóa học và trang chi tiết
- name:'AI for CEO',desc:'Khóa cập nhật năng lực AI dành cho CEO qua các ví dụ thực tế. Không học tool, không học prompt: tận mắt thấy AI đã làm được gì, rồi chọn đúng nơi doanh nghiệp nên bắt đầu.',
+ name:'AI for CEO',desc:'Chương trình e-learning 30 ngày giúp CEO hiểu năng lực thực tế, điều kiện ứng dụng và giới hạn của AI để lựa chọn cơ hội ưu tiên phù hợp với doanh nghiệp.',
  cover:"img/cover-aiceo.png",list:12000000,price:8800000,promo:'Ưu đãi ra mắt tháng đầu',
  perks:['37 bài học trong 8 chương (mỗi bài 1 video hoặc 1 bài tập), chia theo lịch của anh/chị','11 bài tập áp dụng cho chính công ty, lưu thành bộ output mang về','Lộ trình cá nhân hóa theo số ngày muốn hoàn thành và phòng ban quan tâm','Live Zoom hằng tháng "AI đến đâu rồi?": năng lực mới, demo mới, hỏi đáp','AI Learning Assistant hỏi đáp 24/7 theo nội dung khóa học','Ưu tiên đăng ký Offline Executive Briefing','Certificate và cộng đồng CEO AI Community']};
 const SAVE=COURSE.list-COURSE.price, OFF=Math.round(SAVE/COURSE.list*100);
@@ -315,7 +325,12 @@ const EVENTS=[
  {d:'22/10',t:'12:00 · Thứ Năm',title:'Hỏi đáp nhanh cùng chuyên gia: Chọn use case đầu tiên',desc:'30 phút giờ trưa, mang 3 use case của anh/chị đến để được góp ý.',len:'30 phút · Zoom',k:'ama',type:'Hỏi đáp',icon:'chat',end:'2026-10-22T12:30',
   join:{zoom:'https://zoom.us/j/86230419552',id:'862 3041 9552',pass:'USECASE'},prep:['Chuẩn bị 3 use case đang cân nhắc (bài tập Module 12 nếu đã làm)','Mỗi use case ghi ngắn: việc gì, phòng ban nào, kết quả mong muốn']},
  {d:'08/11',t:'08:30 · Thứ Bảy',title:'Offline Executive Briefing tại TP.HCM',desc:'Nửa ngày xem demo live và thảo luận theo nhóm ngành. Số lượng giới hạn.',len:'4 giờ · Trực tiếp',k:'offline',type:'Offline',icon:'users',end:'2026-11-08T12:30',
-  join:{place:'Hội trường Học viện Siêu Tăng Trưởng',addr:'100 Nguyễn Văn Lượng, Phường Gò Vấp, Hồ Chí Minh',checkin:'Đón khách từ 08:00'},prep:['Xuất trình email này hoặc mã đăng ký khi check-in','Mang theo danh thiếp để kết nối với các CEO cùng nhóm ngành','Báo trước cho Học viện nếu không tham gia được để nhường chỗ']}];
+  join:{place:'Hội trường Học viện Siêu Tăng Trưởng',addr:'100 Nguyễn Văn Lượng, Phường Gò Vấp, Hồ Chí Minh',checkin:'Đón khách từ 08:00'},prep:['Xuất trình email này hoặc mã đăng ký khi check-in','Mang theo danh thiếp để kết nối với các CEO cùng nhóm ngành','Báo trước cho Học viện nếu không tham gia được để nhường chỗ']},
+ // 2 sự kiện minh họa thêm (27/10/2026) để danh sách "Sự kiện sắp tới" có nhiều hơn 1 sự kiện
+ {d:'13/11',t:'20:00 · Thứ Năm',title:'Live Zoom: AI đến đâu rồi? · Tháng 11',desc:'Cập nhật năng lực AI mới trong tháng, 3 demo trực tiếp, hỏi đáp CEO.',len:'75 phút · Zoom',k:'live',type:'Live Zoom',icon:'video',end:'2026-11-13T21:15',
+  join:{zoom:'https://zoom.us/j/84512036782',id:'845 1203 6782',pass:'AICEO11'},prep:['Ghi sẵn 1–2 câu hỏi về AI anh/chị đang băn khoăn để hỏi trực tiếp','Dùng máy tính để xem demo rõ hơn']},
+ {d:'20/11',t:'12:00 · Thứ Năm',title:'Hỏi đáp nhanh cùng chuyên gia: Từ use case đến thử nghiệm',desc:'30 phút giờ trưa, góp ý cách chuẩn bị bước thử nghiệm AI đầu tiên.',len:'30 phút · Zoom',k:'ama',type:'Hỏi đáp',icon:'chat',end:'2026-11-20T12:30',
+  join:{zoom:'https://zoom.us/j/86230419553',id:'862 3041 9553',pass:'PILOT'},prep:['Mang theo 1 use case anh/chị muốn thử trước','Ghi ngắn: ai phụ trách, đo kết quả bằng gì']}];
 
 /* ---------- cấu hình lộ trình & demo ---------- */
 const PACES=[20,30,60];   // số phút mỗi ngày học được chọn
@@ -328,13 +343,14 @@ const HIDE_FAB=true; // tạm ẩn nút Trợ lý AI + Chuyên gia góc phải d
 // Version 2 (mở bằng v2.html, theo yêu cầu user 10/2026): không có trang Khóa học riêng; vào Cộng đồng (CEO AI Community) → tab "Khóa học" → thẻ AI for CEO → mua khóa
 const V2=typeof window!=='undefined'&&window.APP_V===2;
 // Trang chủ (theo bố cục user gửi 10/2026): thử thách và bài viết thư viện là dữ liệu MINH HỌA (lấy theo ảnh website STT user gửi)
-const CHALLENGES=[
- {title:'3 Ngày Có Ngay Social Post Bán Hàng Chuyên Nghiệp Bằng AI',days:3,price:199000,k:'Thử thách 3 ngày',n:'Social post bán hàng bằng <b>AI</b>',bg:'linear-gradient(135deg,#3B1FA8,#2563EB)',cover:''},
- {title:'3 Ngày Xây dựng Landing Page hiệu quả bằng AI',days:3,price:0,k:'Thử thách 3 ngày',n:'Landing page hiệu quả bằng <b>AI</b>',bg:'linear-gradient(135deg,#1E3A8A,#7C3AED)',cover:''},
- {title:'Thử thách 3 ngày Tạo Video Quảng Cáo Sản Phẩm Bằng AI',days:3,price:199000,k:'Thử thách 3 ngày',n:'Video quảng cáo sản phẩm bằng <b>AI</b>',bg:'linear-gradient(135deg,#0F172A,#6D28D9)',cover:''},
- {title:'7 Ngày Tự Động Hóa Báo Cáo Doanh Thu Bằng AI',days:7,price:299000,k:'Thử thách 7 ngày',n:'Báo cáo doanh thu tự động bằng <b>AI</b>',bg:'linear-gradient(135deg,#0E7490,#2563EB)',cover:''},
- {title:'3 Ngày Viết Email Chăm Sóc Khách Hàng Bằng AI',days:3,price:0,k:'Thử thách 3 ngày',n:'Email chăm sóc khách hàng bằng <b>AI</b>',bg:'linear-gradient(135deg,#9D174D,#7C3AED)',cover:''},
- {title:'5 Ngày Xây Trợ Lý AI Trả Lời Khách Hàng',days:5,price:199000,k:'Thử thách 5 ngày',n:'Trợ lý AI trả lời khách hàng',bg:'linear-gradient(135deg,#1E3A8A,#0EA5E9)',cover:''}];
+const CHALLENGES=[ // thử thách THẬT theo hệ thống (user gửi ảnh 23/10/2026); tasks = số nhiệm vụ, joined = số người tham gia; ảnh bìa cắt từ ảnh chụp (chờ file gốc)
+ {title:'3 Ngày Dựng Web Portfolio Không Code Cùng AI',desc:'Trong 3 ngày, bạn sẽ sử dụng AI để tự tay xây dựng một website Portfolio chuyên nghiệp.',days:3,tasks:7,joined:149,price:0,cover:'img/challenges/portfolio.jpg',k:'Thử thách 3 ngày',n:'Web portfolio <b>không code</b>',bg:'linear-gradient(135deg,#1E1B4B,#4338CA)'},
+ {title:'3 Ngày Có Ngay Landing Page Bất Động Sản Chốt Khách Bằng AI',desc:'Thử thách 3 ngày giúp bạn từng bước tạo Landing Page Bất động sản chốt khách bằng AI.',days:3,tasks:7,joined:1,price:199000,cover:'img/challenges/landing-bds.jpg',k:'Thử thách 3 ngày',n:'Landing page <b>bất động sản</b>',bg:'linear-gradient(135deg,#1E1B4B,#4338CA)'},
+ {title:'Thử Thách 5 Ngày Xây Dựng Mini Hệ Thống Quản Lý Hồ Sơ Nhân Viên Bằng AI',desc:'Trong thử thách 5 ngày này, bạn sẽ từng bước sử dụng AI để xây dựng một mini hệ thống Quản lý Hồ sơ Nhân viên.',days:5,tasks:5,joined:0,price:199000,cover:'img/challenges/hr-mini.jpg',k:'Thử thách 5 ngày',n:'Quản lý <b>hồ sơ nhân viên</b>',bg:'linear-gradient(135deg,#1E1B4B,#4338CA)'},
+ {title:'Thử Thách 7 Ngày Tự Tay Xây Dựng Chatbot CSKH Bằng AI',desc:'Trong 7 ngày, mỗi ngày chỉ khoảng 10–15 phút, bạn tự tay làm một chatbot AI biết trả lời khách.',days:7,tasks:7,joined:0,price:199000,cover:'img/challenges/chatbot.jpg',k:'Thử thách 7 ngày',n:'Chatbot <b>CSKH</b>',bg:'linear-gradient(135deg,#1E1B4B,#4338CA)'},
+ {title:'Biến Cuộc Họp Thành Bảng Việc Chính Xác Bằng AI',desc:'Trong 3 ngày, bạn sẽ từng bước học cách đặt câu lệnh có cấu trúc để AI tóm tắt đúng trọng tâm cuộc họp.',days:3,tasks:3,joined:1,price:199000,cover:'img/challenges/meeting.jpg',k:'Thử thách 3 ngày',n:'Cuộc họp thành <b>bảng việc</b>',bg:'linear-gradient(135deg,#1E1B4B,#4338CA)'},
+ {title:'3 Ngày Tạo Landing Page Cho Spa Bằng AI',desc:'Trong 3 ngày, bạn sẽ xác định đúng nhóm khách hàng mục tiêu, xây dựng cấu trúc trang và viết nội dung.',days:3,tasks:7,joined:1,price:199000,cover:'img/challenges/spa.jpg',k:'Thử thách 3 ngày',n:'Landing page <b>cho Spa</b>',bg:'linear-gradient(135deg,#1E1B4B,#4338CA)'}];
+const JOINED_MIN=10; // chỉ hiện số người tham gia khi đủ lớn (số quá nhỏ làm giảm tin cậy)
 const ARTICLES=[ // bài viết minh họa theo trang Thư viện user gửi (21/10/2026); type = loại bài (Hướng dẫn / Case study / Tin tức)
  {cat:'AI quản lý dự án',type:'Hướng dẫn',title:'Tóm tắt cuộc họp bằng AI: Quy trình 6 bước chính xác',desc:'Hướng dẫn tóm tắt cuộc họp bằng AI theo 6 bước: chuẩn bị bản ghi, tạo transcript, trích quyết định, đầu việc, người phụ trách và thời hạn.',date:'25/8/2026',min:5,views:172,n:'Tóm tắt cuộc họp <b>bằng AI</b>',cover:''},
  {cat:'AI quản lý dự án',type:'Hướng dẫn',title:'Cách chuyển nội dung cuộc họp thành bảng công việc',desc:'Quy trình chuyển nội dung cuộc họp thành bảng công việc rõ người, rõ hạn và có nguồn đối chiếu; kèm cấu trúc bảng và prompt thực hành.',date:'25/8/2026',min:5,views:194,n:'Cuộc họp thành <b>bảng công việc</b>',cover:''},
@@ -345,7 +361,7 @@ const ARTICLES=[ // bài viết minh họa theo trang Thư viện user gửi (21
  {cat:'AI Website',type:'Hướng dẫn',title:'Tạo Landing Page bất động sản bằng AI không cần code',desc:'Quy trình tạo Landing Page bất động sản bằng AI cho người mới: chuẩn bị dữ liệu, viết prompt, tạo nội dung, dựng giao diện và kiểm tra chuyển đổi.',date:'25/8/2026',min:7,views:187,n:'Landing Page <b>bất động sản</b>',cover:''}
 ];
 // ảnh bìa thật cho 3 thử thách + 3 bài viết đầu (cắt từ ảnh user gửi, 10/2026)
-['chal-1','chal-2','chal-3'].forEach((f,i)=>{CHALLENGES[i].cover=`img/home/${f}.jpg`;});
+
 ARTICLES.forEach((a,i)=>{a.cover=`img/home/art-${i+1}.jpg`;});
 // Thư viện · Tài liệu tải về (minh họa, 21/10/2026): kind = loại tệp
 const DOCS=[
@@ -368,6 +384,17 @@ const LOGO_DATA="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABr0AAADuCAYAAACEe
 
 /* Các khóa học khác của Học viện trên trang Khóa học (minh họa theo ảnh user gửi 10/2026; bấm vào chỉ báo là khóa minh họa).
    cover: đường dẫn ảnh bìa 16:9 (để trống thì dùng nền màu có chữ); price: học phí, không có ưu đãi */
+// Nhóm khóa học (theo hệ thống thật, 23/10/2026)
+const CRS_CATS=[['ceo','Dành cho CEO'],['web','Website'],['pm','Quản lý dự án'],['cs','Chăm sóc khách hàng'],['mkt','Marketing & Content'],['hr','Nhân sự']];
+// Các khóa khác của Học viện: theo trang Khóa học của hệ thống thật (user gửi ảnh 23/10/2026). Ảnh bìa cắt từ ảnh chụp (độ phân giải thấp, chờ file gốc).
+// price: số = có phí · free: miễn phí (Landing Page, Portfolio cũng miễn phí theo hệ thống thật) · price:null = chưa rõ giá · demoOwned: tài khoản demo đã mua khóa này (chỉ khi đã đăng nhập), demoDone = số bài đã học (minh họa)
+// Bỏ 1 khóa nhóm Quản lý dự án chưa có ảnh bìa và chưa đọc được tên.
 const OTHER_COURSES=[
- {title:'Quản lý lịch, email và ưu tiên công việc cho sếp bằng AI',desc:'',lessons:11,price:199000,cover:'',k:'Trợ lý cho sếp',n:'Lịch, email & ưu tiên việc bằng <b>AI</b>',bg:'linear-gradient(135deg,#0B5BC6,#3B8BEB)'},
- {title:'Không biết Code vẫn xây được Phần mềm Quản lý công việc cá nhân bằng AI',desc:'Xây dựng phần mềm quản lý công việc cá nhân bằng các công cụ AI vibe code như Google AI studio, Bolt, Loveable…',lessons:18,price:199000,cover:'',k:'Không cần code',n:'Phần mềm quản lý công việc bằng <b>AI</b>',bg:'linear-gradient(135deg,#00276B,#0B5BC6)'}];
+ {title:'Website 3 không: Không Đồng - Không Code - Không Chờ Đợi',cat:'web',desc:'Tự tay xây dựng một Website hoàn toàn bằng AI: không đồng chi phí phát triển, không cần biết code, không phải chờ đợi.',lessons:17,price:2000000,cover:'img/courses/web-3khong.jpg',k:'Website',n:'Website <b>3 không</b>',bg:'linear-gradient(135deg,#F59E0B,#FBBF24)'},
+ {title:'Tự Tay Xây Dựng Landing Page Trong 1 Giờ',cat:'web',desc:'Khóa học xây dựng landing page hiệu quả trong 1 giờ bằng AI.',lessons:12,free:true,demoOwned:true,demoDone:1,cover:'img/courses/web-landing.jpg',k:'Website',n:'Landing page <b>trong 1 giờ</b>',bg:'linear-gradient(135deg,#F59E0B,#FBBF24)'},
+ {title:'Tự Tay Xây Website Portfolio Bằng AI',cat:'web',desc:'Tự tay xây dựng một website portfolio cá nhân ấn tượng bằng AI.',lessons:5,free:true,demoOwned:true,demoDone:0,cover:'img/courses/web-portfolio.jpg',k:'Website',n:'Website <b>portfolio</b>',bg:'linear-gradient(135deg,#F59E0B,#FBBF24)'},
+ {title:'Biến Cuộc Họp Thành Bảng Việc Chính Xác Bằng AI',cat:'pm',desc:'Học cách dùng AI để chuyển nội dung cuộc họp thành biên bản và bảng công việc có người phụ trách, hạn cụ thể.',lessons:8,free:true,cover:'img/courses/pm-meeting.jpg',k:'Quản lý dự án',n:'Cuộc họp thành <b>bảng việc</b>',bg:'linear-gradient(135deg,#1E1B4B,#4338CA)'},
+ {title:'Xây Dựng Chatbot Chăm Sóc Khách Hàng Bằng AI',cat:'cs',desc:'Tự tay xây dựng một chatbot CSKH chạy thật, có link chia sẻ được.',lessons:8,free:true,cover:'img/courses/cs-chatbot.jpg',k:'Chăm sóc khách hàng',n:'Chatbot <b>CSKH</b>',bg:'linear-gradient(135deg,#1E1B4B,#4338CA)'},
+ {title:'Sản Xuất Video Quảng Cáo Sản Phẩm Cao Cấp Bằng AI',cat:'mkt',desc:'Quy trình sản xuất một video ra mắt sản phẩm cao cấp chỉ với ảnh chụp đơn giản.',lessons:5,free:true,cover:'img/courses/mkt-video.jpg',k:'Marketing & Content',n:'Video quảng cáo <b>bằng AI</b>',bg:'linear-gradient(135deg,#78350F,#B45309)'},
+ {title:'Xây Dựng Hệ Thống Quản Lý Hồ Sơ Nhân Viên',cat:'hr',desc:'Tự dựng một hệ thống quản lý hồ sơ nhân viên không cần biết lập trình.',lessons:9,free:true,cover:'img/courses/hr-records.jpg',k:'Nhân sự',n:'Quản lý <b>hồ sơ nhân viên</b>',bg:'linear-gradient(135deg,#1E1B4B,#4338CA)'}
+];

@@ -65,7 +65,7 @@ function achievements(){
   {k:'first',icon:'play',t:'Khởi động',d:'Xong bài đầu tiên',on:d.lessonsDone>=1},
   {k:'streak',icon:'flame',t:'3 ngày liên tiếp',d:'Học 3 ngày liền',on:best>=3},
   {k:'cap5',icon:'spark',t:'5 năng lực',d:'Mở khóa 5 năng lực',on:d.caps>=5},
-  {k:'ex6',icon:'file',t:'Người thực hành',d:'Nộp 6 bài tập',on:d.subs>=6},
+  {k:'ex6',icon:'write',t:'Người thực hành',d:'Nộp 6 bài tập',on:d.subs>=6},
   {k:'comm',icon:'users',t:'Kết nối',d:'Tham gia cộng đồng',on:!!(S.comm&&S.comm.joined)},
   {k:'finish',icon:'award',t:'Về đích',d:'Hoàn thành khóa học',on:d.allDone}];
 }
@@ -84,7 +84,9 @@ function dashboard(){
   <div class="dh-cta">${ni>=0?`<button class="btn btn-primary btn-lg" data-a="openLesson" data-v="${ni}">${d.lessonsDone===0&&subsCount()===0?'Bắt đầu học':'Học tiếp'} ${ic('arrow',16)}</button>`:`<button class="btn btn-primary btn-lg" data-a="go" data-to="complete">Nhận chứng nhận ${ic('arrow',16)}</button>`}<button class="btn btn-accent" data-a="shareOpen" data-v="dash">${ic('share',15)} Chia sẻ Dashboard</button></div>
  </section>`;
  // 2. 4 thẻ số liệu
- const cards=[['chart','Tiến độ',`${p}%`,p/100,'var(--blue)'],['check','Bài hoàn thành',`${d.lessonsDone}/${d.N}`,d.lessonsDone/d.N,'var(--green)'],['spark','Năng lực AI',`${d.caps}/${CAP_MAP.length}`,d.caps/CAP_MAP.length,'var(--teal)'],['clock','Thời gian học',`${d.studyDays} ngày`,d.N?Math.min(1,d.studyDays/d.N):0,'var(--orange)']];
+ // đã bỏ thẻ "Tiến độ %" (trùng vòng % ở trên và dải đầu trang) → thay bằng Bài tập đã nộp (điều kiện hoàn thành thứ 2)
+ const nT=Object.keys(TASKS).length,nS=subsCount();
+ const cards=[['check','Bài hoàn thành',`${d.lessonsDone}/${d.N}`,d.lessonsDone/d.N,'var(--green)'],['write','Bài tập đã nộp',`${nS}/${nT}`,nT?nS/nT:0,'#DB2777'],['spark','Năng lực AI',`${d.caps}/${CAP_MAP.length}`,d.caps/CAP_MAP.length,'var(--teal)'],['clock','Thời gian học',`${d.studyDays} ngày`,d.N?Math.min(1,d.studyDays/d.N):0,'var(--orange)']];
  const cardHTML=`<div class="dh-kpis">${cards.map(([i,l,v,f,c])=>`<div class="dh-kpi" style="--c:${c}"><span class="ico">${ic(i,18)}</span><b>${v}</b><span>${l}</span><i class="meter"><i style="width:${Math.round(f*100)}%"></i></i></div>`).join('')}</div>`;
  // 4. Capacity Map: 10 thẻ năng lực
  const capHTML=`<section class="card pad dh-sec"><div class="dh-sec-h"><div><span class="eyebrow">Bản đồ năng lực</span><h2 class="h3">${CAP_MAP.length} năng lực AI anh/chị đang chinh phục</h2></div><span class="dh-big">${d.caps}<small>/${CAP_MAP.length}</small></span></div>

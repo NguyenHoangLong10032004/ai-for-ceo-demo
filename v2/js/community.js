@@ -10,22 +10,22 @@
 const COMM={name:'CEO AI Community',tagline:'Nơi các CEO chia sẻ use case, hỏi đáp và cập nhật AI mỗi tháng',
  members:428,online:23,
  // ảnh bìa (để trống = nền màu): đặt đường dẫn ảnh, vd. 'img/cover-aiceo.jpg'. Kích thước gợi ý 1500×500 (tỉ lệ 3:1)
- cover:'',
+ cover:'img/community-cover.png', // ảnh bìa tạm (Claude thiết kế 27/10/2026), thay bằng ảnh cộng đồng thật khi có
  rules:['Chia sẻ thật, cụ thể: bài toán, cách làm, kết quả','Không quảng cáo, không bán hàng trong bài viết','Tôn trọng thông tin của doanh nghiệp khác, không chia sẻ dữ liệu khách hàng']};
 const COMM_CATS=[['all','Tất cả'],['res','Bài viết'],['ask','Hỏi đáp'],['usecase','Chia sẻ use case'],['news','Thông báo']];
-const CAT_COLOR={ask:'#1747C9',usecase:'#7C3AED',win:'#15803D',res:'#0E7490',news:'#EA580C'};
+const CAT_COLOR={ask:'#1747C9',usecase:'#7C3AED',win:'#15803D',res:'#0E7490',news:'#C2410C'};
 const COMM_PEOPLE={
  mt:{name:'Minh Thư',role:'Quản trị cộng đồng · Học viện',pts:2140,admin:true,online:true,c:'#15803D'},
  dt:{name:'Trần Quốc Duy',role:'CEO · Chuỗi bán lẻ điện máy',pts:612,online:true,c:'#1747C9'},
  lh:{name:'Lê Thu Hà',role:'Founder · Dịch vụ kế toán B2B',pts:384,online:true,c:'#DB2777'},
- pk:{name:'Phạm Minh Khoa',role:'Giám đốc · Nhà máy bao bì',pts:241,online:false,c:'#EA580C'},
+ pk:{name:'Phạm Minh Khoa',role:'Giám đốc · Nhà máy bao bì',pts:241,online:false,c:'#C2410C'},
  nv:{name:'Ngô Thanh Vy',role:'CEO · Trung tâm Anh ngữ',pts:167,online:true,c:'#7C3AED'},
  hb:{name:'Hoàng Gia Bảo',role:'CEO · Chuỗi cà phê',pts:96,online:false,c:'#0E7490'},
  tl:{name:'Đỗ Thị Lan',role:'COO · Công ty logistics',pts:58,online:false,c:'#B45309'},
  qa:{name:'Vũ Quang Anh',role:'Founder · Agency marketing',pts:23,online:true,c:'#DC2626'}};
 // ago: số giờ trước; likes: số lượt thích có sẵn
 const COMM_SEED=[
- {id:'p1',by:'mt',cat:'news',pin:true,ago:240,likes:86,title:'👋 Chào mừng đến CEO AI Community: đọc trước khi đăng bài',
+ {id:'p1',by:'mt',cat:'news',pin:true,ago:240,likes:86,title:'Chào mừng đến CEO AI Community: đọc trước khi đăng bài',
   body:'Đây là nơi dành riêng cho học viên khóa AI for CEO. Ba việc nên làm ngay:\n1. Giới thiệu bản thân ở phần bình luận: công ty, ngành, bài toán đang muốn dùng AI.\n2. Chia sẻ 3 use case anh/chị chọn sau Module 12 để nhận góp ý.\n3. Đăng ký Live Zoom "AI đến đâu rồi?" hằng tháng ở tab Lịch.\nMỗi bài đăng được cộng 2 điểm, mỗi lượt thích bài viết hoặc bình luận của anh/chị được cộng 1 điểm. Lên cấp để mở thêm tài nguyên.',
   comments:[{by:'dt',ago:200,text:'Chào cả nhà, Duy bên chuỗi điện máy 32 cửa hàng. Đang muốn tự động hóa báo cáo tồn kho.'},{by:'nv',ago:150,text:'Vy, trung tâm Anh ngữ ở Đà Nẵng. Bài toán của mình là tư vấn tuyển sinh ngoài giờ.'}]},
  {id:'p2',by:'mt',cat:'news',ago:30,likes:41,title:'Live Zoom tháng 10: AI đến đâu rồi?',
@@ -99,7 +99,7 @@ function commHeader(){
  return `<header class="hdr cmhd"><div class="wrap cmhd-top">
   <button class="logo" data-a="go" data-to="landing" aria-label="Trang chủ Siêu Tăng Trưởng"><img class="logo-img" src="img/logo.png" onerror="this.onerror=null;this.src='../Logo.png'" alt="Siêu Tăng Trưởng" width="1725" height="237"></button>
   <span class="cmhd-sep" aria-hidden="true"></span>
-  <button class="cmhd-id" data-a="commHub" title="Tất cả cộng đồng"><span class="cmhd-logo"${COMM.cover?` style="background:center/cover no-repeat url(${COMM.cover})"`:''}>${COMM.cover?'':ic('users',20)}</span><b>${esc(COMM.name)}</b></button>
+  <button class="cmhd-id" data-a="commHub" title="Tất cả cộng đồng"><span class="cmhd-logo">${ic('users',20)}</span><b>${esc(COMM.name)}</b></button>
   <div class="cmhd-r">
    <button class="cmhd-ic" data-a="commNotif" aria-label="Thông báo, 3 mới" title="Thông báo">${ic('bell',21)}<i class="cmhd-badge">3</i></button>
    <button class="cmhd-ic" data-a="openChat" data-v="expert" aria-label="Tin nhắn${unread?`, ${unread} chưa đọc`:''}" title="Tin nhắn">${ic('chat',21)}${unread?`<i class="cmhd-badge">${unread}</i>`:''}</button>
@@ -220,7 +220,7 @@ function commPostCard(p){
  const a=person(p.by),last=p.comments.slice(-3);
  return `<article class="card cm-post ${p.pin?'pin':''}"><button class="cm-post-hit" data-a="commOpen" data-v="${p.id}" aria-label="Mở bài: ${esc(p.title)}"></button>
   <div class="cm-post-h">${avatar(p.by,40)}<div><b>${esc(a.name)}${a.admin?'<span class="cm-admin">Quản trị</span>':''}</b><span class="hint">${timeAgo(p.ago)} · <span class="cm-cat" style="--c:${CAT_COLOR[p.cat]}">${catLabel(p.cat)}</span></span></div>${p.pin?`<span class="cm-pin">${ic('flag',13)} Đã ghim</span>`:''}</div>
-  <h3>${esc(p.title)}</h3>${p.body?`<p class="cm-ex">${esc(p.body)}</p>`:''}${mediaGrid(p.media,p.id)}
+  <h2>${esc(p.title)}</h2>${p.body?`<p class="cm-ex">${esc(p.body)}</p>`:''}${mediaGrid(p.media,p.id)}
   <div class="cm-post-f"><button class="cm-like ${p.liked?'on':''}" data-a="commLike" data-v="${p.id}" aria-pressed="${p.liked}">${ic('thumb',16)} ${p.likes}</button><span class="cm-cc">${ic('chat',16)} ${p.comments.length}</span>
    ${last.length?`<span class="cm-faces">${last.map(c=>avatar(c.by,24)).join('')}<span class="hint">Bình luận mới ${timeAgo(p.comments[p.comments.length-1].ago)}</span></span>`:''}</div></article>`;
 }

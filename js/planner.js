@@ -23,7 +23,7 @@ function U(key){
 }
 const chOf=k=>{const u=U(k);return u.b?u.b.ch:L[u.id].id;}; // mã chương chứa bài
 const unitType=u=>u.kind==='exercise'?'Bài tập':u.kind==='review'?'Ôn tập':u.kind==='text'?'Văn bản':'Video';
-const unitIcon=u=>u.kind==='exercise'?'file':u.kind==='review'?'book':u.kind==='text'?'news':'play'; // biểu tượng loại bài
+const unitIcon=u=>u.kind==='exercise'?'write':u.kind==='review'?'book':u.kind==='text'?'file':'play'; // biểu tượng loại bài
 function unitLabel(u){return u.b?`${chLabel(L[u.b.ch])} · Bài ${u.b.i+1}`:`Ôn tập ${chLabel(L[u.id])}`;}
 function unitTitle(u){return u.b?u.b.t:`Ôn tập: ${L[u.id].title}`;}
 function unitLine(u){return {icon:u.kind==='video'?'video':unitIcon(u),t:unitTitle(u)};}

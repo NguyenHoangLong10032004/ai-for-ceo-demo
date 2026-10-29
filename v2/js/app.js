@@ -172,6 +172,7 @@ function render(){
  // vào cộng đồng là tham gia luôn (đã bỏ màn quy tắc cộng đồng theo yêu cầu user 10/2026)
  if(S.screen==='community'&&T.commId&&S.loggedIn&&S.account&&S.comm&&!S.comm.joined){S.comm.joined=true;setTimeout(()=>toast(`Chào mừng anh/chị đến ${COMM.name}!`),0);}
  if(V2&&S.screen==='courses'){S.screen='community';T.commId='aiceo';T.commTab='courses';T.commPost=null;} // Version 2: khóa học nằm trong Cộng đồng
+ if(T.navScr!==S.screen){T.navOpen=false;T.navScr=S.screen;} // chuyển trang thì đóng menu điện thoại
  const scr=SCREENS[S.screen]||landing;
  // giữ chữ đang gõ dở trong ô chat chuyên gia khi màn hình vẽ lại (vd. chuyên gia vừa trả lời)
  const cmT=document.getElementById('cm-title'),cmB=document.getElementById('cm-body'),cmC=document.getElementById('cm-cat');if(cmT&&cmB&&T.commWrite)T.commDraft={title:cmT.value,body:cmB.value,cat:cmC?cmC.value:'ask'};
@@ -180,12 +181,17 @@ function render(){
  const brandPg=!['dashboard','community'].includes(S.screen);
  $app.innerHTML=demoBar()+header()+`<main class="scr-${S.screen}${brandPg?' brand-pg':''}">${scr()}</main>`+footer()+fab()+mailView()+shareView()+mediaViewer()+remindView()+zaloView()+drawerView()+invoiceView();
  brandBand();
+ // khả năng tiếp cận: mỗi trang có đúng 1 tiêu đề H1 (trang không có tiêu đề hiện ra thì thêm H1 ẩn cho trình đọc màn hình)
+ {const m=$app.querySelector('main');if(m&&!m.querySelector('h1'))m.insertAdjacentHTML('afterbegin',`<h1 class="sr-only">${esc(PAGE_H1[S.screen]||'AI for CEO')}</h1>`);}
  if(T.share)drawShare();
  if(document.getElementById('cert-cv'))drawCert();
  if(!T.syncing)save(); // vẽ lại do tab kia vừa lưu thì không lưu ngược lại
  // khả năng tiếp cận: vùng chat đọc được bằng trình đọc màn hình, lỗi có role=alert
+ // ô trả lời trong khung chat có nhãn cho trình đọc màn hình (chỉ có chữ gợi ý thì không đủ)
+ document.querySelectorAll('.chat-in input:not([aria-label]),.chat-in textarea:not([aria-label])').forEach(el=>el.setAttribute('aria-label','Câu trả lời của anh/chị'));
  document.querySelectorAll('.chat-log').forEach(el=>{el.scrollTop=el.scrollHeight;el.setAttribute('role','log');el.setAttribute('aria-live','polite');});
  document.querySelectorAll('.err').forEach(el=>{el.setAttribute('role','alert');if(!el.querySelector('.ic'))el.insertAdjacentHTML('afterbegin',ic('x',16));});
+ if(T.err.field){const f=document.getElementById(T.err.field),fm=f&&f.closest('form'),e=fm&&fm.querySelector(':scope p.err');if(f&&e){const box=f.closest('.field');e.classList.add('err-inline');e.id='err-'+T.err.field;if(box)box.appendChild(e);else(f.closest('.ck-terms')||f.closest('label')||f).insertAdjacentElement('afterend',e);f.setAttribute('aria-describedby',((f.getAttribute('aria-describedby')||'')+' '+e.id).trim());}} // rà soát UI/UX 27/10/2026: lỗi nằm cạnh ô sai
  if(T.err.field){const f=document.getElementById(T.err.field);if(f){f.setAttribute('aria-invalid','true');f.focus({preventScroll:false});}}
  if(exFocus&&!T.focus)T.focus='expert';
  if(T.focus){const id={ob:'ob-in',asst:'asst-in',adj:'adj-in',expert:'ex-in'}[T.focus];const el=document.getElementById(id);if(el)el.focus({preventScroll:true});T.focus=null;}
@@ -227,7 +233,7 @@ function ensureFor(to){
  const need=['mycourses','onboarding','syllabus','learn','complete'].includes(to);
  if(need&&!S.account)S.account={name:SAMPLE_PROFILE.name,phone:'0912 345 678',email:'long.nguyen@minhan.vn',createdAt:today()};
  if(need)S.loggedIn=true;
- if(need&&!S.enrolled){S.order=S.order||{code:'AICEO-'+Math.floor(100000+Math.random()*900000),name:S.account.name,phone:S.account.phone,email:S.account.email,company:SAMPLE_PROFILE.company,invoice:false,method:'bank',paidAt:today()};S.pay.status='success';S.enrolled=true;}
+ if(need&&!S.enrolled){S.order=S.order||{code:'AICEO'+Math.floor(100000+Math.random()*900000),name:S.account.name,phone:S.account.phone,email:S.account.email,company:SAMPLE_PROFILE.company,invoice:false,method:'bank',paidAt:today()};S.pay.status='success';S.enrolled=true;}
  if(to==='onboarding'&&!S.ob.flow.length&&!S.ob.done)startOb();
  if(['syllabus','learn','complete'].includes(to)&&!profileComplete(S.profile)){
   S.profile={...SAMPLE_PROFILE,...(S.eval?{industry:S.eval.industry,size:S.eval.size,level:S.eval.level,goals:S.eval.goals}:{}),name:S.order.name,company:S.order.company};
@@ -245,7 +251,10 @@ function advance(){
 }
 
 /* ---------- xử lý nút bấm (data-a="…") ---------- */
+// tên trang cho H1 ẩn (trang không có tiêu đề hiện ra)
+const PAGE_H1={library:'Thư viện',account:'Tài khoản Học viện',checkout:'Đăng ký & thanh toán',syllabus:'Lộ trình của anh/chị',outputs:'Bài tập của tôi',complete:'Hoàn thành khóa học',community:'Cộng đồng',onboarding:'Onboarding AI for CEO',dashboard:'Dashboard học tập',lesson:'Bài học'};
 const ACT={
+ navTg(){T.navOpen=!T.navOpen;render();if(!T.navOpen){const b=document.querySelector('.nav-tg');if(b)b.focus();}},
  go:d=>{if(['mycourses','dashboard','learn','complete','syllabus','onboarding','outputs'].includes(d.to))ensureFor(d.to);T.editEx=null;go(d.to);},
  jump:d=>{ensureFor(d.to);go(d.to);},
  // tài khoản Học viện: bắt buộc có trước khi đăng ký mua khóa học
@@ -321,12 +330,20 @@ const ACT={
  trialStart:()=>{if(S.enrolled){ACT.openCourse();return;}if(S.ob.done){go('syllabus');return;}if(!S.ob.flow.length)startOb();go('onboarding');},
  homeTo:d=>{go('home');setTimeout(()=>{const el=document.getElementById(d.v);if(el)el.scrollIntoView({block:'start',behavior:'smooth'});},30);},
  listFilter:d=>{T[d.k]=d.v;render();},
+ libReset:()=>{T.libF='all';T.libT='all';T.libQ='';T.libSort='new';render();},
  libDl:()=>toast('Tài liệu minh họa trong bản demo, chưa có tệp thật để tải'),
  // Trang Chi tiết khóa học
+ crsCat:d=>{T.crsCat=d.v;render();},
+ hpCat:d=>{T.hpCat=d.v;render();},
+ hpCatGo:d=>{T.crsCat=d.v;go('courses');window.scrollTo(0,0);},
+ hpLib:d=>{T.libT=d.v==='docs'?'Tài liệu':d.v==='cases'?'Case study':'all';T.libF='all';T.libQ='';go('library');window.scrollTo(0,0);},
+ hpScroll:d=>{const el=document.getElementById(d.t);if(el)el.scrollBy({left:(d.v==='prev'?-1:1)*el.clientWidth*.9,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});},
+
  crsOpen:d=>{T.crsId=d.v;T.cdOpen=null;go('course');window.scrollTo(0,0);},
  cdCh:d=>{const o=T.cdOpen||[];T.cdOpen=o.includes(d.v)?o.filter(x=>x!==d.v):[...o,d.v];render();},
  cdAll:()=>{T.cdOpen=(T.cdOpen||[]).length===LIB.length?[]:LIB.map(x=>x.id);render();},
  cdTry:d=>{if(HAS_C0&&(!S.ob||S.ob.v!==2))startOb();S.unit=d.v;S.lesson=0;S.from=null;go('lesson');},
+ chalDemo:()=>toast('Thử thách minh họa: trang chi tiết thử thách chưa có trong bản demo.'),
  homeDemo:()=>toast('Nội dung minh họa trên trang chủ demo'),
  openUnit:d=>{if(!S.enrolled){go('checkout');toast('Đăng ký khóa học để bắt đầu học');return;}const k=d.v;if(!unitOpen(k)){toast(unitLockMsg(k),'bad');return;}S.unit=k;S.lesson=lessonOfUnit(k);S.from=null;T.editEx=null;go('lesson');},
  openLesson:d=>{if(!lessonOpen(+d.v)){toast(lockMsg(+d.v),'bad');return;}S.lesson=+d.v;S.unit=null;S.from=null;go('lesson');},
@@ -443,7 +460,7 @@ const FORMS={
   if(o.invoice&&!String(o.invAddr||'').trim()){T.err={checkout:'Chưa có địa chỉ doanh nghiệp. Nhập địa chỉ ghi trên hóa đơn, hoặc bỏ chọn "Xuất hóa đơn doanh nghiệp".',field:'c-invaddr'};render();return;}
   if(o.invoice&&!/^\S+@\S+\.\S+$/.test(String(o.invEmail||'').trim())){T.err={checkout:'Email nhận hóa đơn chưa đúng. Nhập email kế toán, ví dụ: ketoan@congty.vn, hoặc bỏ chọn "Xuất hóa đơn doanh nghiệp".',field:'c-invemail'};render();return;}
   if(!o.agree){T.err={checkout:'Anh/chị cần đồng ý với Điều khoản &amp; quy định trước khi tạo mã thanh toán.',field:'c-agree'};render();return;}
-  T.err={};S.pay.method=o.method;S.order={...o,code:(S.order&&S.order.code)||'AICEO-'+Math.floor(100000+Math.random()*900000)};S.profile.name=o.name;S.profile.company=o.company;
+  T.err={};S.pay.method=o.method;S.order={...o,code:(S.order&&S.order.code)||'AICEO'+Math.floor(100000+Math.random()*900000)};S.profile.name=o.name;S.profile.company=o.company;
   S.pay.status='await';S.pay.until=Date.now()+PAY_HOLD;S.pay.support=false;render();window.scrollTo(0,0);},
  acRegister:f=>{const fd=new FormData(f),v=k=>String(fd.get(k)||'').trim(),d={name:v('name'),phone:v('phone'),email:v('email').toLowerCase()};T.acDraft=d;
   const bad=(m,field)=>{T.err={ac:m,field};render();};
@@ -529,6 +546,7 @@ document.addEventListener('click',e=>{if(!e.target.closest('.vp-menu,[data-a="vp
 document.addEventListener('input',e=>{if(e.target&&e.target.id==='c-tax')taxPrefetch(e.target.value);});
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target&&e.target.id==='c-tax'){e.preventDefault();ACT.taxLookup();}});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&vpCloseMenu())e.stopImmediatePropagation();},true);
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&T.navOpen){T.navOpen=false;render();const b=document.querySelector('.nav-tg');if(b)b.focus();}}); // Esc đóng menu điện thoại
 ['fullscreenchange','webkitfullscreenchange'].forEach(t=>document.addEventListener(t,vpSync));
 // góp ý: hiện chữ mô tả ngay khi chọn số sao
 document.addEventListener('change',e=>{
