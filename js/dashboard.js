@@ -79,9 +79,9 @@ function dashboard(){
  // 1. hero
  const hero=`<section class="dh-hero">
   <div class="dh-ring"><svg width="116" height="116" viewBox="0 0 116 116" aria-hidden="true"><defs><linearGradient id="dh-rg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3874FF"/><stop offset="1" stop-color="#7C5CFC"/></linearGradient></defs><circle cx="58" cy="58" r="46" fill="none" stroke="var(--blue-soft)" stroke-width="12"/><circle cx="58" cy="58" r="46" fill="none" stroke="url(#dh-rg)" stroke-width="12" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C*(1-p/100)}" transform="rotate(-90 58 58)"/></svg><div><b>${p}%</b><span>hành trình</span></div></div>
-  <div class="dh-intro"><h1>Chào anh/chị ${esc(firstName())} 👋</h1><p>Anh/chị đã hoàn thành <b>${p}% hành trình</b>.</p>
-   <div class="dh-tags"><span class="dh-tag">${ic('flag',14)} ${d.allDone?'Đã về đích':'Về đích '+fmtShort(d.end)}</span></div></div>
-  <div class="dh-cta">${ni>=0?`<button class="btn btn-primary btn-lg" data-a="openLesson" data-v="${ni}">${d.lessonsDone===0&&subsCount()===0?'Bắt đầu học':'Học tiếp'} ${ic('arrow',16)}</button>`:`<button class="btn btn-primary btn-lg" data-a="go" data-to="complete">Nhận chứng nhận ${ic('arrow',16)}</button>`}<button class="btn btn-accent" data-a="shareOpen" data-v="dash">${ic('share',15)} Chia sẻ Dashboard</button></div>
+  <div class="dh-intro"><h1>Chào anh/chị ${esc(firstName())}</h1><p>Anh/chị đã hoàn thành <b>${p}% hành trình</b>.</p>
+   </div>
+  <div class="dh-cta"><button class="btn btn-accent" data-a="shareOpen" data-v="dash">${ic('share',15)} Chia sẻ Dashboard</button></div>
  </section>`;
  // 2. 4 thẻ số liệu
  // đã bỏ thẻ "Tiến độ %" (trùng vòng % ở trên và dải đầu trang) → thay bằng Bài tập đã nộp (điều kiện hoàn thành thứ 2)
@@ -101,7 +101,7 @@ function dashboard(){
   <div class="seg dh-seg" role="group" aria-label="Lọc">${[['all','Tất cả'],['done','Đã hoàn thành'],['todo','Chưa hoàn thành']].map(([k,l])=>`<button class="${(T.dashFilter||'all')===k?'on':''}" data-a="dashFilter" data-v="${k}">${l}</button>`).join('')}</div></div>${workList()}</section>`;
  const ask=d.allDone&&!S.feedback?`<div class="callout info fb-ask"><span class="fb-ask-ico">${ic('star',20)}</span><div><b>Góp ý về khóa học</b><span>2 phút để Học viện làm tốt hơn.</span></div><button class="btn btn-primary btn-sm" data-a="goFeedback">Góp ý ${ic('arrow',15)}</button></div>`:'';
  const demo=`<div class="demo-box"><span class="t">Công cụ demo</span><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-line btn-sm" data-a="simulateHalf">Mô phỏng: học một nửa</button><button class="btn btn-line btn-sm" data-a="simulateAll" data-v="dash">Mô phỏng: học xong</button></div></div>`;
- return `<section class="wrap page dash">${head}${hero}${ask}${cardHTML}${decDashCard()}${capHTML}${chartsHTML(d)}${jHTML}${demo}</section>`;
+ return `<section class="wrap page dash">${head}${hero}${ask}${cardHTML}${capHTML}${chartsHTML(d)}${jHTML}${demo}</section>`;
 }
 // thẻ "Quyết định 30 ngày": câu hiện tại + các lần giữ / điều chỉnh theo chương (PLAN_Onboarding.md mục 2.4)
 function decDashCard(){const p=S.profile;if(!p||!p.decision30)return '';
